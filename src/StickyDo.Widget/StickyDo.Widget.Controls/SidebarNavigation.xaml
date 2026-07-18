@@ -17,7 +17,7 @@
         <!-- Sidebar Header -->
         <Border Grid.Row="0" Padding="20,20,20,16">
             <StackPanel Orientation="Vertical">
-                <TextBlock Text="Sticky TODO" FontSize="14" FontWeight="700" Foreground="#1F1F1F" Margin="0,0,0,6"/>
+                <TextBlock Text="Sticky TODO" FontSize="14" FontWeight="700" Foreground="#0066CC" Margin="0,0,0,6"/>
                 <TextBlock Text="Productive Session" FontSize="11" Foreground="#B0B0B0"/>
             </StackPanel>
         </Border>
