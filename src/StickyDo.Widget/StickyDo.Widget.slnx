@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../StickyDo.Domain/StickyDo.Domain.csproj" />
+  <Project Path="StickyDo.Widget/StickyDo.Widget.csproj" />
+</Solution>

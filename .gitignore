@@ -1,0 +1,14 @@
+
+src/StickyDo.Domain/bin
+src/StickyDo.Domain/bin*
+
+src/StickyDo.Domain/obj
+src/StickyDo.Domain/obj/*
+
+src/StickyDo.Widget/StickyDo.Widget/bin
+src/StickyDo.Widget/StickyDo.Widget/bin/*
+
+src/StickyDo.Widget/StickyDo.Widget/obj
+src/StickyDo.Widget/StickyDo.Widget/obj/*
+/src/StickyDo.Widget/.vs/StickyDo.Widget.slnx/FileContentIndex
+/src/StickyDo.Widget/.vs/StickyDo.Widget.slnx/FileContentIndex/*
