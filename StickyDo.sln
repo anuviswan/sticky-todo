@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StickyDo.Domain", "src\StickyDo.Domain\StickyDo.Domain.csproj", "{E1A5C5A1-5E5C-4C5C-8C5C-5C5C5C5C5C5C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StickyDo.Widget.Controls", "src\StickyDo.Widget\StickyDo.Widget.Controls\StickyDo.Widget.Controls.csproj", "{E2A5C5A2-5E5C-4C5C-8C5C-5C5C5C5C5C5C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StickyDo.Widget", "src\StickyDo.Widget\StickyDo.Widget\StickyDo.Widget.csproj", "{E3A5C5A3-5E5C-4C5C-8C5C-5C5C5C5C5C5C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E1A5C5A1-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1A5C5A1-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1A5C5A1-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1A5C5A1-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2A5C5A2-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A5C5A2-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2A5C5A2-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A5C5A2-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3A5C5A3-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3A5C5A3-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3A5C5A3-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3A5C5A3-5E5C-4C5C-8C5C-5C5C5C5C5C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

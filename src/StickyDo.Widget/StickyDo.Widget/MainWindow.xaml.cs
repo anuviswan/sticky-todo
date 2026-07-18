@@ -1,12 +1,8 @@
-﻿using System.Windows;
-using System.Windows.Input;
+using System.Windows;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget;
 
-/// <summary>
-/// Main window for the Todo List sticky note manager application.
-/// </summary>
 public partial class MainWindow : Window
 {
     public MainWindow()
@@ -17,43 +13,78 @@ public partial class MainWindow : Window
     public void SetViewModel(MainWindowViewModel viewModel)
     {
         DataContext = viewModel;
+        viewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(viewModel.FilteredNotes))
+            {
+                UpdateEmptyState();
+            }
+        };
     }
 
-    private void OnTitleBarMouseDown(object sender, MouseButtonEventArgs e)
+    private void UpdateEmptyState()
     {
-        if (e.LeftButton == MouseButtonState.Pressed)
+        if (DataContext is MainWindowViewModel vm)
         {
-            DragMove();
+            var hasNotes = vm.FilteredNotes?.Count > 0;
+            NotesScrollViewer.Visibility = hasNotes == true ? Visibility.Visible : Visibility.Collapsed;
+            EmptyStatePanel.Visibility = hasNotes == true ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 
-    private void OnMinimizeClick(object sender, RoutedEventArgs e)
+    private void OnAllNotesNavClick(object sender, RoutedEventArgs e)
     {
-        WindowState = WindowState.Minimized;
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.ShowAllNotes();
+            UpdateNavButtonStyles("all");
+        }
     }
 
-    private void OnCloseClick(object sender, RoutedEventArgs e)
+    private void OnFavoritesNavClick(object sender, RoutedEventArgs e)
     {
-        Close();
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.ShowFavorites();
+            UpdateNavButtonStyles("favorites");
+        }
+    }
+
+    private void OnTrashNavClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.ShowTrash();
+            UpdateNavButtonStyles("trash");
+        }
+    }
+
+    private void UpdateNavButtonStyles(string active)
+    {
+        AllNotesNavButton.Opacity = active == "all" ? 1.0 : 0.6;
+        FavoritesNavButton.Opacity = active == "favorites" ? 1.0 : 0.6;
+        TrashNavButton.Opacity = active == "trash" ? 1.0 : 0.6;
     }
 
     private void OnCreateNoteClick(object sender, RoutedEventArgs e)
     {
-        MessageBox.Show("Create note functionality - Phase 2", "Feature Placeholder");
-    }
-
-    private void OnDeleteNoteClick(object sender, RoutedEventArgs e)
-    {
-        MessageBox.Show("Delete note functionality - Phase 2", "Feature Placeholder");
+        if (DataContext is MainWindowViewModel vm)
+        {
+            _ = vm.CreateNoteAsync();
+        }
     }
 
     private void OnSearchTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
-        // TODO: Implement search filtering in Phase 2
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.SearchQuery = SearchTextBox.Text;
+            _ = vm.SearchNotesAsync();
+        }
     }
 
-    private void OnNoteItemClick(object sender, MouseButtonEventArgs e)
+    private void OnNoteItemClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        MessageBox.Show("Open note editor - Phase 2", "Feature Placeholder");
+        // Placeholder for note item interaction
     }
 }

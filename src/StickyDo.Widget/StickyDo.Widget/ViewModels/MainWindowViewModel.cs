@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
+using System.Windows.Media;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -12,9 +13,10 @@ namespace StickyDo.Widget.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
+    private ObservableCollection<StickyNoteItemViewModel> _allNotes = new();
 
     [ObservableProperty]
-    private ObservableCollection<StickyNoteItemViewModel> notes = new();
+    private ObservableCollection<StickyNoteItemViewModel> filteredNotes = new();
 
     [ObservableProperty]
     private string searchQuery = string.Empty;
@@ -47,10 +49,10 @@ public partial class MainWindowViewModel : ObservableObject
             SyncStatus = "Syncing...";
             var notes = await _stickyNoteService.GetAllNotesAsync();
 
-            Notes.Clear();
+            _allNotes.Clear();
             foreach (var note in notes.OrderByDescending(n => n.UpdatedAt))
             {
-                Notes.Add(new StickyNoteItemViewModel
+                _allNotes.Add(new StickyNoteItemViewModel
                 {
                     Id = note.Id,
                     Title = note.Title,
@@ -61,6 +63,7 @@ public partial class MainWindowViewModel : ObservableObject
                 });
             }
 
+            ApplyFilter();
             UpdateNoteCount();
             SyncStatus = "Synced";
             LastSyncDisplay = "Just now";
@@ -96,30 +99,71 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Searches notes based on the search query (placeholder for Phase 2).
+    /// Searches notes based on the search query.
     /// </summary>
     [RelayCommand]
     public async Task SearchNotesAsync()
     {
-        if (string.IsNullOrWhiteSpace(SearchQuery))
+        ApplyFilter();
+        UpdateNoteCount();
+        await Task.CompletedTask;
+    }
+
+    public void ShowAllNotes()
+    {
+        SearchQuery = string.Empty;
+        ApplyFilter();
+    }
+
+    public void ShowFavorites()
+    {
+        SearchQuery = string.Empty;
+        ApplyFilter();
+    }
+
+    public void ShowTrash()
+    {
+        SearchQuery = string.Empty;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        var filtered = _allNotes.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(SearchQuery))
         {
-            await LoadNotesAsync();
-            return;
+            var query = SearchQuery.ToLower();
+            filtered = filtered.Where(n =>
+                n.Title.ToLower().Contains(query) ||
+                n.Content.ToLower().Contains(query)
+            );
         }
 
-        // Placeholder for Phase 2 implementation
-        await Task.CompletedTask;
+        FilteredNotes.Clear();
+        foreach (var note in filtered)
+        {
+            FilteredNotes.Add(note);
+        }
+
+        UpdateNoteCount();
     }
 
     private void UpdateNoteCount()
     {
-        var count = Notes.Count;
+        var count = FilteredNotes.Count;
         NoteCountDisplay = $"{count} {(count == 1 ? "note" : "notes")}";
     }
 
-    private static System.Windows.Media.Brush GetColorBrushForNote(StickyNote note)
+    private static Brush GetColorBrushForNote(StickyNote note)
     {
-        // Placeholder - use default color
-        return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 193, 7));
+        var argb = note.ColorArgb ?? 0xFFFFCC07;
+        var color = System.Windows.Media.Color.FromArgb(
+            (byte)((argb >> 24) & 0xFF),
+            (byte)((argb >> 16) & 0xFF),
+            (byte)((argb >> 8) & 0xFF),
+            (byte)(argb & 0xFF)
+        );
+        return new SolidColorBrush(color);
     }
 }
