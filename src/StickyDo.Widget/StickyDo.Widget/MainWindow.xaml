@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:StickyDo.Widget"
         xmlns:controls="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
         mc:Ignorable="d"
-        Title="Sticky TODO" Height="700" Width="1000"
+        Title="StickyDo" Height="700" Width="1000"
         Background="White" ResizeMode="CanResizeWithGrip"
         WindowStyle="SingleBorderWindow" ShowInTaskbar="True">
     <Window.Resources>
@@ -134,8 +134,7 @@
                                         Status="{Binding Status, Mode=OneWay}"
                                         LastModified="{Binding LastModified, Mode=OneWay}"
                                         ColorBrush="{Binding ColorBrush, Mode=OneWay}"
-                                        Margin="0,0,0,12"
-                                        MouseLeftButtonUp="OnNoteItemClick"/>
+                                        Margin="0,0,0,12"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>

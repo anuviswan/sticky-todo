@@ -1,7 +1,6 @@
 using StickyDo.Domain.Models;
-using StickyDo.Domain.Repositories;
 
-namespace StickyDo.Widget.Data;
+namespace StickyDo.Domain.Repositories;
 
 /// <summary>
 /// In-memory implementation of sticky note repository for Phase 1 testing.
