@@ -1,5 +1,4 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.Windows.Media;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -24,5 +23,5 @@ public partial class StickyNoteItemViewModel : ObservableObject
     private DateTime lastModified = DateTime.UtcNow;
 
     [ObservableProperty]
-    private Brush colorBrush = new SolidColorBrush(Color.FromRgb(255, 193, 7));
+    private uint colorArgb = 0xFFFFCC07;
 }

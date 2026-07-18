@@ -5,39 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StickyDo.Widget"
         xmlns:controls="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
+        xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
         mc:Ignorable="d"
         Title="StickyDo" Height="700" Width="1000"
         Background="White" ResizeMode="CanResizeWithGrip"
         WindowStyle="SingleBorderWindow" ShowInTaskbar="True">
     <Window.Resources>
-        <Style x:Key="NavButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#1F1F1F"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,8,12,8"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderThickness="0"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FFF4E6"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#FFE8CC"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:ColorArgbToBrushConverter x:Key="ColorArgbToBrushConverter"/>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid>
@@ -133,7 +112,7 @@
                                         NoteContent="{Binding Content, Mode=OneWay}"
                                         Status="{Binding Status, Mode=OneWay}"
                                         LastModified="{Binding LastModified, Mode=OneWay}"
-                                        ColorBrush="{Binding ColorBrush, Mode=OneWay}"
+                                        ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
                                         Margin="0,0,0,12"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

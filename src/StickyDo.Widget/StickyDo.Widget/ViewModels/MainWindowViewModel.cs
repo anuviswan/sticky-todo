@@ -3,7 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
-using System.Windows.Media;
+using StickyDo.Widget.Resources;
+using StickyDo.Widget.Utilities;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -31,17 +32,18 @@ public partial class MainWindowViewModel : ObservableObject
     private StickyNoteItemViewModel? selectedNote;
 
     [ObservableProperty]
-    private string syncStatus = "Synced";
+    private string syncStatus = AppStrings.SyncedStatus;
 
     [ObservableProperty]
-    private string noteCountDisplay = "0 notes";
+    private string noteCountDisplay = AppStrings.ZeroNotes;
 
     [ObservableProperty]
-    private string lastSyncDisplay = "Just now";
+    private string lastSyncDisplay = AppStrings.JustNow;
 
     public MainWindowViewModel(StickyNoteService stickyNoteService)
     {
-        _stickyNoteService = stickyNoteService ?? throw new ArgumentNullException(nameof(stickyNoteService));
+        ArgumentNullException.ThrowIfNull(stickyNoteService);
+        _stickyNoteService = stickyNoteService;
     }
 
     /// <summary>
@@ -52,7 +54,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            SyncStatus = "Syncing...";
+            SyncStatus = AppStrings.SyncingStatus;
             var notes = await _stickyNoteService.GetAllNotesAsync();
 
             _allNotes.Clear();
@@ -65,19 +67,22 @@ public partial class MainWindowViewModel : ObservableObject
                     Content = note.Content,
                     Status = note.Status.ToString(),
                     LastModified = note.UpdatedAt,
-                    ColorBrush = GetColorBrushForNote(note)
+                    ColorArgb = note.ColorArgb ?? 0xFFFFCC07
                 });
             }
 
             ApplyFilter();
             UpdateNoteCount();
-            SyncStatus = "Synced";
-            LastSyncDisplay = "Just now";
+            SyncStatus = AppStrings.SyncedStatus;
+            LastSyncDisplay = AppStrings.JustNow;
         }
         catch (Exception ex)
         {
-            SyncStatus = "Error";
-            System.Windows.MessageBox.Show($"Error loading notes: {ex.Message}", "Load Error");
+            SyncStatus = AppStrings.ErrorStatus;
+            LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
+            System.Windows.MessageBox.Show(
+                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
+                AppStrings.LoadErrorTitle);
         }
     }
 
@@ -170,18 +175,11 @@ public partial class MainWindowViewModel : ObservableObject
     private void UpdateNoteCount()
     {
         var count = FilteredNotes.Count;
-        NoteCountDisplay = $"{count} {(count == 1 ? "note" : "notes")}";
-    }
-
-    private static Brush GetColorBrushForNote(StickyNote note)
-    {
-        var argb = note.ColorArgb ?? 0xFFFFCC07;
-        var color = System.Windows.Media.Color.FromArgb(
-            (byte)((argb >> 24) & 0xFF),
-            (byte)((argb >> 16) & 0xFF),
-            (byte)((argb >> 8) & 0xFF),
-            (byte)(argb & 0xFF)
-        );
-        return new SolidColorBrush(color);
+        NoteCountDisplay = count switch
+        {
+            0 => AppStrings.ZeroNotes,
+            1 => AppStrings.SingleNote,
+            _ => string.Format(AppStrings.MultipleNotesFormat, count)
+        };
     }
 }
