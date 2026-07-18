@@ -14,3 +14,7 @@ src/StickyDo.Widget/StickyDo.Widget/obj/*
 /src/StickyDo.Widget/.vs/StickyDo.Widget.slnx/FileContentIndex/*
 /src/StickyDo.Widget/.vs/StickyDo.Widget.slnx/DesignTimeBuild
 /src/StickyDo.Widget/.vs/StickyDo.Widget.slnx/DesignTimeBuild/*
+/src/StickyDo.Widget/StickyDo.Widget.Controls/obj
+/src/StickyDo.Widget/StickyDo.Widget.Controls/obj/*
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin/*
