@@ -73,11 +73,12 @@
                     </Button>
 
                     <!-- New Note Button -->
-                    <Button Grid.Column="3" Content="+ New Note" Padding="10,5,10,5"
-                            FontSize="11" FontWeight="500"
+                    <Button Grid.Column="3" Content="+ New Note" Padding="8,4,8,4"
+                            FontSize="12" FontWeight="500"
                             Background="#0066CC" Foreground="White"
                             BorderThickness="0" Cursor="Hand"
-                            Command="{Binding CreateNoteCommand}" Margin="0,0,12,0"/>
+                            Command="{Binding CreateNoteCommand}" Margin="0,0,12,0"
+                            Height="32" VerticalAlignment="Center"/>
 
                     <!-- Minimize Button -->
                     <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
@@ -100,7 +101,7 @@
             </Border>
 
             <!-- Notes Content Area -->
-            <Border Grid.Column="1" Grid.Row="1" Background="#FAFAFA">
+            <Border Grid.Column="1" Grid.Row="1" Background="#F5F5F5">
                 <controls:NotesListView/>
             </Border>
         </Grid>
