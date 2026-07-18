@@ -27,7 +27,7 @@
             <controls:SidebarNavigation Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"/>
 
             <!-- Header Bar -->
-            <Border Grid.Column="1" Grid.Row="0" Background="#FFFFFF" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
+            <Border Grid.Column="1" Grid.Row="0" Background="#FAFAFA" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
                 <Grid Margin="24,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -39,8 +39,8 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Search Bar -->
-                    <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
-                            Padding="12,8,12,8" VerticalAlignment="Center" Margin="0,0,16,0" MaxWidth="400">
+                    <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#D8D8D8" BorderThickness="1"
+                            Padding="12,8,12,8" VerticalAlignment="Center" Margin="0,0,16,0" MaxWidth="400" CornerRadius="4">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>

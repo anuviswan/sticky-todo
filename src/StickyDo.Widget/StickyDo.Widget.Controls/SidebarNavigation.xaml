@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="#FFF8E7"
+             Background="#FFFCF5"
              BorderBrush="#E8E8E8"
              BorderThickness="0,0,1,0">
     <Grid>
@@ -15,10 +15,10 @@
         </Grid.RowDefinitions>
 
         <!-- Sidebar Header -->
-        <Border Grid.Row="0" Padding="20,20,20,16" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Padding="20,20,20,16">
             <StackPanel Orientation="Vertical">
-                <TextBlock Text="Sticky TODO" FontSize="16" FontWeight="600" Foreground="#1F1F1F" Margin="0,0,0,4"/>
-                <TextBlock Text="Productive Session" FontSize="11" Foreground="#999999"/>
+                <TextBlock Text="Sticky TODO" FontSize="14" FontWeight="600" Foreground="#333333" Margin="0,0,0,6"/>
+                <TextBlock Text="Productive Session" FontSize="12" Foreground="#999999"/>
             </StackPanel>
         </Border>
 
@@ -27,16 +27,16 @@
             <StackPanel Orientation="Vertical">
                 <!-- Navigation Items -->
                 <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
-                        Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8"
-                        Background="#FFFACD">
+                        Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,12"
+                        Background="#FFFFCC">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
-                        <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
+                        <TextBlock Text="All Notes" FontSize="13" Foreground="#333333" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
                 <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
-                        Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,8">
+                        Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,12">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
                         <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
