@@ -18,7 +18,8 @@
             <StackPanel Orientation="Vertical">
             <!-- Navigation Items -->
             <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
-                    Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8">
+                    Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8"
+                    Background="#FFFACD">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
                     <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>

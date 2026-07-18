@@ -10,12 +10,25 @@ using StickyDo.Widget.Utilities;
 namespace StickyDo.Widget.ViewModels;
 
 /// <summary>
+/// Represents the currently selected navigation view.
+/// </summary>
+public enum NavigationView
+{
+    AllNotes,
+    Favorites,
+    Trash
+}
+
+/// <summary>
 /// ViewModel for the main application window managing the sticky notes list.
 /// </summary>
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
     private ObservableCollection<StickyNoteItemViewModel> _allNotes = new();
+
+    [ObservableProperty]
+    private NavigationView selectedNavView = NavigationView.AllNotes;
 
     [ObservableProperty]
     private ObservableCollection<StickyNoteItemViewModel> filteredNotes = new();
@@ -127,6 +140,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowAllNotes()
     {
+        SelectedNavView = NavigationView.AllNotes;
         SearchQuery = string.Empty;
         ApplyFilter();
     }
@@ -137,6 +151,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowFavorites()
     {
+        SelectedNavView = NavigationView.Favorites;
         SearchQuery = string.Empty;
         ApplyFilter();
     }
@@ -147,6 +162,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowTrash()
     {
+        SelectedNavView = NavigationView.Trash;
         SearchQuery = string.Empty;
         ApplyFilter();
     }
