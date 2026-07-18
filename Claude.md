@@ -12,23 +12,17 @@ The solution would consist of
 
 The solution would be an offline-first app, which would allow users to use app even if there is no internet. The synchornization would happen in the background whenever the connectivity is possible.
 
-Core
+StickyDo.Domain
 ├── Domain
 ├── Sync Engine
-├── API Client
 
-Windows (WPF)
+StickyDo.Widget
 ├── Main App
 ├── Desktop Widgets
 ├── System Tray
 ├── Global Hotkeys
 
-Android (MAUI)
-├── Mobile UI
-├── Notifications
-├── Home Screen Widgets
-
-ASP.NET Core Backend
+StickyDo.Api
 ├── Authentication
 ├── Sync
 ├── Push Notifications
@@ -55,6 +49,7 @@ ASP.NET Core Backend
 - WPF
 - SQL Lite
 - C# 14
+- CommunityToolkit.Mvvm
 
 ---
 
