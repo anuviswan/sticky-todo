@@ -19,10 +19,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FFFDF0"/>
+                            <Setter Property="Background" Value="#FFFACD"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#FFFDF0"/>
+                            <Setter Property="Background" Value="#FFFACD"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

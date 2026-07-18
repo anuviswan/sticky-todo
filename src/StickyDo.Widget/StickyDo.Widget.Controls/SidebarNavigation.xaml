@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="#FFFEF5"
+             Background="#F5F5F5"
              BorderBrush="#E8E8E8"
              BorderThickness="0,0,1,0">
     <Grid>
@@ -28,7 +28,7 @@
                 <!-- Navigation Items -->
                 <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
                         Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8"
-                        Background="#FFFDF0">
+                        Background="#FFFACD">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
                         <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
