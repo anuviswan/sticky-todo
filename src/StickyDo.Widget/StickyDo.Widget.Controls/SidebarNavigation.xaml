@@ -1,0 +1,43 @@
+<UserControl x:Class="StickyDo.Widget.Controls.SidebarNavigation"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Background="#FFFBF0"
+             BorderBrush="#E0E0E0"
+             BorderThickness="0,0,1,0">
+    <Border Padding="16,16,16,16">
+        <StackPanel Orientation="Vertical">
+            <!-- App Header -->
+            <TextBlock Text="Sticky TODO" FontSize="18" FontWeight="600" Foreground="#1F1F1F" Margin="0,0,0,8"/>
+            <TextBlock Text="Productive Session" FontSize="11" Foreground="#999999" Margin="0,0,0,24"/>
+
+            <!-- Navigation Items -->
+            <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
+                    Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
+                    <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
+                    Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,24">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
+                    <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+            <!-- Trash -->
+            <Button x:Name="TrashNavButton" Style="{StaticResource NavButtonStyle}"
+                    Command="{Binding ShowTrashCommand}" Margin="0,0,0,0" VerticalAlignment="Bottom">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🗑" FontSize="16" Margin="0,0,12,0"/>
+                    <TextBlock Text="Trash" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>

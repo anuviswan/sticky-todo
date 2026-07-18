@@ -10,14 +10,6 @@
         Title="StickyDo" Height="700" Width="1000"
         Background="White" ResizeMode="CanResizeWithGrip"
         WindowStyle="SingleBorderWindow" ShowInTaskbar="True">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Styles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            <converters:ColorArgbToBrushConverter x:Key="ColorArgbToBrushConverter"/>
-        </ResourceDictionary>
-    </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -26,39 +18,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left Sidebar Navigation -->
-        <Border Grid.Column="0" Background="#FFFBF0" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0" Padding="16,16,16,16">
-            <StackPanel Orientation="Vertical">
-                <!-- App Header -->
-                <TextBlock Text="Sticky TODO" FontSize="18" FontWeight="600" Foreground="#1F1F1F" Margin="0,0,0,8"/>
-                <TextBlock Text="Productive Session" FontSize="11" Foreground="#999999" Margin="0,0,0,24"/>
-
-                <!-- Navigation Items -->
-                <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
-                        Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
-                        <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
-                <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
-                        Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,24">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
-                        <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-
-                <!-- Trash -->
-                <Button x:Name="TrashNavButton" Style="{StaticResource NavButtonStyle}"
-                        Command="{Binding ShowTrashCommand}" Margin="0,0,0,0" VerticalAlignment="Bottom">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="🗑" FontSize="16" Margin="0,0,12,0"/>
-                        <TextBlock Text="Trash" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Border>
+        <controls:SidebarNavigation Grid.Column="0"/>
 
         <!-- Main Content Area -->
         <Grid Grid.Column="1">
@@ -98,44 +58,7 @@
 
             <!-- Notes Content Area -->
             <Border Grid.Row="1" Background="White">
-                <Grid x:Name="ContentGrid">
-                    <!-- Notes List -->
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Background="White"
-                                  x:Name="NotesScrollViewer">
-                        <ItemsControl x:Name="NotesItemsControl"
-                                      ItemsSource="{Binding FilteredNotes, Mode=OneWay}"
-                                      Padding="24,16,24,16">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <controls:StickyNoteListItem
-                                        Title="{Binding Title, Mode=OneWay}"
-                                        NoteContent="{Binding Content, Mode=OneWay}"
-                                        Status="{Binding Status, Mode=OneWay}"
-                                        LastModified="{Binding LastModified, Mode=OneWay}"
-                                        ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
-                                        Margin="0,0,0,12"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-
-                    <!-- Empty State -->
-                    <StackPanel x:Name="EmptyStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                Visibility="Collapsed">
-                        <TextBlock Text="📋" FontSize="64" Foreground="#D0D0D0"
-                                   HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                        <TextBlock Text="No notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
-                                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                        <TextBlock Text="Start by creating your first sticky note to stay organized."
-                                   FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
-                                   Margin="0,0,0,24" MaxWidth="300" TextAlignment="Center"/>
-                        <Button Content="+ Create New Note" Padding="24,12,24,12"
-                                FontSize="13" FontWeight="500"
-                                Background="#0066CC" Foreground="White"
-                                BorderThickness="0" Cursor="Hand"
-                                Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Grid>
+                <controls:NotesListView/>
             </Border>
         </Grid>
     </Grid>
