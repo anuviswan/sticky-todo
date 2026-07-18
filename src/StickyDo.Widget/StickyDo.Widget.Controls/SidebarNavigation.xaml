@@ -5,14 +5,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              Background="#FFFBF0"
-             BorderBrush="#E0E0E0"
+             BorderBrush="#E8E8E8"
              BorderThickness="0,0,1,0">
-    <Border Padding="16,16,16,16">
-        <StackPanel Orientation="Vertical">
-            <!-- App Header -->
-            <TextBlock Text="Sticky TODO" FontSize="18" FontWeight="600" Foreground="#1F1F1F" Margin="0,0,0,8"/>
-            <TextBlock Text="Productive Session" FontSize="11" Foreground="#999999" Margin="0,0,0,24"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
+        <!-- Navigation Items Container -->
+        <Border Grid.Row="0" Padding="16,16,16,16">
+            <StackPanel Orientation="Vertical">
             <!-- Navigation Items -->
             <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
                     Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8">
@@ -23,21 +26,24 @@
             </Button>
 
             <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
-                    Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,24">
+                    Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,8">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
                     <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
+            </StackPanel>
+        </Border>
 
-            <!-- Trash -->
+        <!-- Trash at Bottom -->
+        <Border Grid.Row="1" BorderBrush="#E8E8E8" BorderThickness="0,1,0,0" Padding="16,16,16,16">
             <Button x:Name="TrashNavButton" Style="{StaticResource NavButtonStyle}"
-                    Command="{Binding ShowTrashCommand}" Margin="0,0,0,0" VerticalAlignment="Bottom">
+                    Command="{Binding ShowTrashCommand}" Margin="0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="🗑" FontSize="16" Margin="0,0,12,0"/>
                     <TextBlock Text="Trash" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
-        </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </UserControl>
