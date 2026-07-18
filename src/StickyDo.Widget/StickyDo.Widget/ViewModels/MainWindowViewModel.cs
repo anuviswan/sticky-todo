@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
@@ -148,6 +149,26 @@ public partial class MainWindowViewModel : ObservableObject
     {
         SearchQuery = string.Empty;
         ApplyFilter();
+    }
+
+    /// <summary>
+    /// Minimizes the application window.
+    /// </summary>
+    [RelayCommand]
+    public void MinimizeWindow(object? parameter)
+    {
+        if (parameter is Window window)
+            window.WindowState = WindowState.Minimized;
+    }
+
+    /// <summary>
+    /// Closes the application window.
+    /// </summary>
+    [RelayCommand]
+    public void CloseWindow(object? parameter)
+    {
+        if (parameter is Window window)
+            window.Close();
     }
 
     private void ApplyFilter()
