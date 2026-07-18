@@ -14,105 +14,96 @@
 
     <Border Background="White" BorderBrush="#D0D0D0" BorderThickness="1">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="56"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- Unified Header spanning entire width -->
-            <Border Grid.Row="0" Background="#F8F8F8" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
-                <Grid Margin="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <!-- Left Sidebar Navigation - extends to full height -->
+            <controls:SidebarNavigation Grid.Column="0" Grid.RowSpan="2"/>
 
-                    <!-- App Name -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,32,0">
-                        <TextBlock Text="Sticky TODO" FontSize="14" FontWeight="600" Foreground="#1F1F1F"/>
-                    </StackPanel>
+            <!-- Main Content Grid -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="56"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                    <!-- Search Bar -->
-                    <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
-                            Padding="12,8,12,8" VerticalAlignment="Center" Margin="0,0,16,0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                <!-- Header Bar -->
+                <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
+                    <Grid Margin="24,0,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                            <!-- Search Icon -->
-                            <TextBlock Grid.Column="0" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <!-- Search Bar -->
+                        <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
+                                Padding="12,8,12,8" VerticalAlignment="Center" Margin="0,0,16,0" MaxWidth="400">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <!-- Search TextBox -->
-                            <TextBox Grid.Column="1" x:Name="SearchTextBox"
-                                     FontSize="13"
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Foreground="#666666"
-                                     Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                <TextBox.Style>
-                                    <Style TargetType="TextBox">
-                                        <Style.Triggers>
-                                            <Trigger Property="Text" Value="">
-                                                <Setter Property="Background" Value="Transparent"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBox.Style>
-                            </TextBox>
-                        </Grid>
-                    </Border>
+                                <!-- Search Icon -->
+                                <TextBlock Grid.Column="0" Text="🔍" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#999999"/>
 
-                    <!-- Settings Button -->
-                    <Button Grid.Column="2" Width="36" Height="36" Background="Transparent" BorderThickness="0"
-                            Cursor="Hand" ToolTip="Settings" Margin="0,0,8,0">
-                        <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Button>
+                                <!-- Search TextBox -->
+                                <TextBox Grid.Column="1" x:Name="SearchTextBox"
+                                         FontSize="13"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Foreground="#666666"
+                                         Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </Border>
 
-                    <!-- New Note Button -->
-                    <Button Grid.Column="3" Content="+ New Note" Padding="12,6,12,6"
-                            FontSize="12" FontWeight="500"
-                            Background="#0066CC" Foreground="White"
-                            BorderThickness="0" Cursor="Hand"
-                            Command="{Binding CreateNoteCommand}" Margin="0,0,16,0"/>
+                        <!-- Settings Button -->
+                        <Button Grid.Column="1" Width="32" Height="32" Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="Settings" Margin="0,0,12,0">
+                            <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
 
-                    <!-- Minimize Button -->
-                    <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
-                            Cursor="Hand" ToolTip="Minimize"
-                            Command="{Binding MinimizeWindowCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-                        <TextBlock Text="−" FontSize="18" FontWeight="300" Foreground="#666666"
-                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Button>
+                        <!-- Info Button -->
+                        <Button Grid.Column="2" Width="32" Height="32" Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="Help" Margin="0,0,12,0">
+                            <TextBlock Text="ℹ️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
 
-                    <!-- Close Button -->
-                    <Button Grid.Column="5" Width="40" Height="40" Background="Transparent" BorderThickness="0"
-                            Cursor="Hand" ToolTip="Close"
-                            Command="{Binding CloseWindowCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
-                        <TextBlock Text="✕" FontSize="16" FontWeight="400" Foreground="#666666"
-                                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Button>
-                </Grid>
-            </Border>
+                        <!-- New Note Button -->
+                        <Button Grid.Column="3" Content="+ New Note" Padding="10,5,10,5"
+                                FontSize="11" FontWeight="500"
+                                Background="#0066CC" Foreground="White"
+                                BorderThickness="0" Cursor="Hand"
+                                Command="{Binding CreateNoteCommand}" Margin="0,0,12,0"/>
 
-            <!-- Main Content Area -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                        <!-- Minimize Button -->
+                        <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="Minimize"
+                                Command="{Binding MinimizeWindowCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
+                            <TextBlock Text="−" FontSize="18" FontWeight="300" Foreground="#666666"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
 
-                <!-- Left Sidebar Navigation -->
-                <controls:SidebarNavigation Grid.Column="0"/>
+                        <!-- Close Button -->
+                        <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" ToolTip="Close"
+                                Command="{Binding CloseWindowCommand}"
+                                CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                HorizontalAlignment="Right">
+                            <TextBlock Text="✕" FontSize="16" FontWeight="400" Foreground="#666666"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Button>
+                    </Grid>
+                </Border>
 
-                <!-- Notes List View -->
-                <Border Grid.Column="1" Background="White">
+                <!-- Notes Content Area -->
+                <Border Grid.Row="1" Background="#FAFAFA">
                     <controls:NotesListView/>
                 </Border>
             </Grid>

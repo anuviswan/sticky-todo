@@ -4,40 +4,49 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Background="#FFFBF0"
+             Background="#FFF9F0"
              BorderBrush="#E8E8E8"
              BorderThickness="0,0,1,0">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Navigation Items Container -->
-        <Border Grid.Row="0" Padding="16,16,16,16">
+        <!-- Sidebar Header -->
+        <Border Grid.Row="0" Padding="20,20,20,16" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1">
             <StackPanel Orientation="Vertical">
-            <!-- Navigation Items -->
-            <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
-                    Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8"
-                    Background="#FFFACD">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
-                    <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
+                <TextBlock Text="Sticky TODO" FontSize="16" FontWeight="600" Foreground="#1F1F1F" Margin="0,0,0,4"/>
+                <TextBlock Text="Productive Session" FontSize="11" Foreground="#999999"/>
+            </StackPanel>
+        </Border>
 
-            <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
-                    Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,8">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
-                    <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Button>
+        <!-- Navigation Items Container -->
+        <Border Grid.Row="1" Padding="16,16,16,16">
+            <StackPanel Orientation="Vertical">
+                <!-- Navigation Items -->
+                <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
+                        Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8"
+                        Background="#FFFACD">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
+                        <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
+                        Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
+                        <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
         </Border>
 
         <!-- Trash at Bottom -->
-        <Border Grid.Row="1" BorderBrush="#E8E8E8" BorderThickness="0,1,0,0" Padding="16,16,16,16">
+        <Border Grid.Row="2" BorderBrush="#E8E8E8" BorderThickness="0,1,0,0" Padding="16,16,16,16">
             <Button x:Name="TrashNavButton" Style="{StaticResource NavButtonStyle}"
                     Command="{Binding ShowTrashCommand}" Margin="0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
