@@ -4,9 +4,129 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StickyDo.Widget"
+        xmlns:controls="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Todo List" Height="600" Width="700"
+        Background="White" ResizeMode="CanResizeWithGrip"
+        WindowStyle="SingleBorderWindow" ShowInTaskbar="True">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
+        <!-- Title Bar (Draggable) -->
+        <Border Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1"
+                Padding="16,12,16,12" MouseLeftButtonDown="OnTitleBarMouseDown">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- App icon and title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock Text="📋" FontSize="18" Margin="0,0,8,0"/>
+                    <TextBlock Text="Todo List" FontSize="16" FontWeight="500" Foreground="#1F1F1F"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Window controls -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Button Content="−" Width="32" Height="32" FontSize="16"
+                            Background="Transparent" Foreground="#666666"
+                            BorderThickness="0" Cursor="Hand"
+                            Click="OnMinimizeClick"/>
+                    <Button Content="✕" Width="32" Height="32" FontSize="16"
+                            Background="Transparent" Foreground="#666666"
+                            BorderThickness="0" Cursor="Hand"
+                            Click="OnCloseClick" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="1" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1"
+                Padding="16,12,16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Create button -->
+                <Button Grid.Column="0" Content="✚ Create" Padding="12,6,12,6"
+                        FontSize="12" FontWeight="500"
+                        Background="#0066CC" Foreground="White"
+                        BorderThickness="0" Cursor="Hand"
+                        Click="OnCreateNoteClick" Margin="0,0,8,0"/>
+
+                <!-- Delete button -->
+                <Button Grid.Column="1" Content="🗑 Delete" Padding="12,6,12,6"
+                        FontSize="12"
+                        Background="Transparent" Foreground="#CC0000"
+                        BorderBrush="#CC0000" BorderThickness="0.5" Cursor="Hand"
+                        Click="OnDeleteNoteClick"/>
+
+                <!-- Search box -->
+                <TextBox Grid.Column="3" x:Name="SearchTextBox"
+                         FontSize="12"
+                         Padding="8,6,8,6" BorderThickness="0.5"
+                         BorderBrush="#D0D0D0" Background="White"
+                         TextChanged="OnSearchTextChanged" Margin="16,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Notes List -->
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Background="White">
+                <ItemsControl x:Name="NotesItemsControl"
+                              ItemsSource="{Binding Notes, Mode=OneWay}"
+                              Padding="8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <controls:StickyNoteListItem
+                                Title="{Binding Title, Mode=OneWay}"
+                                NoteContent="{Binding Content, Mode=OneWay}"
+                                Status="{Binding Status, Mode=OneWay}"
+                                LastModified="{Binding UpdatedAt, Mode=OneWay}"
+                                ColorBrush="{Binding ColorBrush, Mode=OneWay}"
+                                Margin="0,0,0,8"
+                                MouseLeftButtonUp="OnNoteItemClick"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,1,0,0"
+                Padding="16,8,16,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Note count and sync status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding NoteCountDisplay, Mode=OneWay}"
+                               FontSize="11" Foreground="#666666" Margin="0,0,16,0"/>
+                    <TextBlock Text="{Binding LastSyncDisplay, Mode=OneWay}"
+                               FontSize="11" Foreground="#999999"/>
+                </StackPanel>
+
+                <!-- Sync status indicator -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <TextBlock Text="{Binding SyncStatus, Mode=OneWay}"
+                               FontSize="11" Foreground="#0066CC" FontWeight="500" Margin="0,0,6,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

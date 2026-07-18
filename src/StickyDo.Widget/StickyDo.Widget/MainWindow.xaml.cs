@@ -1,24 +1,53 @@
-﻿using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace StickyDo.Widget
+namespace StickyDo.Widget;
+
+/// <summary>
+/// Main window for the Todo List sticky note manager application.
+/// </summary>
+public partial class MainWindow : Window
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public MainWindow()
     {
-        public MainWindow()
+        InitializeComponent();
+    }
+
+    private void OnTitleBarMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
         {
-            InitializeComponent();
+            DragMove();
         }
+    }
+
+    private void OnMinimizeClick(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void OnCloseClick(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void OnCreateNoteClick(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Create note functionality - Phase 2", "Feature Placeholder");
+    }
+
+    private void OnDeleteNoteClick(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Delete note functionality - Phase 2", "Feature Placeholder");
+    }
+
+    private void OnSearchTextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        // TODO: Implement search filtering in Phase 2
+    }
+
+    private void OnNoteItemClick(object sender, MouseButtonEventArgs e)
+    {
+        MessageBox.Show("Open note editor - Phase 2", "Feature Placeholder");
     }
 }

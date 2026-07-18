@@ -8,4 +8,9 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../StickyDo.Widget.Controls/StickyDo.Widget.Controls.csproj"/>
+    <ProjectReference Include="../../StickyDo.Domain/StickyDo.Domain.csproj"/>
+  </ItemGroup>
+
 </Project>
