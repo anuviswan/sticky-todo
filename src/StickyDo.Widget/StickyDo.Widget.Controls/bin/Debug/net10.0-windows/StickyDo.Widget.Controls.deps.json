@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "StickyDo.Widget.Controls/1.0.0": {
+        "runtime": {
+          "StickyDo.Widget.Controls.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "StickyDo.Widget.Controls/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

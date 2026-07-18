@@ -64,6 +64,7 @@ A feature is complete when:
 - public APIs are documented
 - architecture remains consistent
 - no unnecessary coupling is introduced
+- run the applications and test it against requriements for current task
 
 ## Communication
 

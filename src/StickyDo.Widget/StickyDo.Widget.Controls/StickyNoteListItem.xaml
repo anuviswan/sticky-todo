@@ -1,0 +1,58 @@
+<UserControl x:Class="StickyDo.Widget.Controls.StickyNoteListItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:StickyDo.Widget.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="80" d:DesignWidth="400"
+             Background="Transparent">
+    <Grid Margin="0,4,0,4">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Color indicator bar -->
+        <Rectangle Grid.Column="0" Width="4" Fill="{Binding ColorBrush, Mode=OneWay}"
+                   RadiusX="2" RadiusY="2" Margin="0,2,0,2"/>
+
+        <!-- Main content area -->
+        <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="0.5"
+                Margin="8,0,8,0" Padding="12" CornerRadius="6"
+                MouseEnter="OnMouseEnter" MouseLeave="OnMouseLeave">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Title -->
+                <TextBlock Grid.Row="0" Text="{Binding Title, Mode=OneWay}"
+                           FontWeight="500" FontSize="14" Foreground="#1F1F1F"
+                           TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
+
+                <!-- Content preview -->
+                <TextBlock Grid.Row="1" Text="{Binding ContentPreview, Mode=OneWay}"
+                           FontSize="12" Foreground="#666666"
+                           TextTrimming="CharacterEllipsis" MaxHeight="32"
+                           TextWrapping="Wrap" Margin="0,0,0,6"/>
+
+                <!-- Footer with date -->
+                <TextBlock Grid.Row="2" Text="{Binding LastModifiedDisplay, Mode=OneWay}"
+                           FontSize="11" Foreground="#999999"/>
+            </Grid>
+        </Border>
+
+        <!-- Status badge -->
+        <Border Grid.Column="2" Padding="8,4,8,4" CornerRadius="4"
+                Background="{Binding StatusBackground, Mode=OneWay}"
+                Margin="0,0,8,0">
+            <TextBlock Text="{Binding Status, Mode=OneWay}"
+                       FontSize="11" FontWeight="500" Foreground="White"
+                       TextAlignment="Center"/>
+        </Border>
+    </Grid>
+</UserControl>
