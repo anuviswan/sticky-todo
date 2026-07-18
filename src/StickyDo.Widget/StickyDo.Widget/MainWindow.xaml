@@ -55,7 +55,7 @@
 
                 <!-- Navigation Items -->
                 <Button x:Name="AllNotesNavButton" Style="{StaticResource NavButtonStyle}"
-                        Click="OnAllNotesNavClick" Margin="0,0,0,8">
+                        Command="{Binding ShowAllNotesCommand}" Margin="0,0,0,8">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0"/>
                         <TextBlock Text="All Notes" FontSize="13" Foreground="#1F1F1F" VerticalAlignment="Center"/>
@@ -63,7 +63,7 @@
                 </Button>
 
                 <Button x:Name="FavoritesNavButton" Style="{StaticResource NavButtonStyle}"
-                        Click="OnFavoritesNavClick" Margin="0,0,0,24">
+                        Command="{Binding ShowFavoritesCommand}" Margin="0,0,0,24">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="⭐" FontSize="16" Margin="0,0,12,0"/>
                         <TextBlock Text="Favorites" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
@@ -72,7 +72,7 @@
 
                 <!-- Trash -->
                 <Button x:Name="TrashNavButton" Style="{StaticResource NavButtonStyle}"
-                        Click="OnTrashNavClick" Margin="0,0,0,0" VerticalAlignment="Bottom">
+                        Command="{Binding ShowTrashCommand}" Margin="0,0,0,0" VerticalAlignment="Bottom">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🗑" FontSize="16" Margin="0,0,12,0"/>
                         <TextBlock Text="Trash" FontSize="13" Foreground="#999999" VerticalAlignment="Center"/>
@@ -105,7 +105,7 @@
                                  Background="Transparent"
                                  BorderThickness="0"
                                  Foreground="#666666"
-                                 TextChanged="OnSearchTextChanged"/>
+                                 Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </Border>
 
                     <!-- New Note Button -->
@@ -113,7 +113,7 @@
                             FontSize="13" FontWeight="500"
                             Background="#0066CC" Foreground="White"
                             BorderThickness="0" Cursor="Hand"
-                            Click="OnCreateNoteClick" Margin="16,0,0,0"/>
+                            Command="{Binding CreateNoteCommand}" Margin="16,0,0,0"/>
                 </Grid>
             </Border>
 
@@ -154,7 +154,7 @@
                                 FontSize="13" FontWeight="500"
                                 Background="#0066CC" Foreground="White"
                                 BorderThickness="0" Cursor="Hand"
-                                Click="OnCreateNoteClick" HorizontalAlignment="Center"/>
+                                Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
             </Border>

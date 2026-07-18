@@ -21,6 +21,12 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string searchQuery = string.Empty;
 
+    partial void OnSearchQueryChanged(string value)
+    {
+        ApplyFilter();
+        UpdateNoteCount();
+    }
+
     [ObservableProperty]
     private StickyNoteItemViewModel? selectedNote;
 
@@ -109,18 +115,30 @@ public partial class MainWindowViewModel : ObservableObject
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Shows all notes by clearing search filter.
+    /// </summary>
+    [RelayCommand]
     public void ShowAllNotes()
     {
         SearchQuery = string.Empty;
         ApplyFilter();
     }
 
+    /// <summary>
+    /// Shows favorite notes (placeholder for Phase 2).
+    /// </summary>
+    [RelayCommand]
     public void ShowFavorites()
     {
         SearchQuery = string.Empty;
         ApplyFilter();
     }
 
+    /// <summary>
+    /// Shows trash notes (placeholder for Phase 2).
+    /// </summary>
+    [RelayCommand]
     public void ShowTrash()
     {
         SearchQuery = string.Empty;
