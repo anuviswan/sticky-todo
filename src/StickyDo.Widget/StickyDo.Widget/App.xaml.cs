@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
@@ -13,6 +14,8 @@ namespace StickyDo.Widget;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+    private static Mutex? _appMutex;
+    private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -20,6 +23,13 @@ public partial class App : Application
 
         try
         {
+            if (!AcquireSingleInstanceLock())
+            {
+                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
+                Shutdown(1);
+                return;
+            }
+
             ConfigureServices();
             InitializeMainWindow();
         }
@@ -33,7 +43,21 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _serviceProvider?.Dispose();
+        ReleaseSingleInstanceLock();
         base.OnExit(e);
+    }
+
+    private static bool AcquireSingleInstanceLock()
+    {
+        _appMutex = new Mutex(true, MutexName, out bool createdNew);
+        return createdNew;
+    }
+
+    private static void ReleaseSingleInstanceLock()
+    {
+        _appMutex?.ReleaseMutex();
+        _appMutex?.Dispose();
+        _appMutex = null;
     }
 
     private void ConfigureServices()
