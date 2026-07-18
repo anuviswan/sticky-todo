@@ -12,5 +12,9 @@ src/StickyDo.Widget/StickyDo.Widget/obj
 src/StickyDo.Widget/StickyDo.Widget/obj/*
 
 /src/StickyDo.Widget/StickyDo.Widget.Controls/obj/*
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin/*
 
 src/*/.vs/
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin/*
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin/*
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin
