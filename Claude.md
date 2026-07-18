@@ -40,9 +40,10 @@ ASP.NET Core Backend
 ### Backend
 
 - ASP.Net Core
-- Azure Tables
+- Azure Tables (Azurite emulator for local development)
 - .Net 10 or higher
 - C# 14
+- MSTest
 
 ### Mobile
 
@@ -53,5 +54,51 @@ ASP.NET Core Backend
 
 - WPF
 - SQL Lite
+- C# 14
 
 ---
+
+## Definition of Done
+
+A feature is complete when:
+
+- Always create a feature branch for new ticket
+- implementation is complete
+- Solution can be build without errors or warnings
+- tests pass
+- public APIs are documented
+- architecture remains consistent
+- no unnecessary coupling is introduced
+
+## Communication
+
+When completing a task:
+
+- Summarize the changes made.
+- Mention assumptions.
+- Highlight potential risks.
+- Call out any breaking changes.
+- Suggest improvements separately from requested work.
+
+If requirements are unclear:
+
+- Ask concise questions.
+- Do not invent requirements.
+- Do not guess business rules.
+
+---
+
+## Expectations
+
+Every implementation should strive to be:
+
+- Correct
+- Readable
+- Maintainable
+- Testable
+- Secure
+- Performant
+- Consistent
+- Production-ready
+
+The highest priority is maintaining consistency with the existing codebase. Prefer established project conventions over introducing new patterns.
