@@ -94,7 +94,7 @@
                                 Title="{Binding Title, Mode=OneWay}"
                                 NoteContent="{Binding Content, Mode=OneWay}"
                                 Status="{Binding Status, Mode=OneWay}"
-                                LastModified="{Binding UpdatedAt, Mode=OneWay}"
+                                LastModified="{Binding LastModified, Mode=OneWay}"
                                 ColorBrush="{Binding ColorBrush, Mode=OneWay}"
                                 Margin="0,0,0,8"
                                 MouseLeftButtonUp="OnNoteItemClick"/>
