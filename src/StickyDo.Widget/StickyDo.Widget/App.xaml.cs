@@ -85,6 +85,7 @@ public partial class App : Application
         var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
 
         mainWindow.SetViewModel(viewModel);
+        MainWindow = mainWindow;
         mainWindow.Show();
 
         _ = viewModel.LoadNotesAsync();
