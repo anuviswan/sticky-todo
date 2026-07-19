@@ -17,6 +17,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
     private Func<Task>? _onCreateNewNote;
+    private Action? _onDragWindow;
+    private Action? _onFocusAddTaskInput;
+    private Action<bool>? _onCloseWindow;
 
     [ObservableProperty]
     private Guid noteId;
@@ -275,5 +278,65 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         }
 
         return result == MessageBoxResult.No;
+    }
+
+    /// <summary>
+    /// Sets the callback for window drag operations.
+    /// </summary>
+    public void SetDragWindowCallback(Action onDragWindow)
+    {
+        _onDragWindow = onDragWindow;
+    }
+
+    /// <summary>
+    /// Sets the callback for focusing the add task input field.
+    /// </summary>
+    public void SetFocusAddTaskInputCallback(Action onFocusAddTaskInput)
+    {
+        _onFocusAddTaskInput = onFocusAddTaskInput;
+    }
+
+    /// <summary>
+    /// Sets the callback for closing the window.
+    /// </summary>
+    public void SetCloseWindowCallback(Action<bool> onCloseWindow)
+    {
+        _onCloseWindow = onCloseWindow;
+    }
+
+    /// <summary>
+    /// Focuses the add task input field when placeholder is clicked.
+    /// </summary>
+    [RelayCommand]
+    public void FocusAddTaskInput()
+    {
+        _onFocusAddTaskInput?.Invoke();
+    }
+
+    /// <summary>
+    /// Closes the window after checking for unsaved changes.
+    /// </summary>
+    [RelayCommand]
+    public void CloseWindow()
+    {
+        _onCloseWindow?.Invoke(CanCloseWindow());
+    }
+
+    /// <summary>
+    /// Handles window closed event to save state.
+    /// </summary>
+    [RelayCommand]
+    public async Task OnWindowClosed()
+    {
+        await SaveAsync();
+    }
+
+    /// <summary>
+    /// Handles title bar mouse down for dragging.
+    /// </summary>
+    [RelayCommand]
+    public void OnTitleBarMouseDown()
+    {
+        _onDragWindow?.Invoke();
     }
 }

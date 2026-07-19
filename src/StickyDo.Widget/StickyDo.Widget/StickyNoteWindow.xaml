@@ -23,8 +23,10 @@
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
-            <Border Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1"
-                    MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown" Padding="12,8,12,8">
+            <Border Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8">
+                <Border.InputBindings>
+                    <MouseBinding MouseAction="LeftClick" Command="{Binding OnTitleBarMouseDownCommand}"/>
+                </Border.InputBindings>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -56,8 +58,7 @@
                              Background="Transparent"
                              BorderThickness="0"
                              Padding="0"
-                             VerticalAlignment="Center"
-                             PreviewMouseLeftButtonDown="OnTitleTextBoxMouseDown"/>
+                             VerticalAlignment="Center"/>
 
                     <!-- Pin Icon -->
                     <Button Grid.Column="2"
@@ -79,7 +80,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Click="OnCloseButtonClick"
+                            Command="{Binding CloseWindowCommand}"
                             VerticalAlignment="Center"
                             ToolTip="Close">
                         <TextBlock Text="×" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
@@ -123,8 +124,10 @@
                                    Foreground="#B8A080"
                                    FontStyle="Italic"
                                    VerticalAlignment="Center"
-                                   Cursor="IBeam"
-                                   MouseLeftButtonDown="OnAddTaskPlaceholderClick">
+                                   Cursor="IBeam">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding FocusAddTaskInputCommand}"/>
+                            </TextBlock.InputBindings>
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Style.Triggers>
@@ -148,8 +151,11 @@
                                  Background="Transparent"
                                  BorderThickness="0"
                                  Padding="0"
-                                 VerticalAlignment="Center"
-                                 KeyDown="OnAddTaskKeyDown"/>
+                                 VerticalAlignment="Center">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding AddTaskCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
 
                         <!-- Add Button (visible when text is entered) -->
                         <Button Grid.Column="2"
