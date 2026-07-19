@@ -13,14 +13,21 @@ public record WindowState(double Left, double Top, double Width, double Height);
 /// </summary>
 public class WindowManager
 {
-    private readonly Window _window;
+    private Window? _window;
     private readonly Dictionary<Guid, Window> _openNoteWindows = new();
     private readonly Dictionary<Guid, WindowState> _windowStates = new();
     private const string WindowStateKey = "WindowState";
     private const string WindowSizeKey = "WindowSize";
     private const string WindowPositionKey = "WindowPosition";
 
-    public WindowManager(Window window)
+    public WindowManager()
+    {
+    }
+
+    /// <summary>
+    /// Sets the main window reference after construction (for DI pattern).
+    /// </summary>
+    public void SetMainWindow(Window window)
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
     }
@@ -62,6 +69,9 @@ public class WindowManager
     /// </summary>
     public void EnsureWindowVisible()
     {
+        if (_window == null)
+            return;
+
         // TODO: Implement screen bounds checking in Phase 2
         // For now, just ensure basic positioning
         if (_window.Left < 0)

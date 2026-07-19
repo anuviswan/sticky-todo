@@ -69,6 +69,8 @@ public partial class App : Application
 
         // Register services
         services.AddSingleton<StickyNoteService>();
+        services.AddSingleton<WindowManager>();
+        services.AddSingleton<IStickyNoteWindowService, StickyNoteWindowService>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -79,9 +81,18 @@ public partial class App : Application
             throw new InvalidOperationException("Services not configured");
 
         var mainWindow = new MainWindow();
-        var windowManager = new WindowManager(mainWindow);
+        var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
+        windowManager.SetMainWindow(mainWindow);
+
         var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
-        var viewModel = new MainWindowViewModel(stickyNoteService, windowManager);
+        var windowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
+        var viewModel = new MainWindowViewModel(stickyNoteService, windowService);
+
+        // Set callback for creating new notes from within sticky note windows
+        if (windowService is StickyNoteWindowService noteWindowService)
+        {
+            noteWindowService.SetCreateNoteCallback(async () => await viewModel.CreateNoteCommand.ExecuteAsync(null));
+        }
 
         mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;

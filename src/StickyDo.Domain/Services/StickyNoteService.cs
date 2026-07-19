@@ -38,9 +38,9 @@ public class StickyNoteService
     }
 
     /// <summary>
-    /// Creates a new sticky note with the provided title and content.
+    /// Creates a new sticky note with the provided title.
     /// </summary>
-    public async Task<Guid> CreateNoteAsync(string title, string content)
+    public async Task<Guid> CreateNoteAsync(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Note title cannot be empty.", nameof(title));
@@ -49,7 +49,6 @@ public class StickyNoteService
         {
             Id = Guid.NewGuid(),
             Title = title.Trim(),
-            Content = content ?? string.Empty,
             Status = StickyNoteStatus.Active,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
@@ -62,7 +61,7 @@ public class StickyNoteService
     /// <summary>
     /// Updates an existing sticky note.
     /// </summary>
-    public async Task UpdateNoteAsync(Guid id, string title, string content, StickyNoteStatus status)
+    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(id));
@@ -75,7 +74,6 @@ public class StickyNoteService
             throw new InvalidOperationException($"Note with ID {id} not found.");
 
         note.Title = title.Trim();
-        note.Content = content ?? string.Empty;
         note.Status = status;
         note.UpdatedAt = DateTime.UtcNow;
 

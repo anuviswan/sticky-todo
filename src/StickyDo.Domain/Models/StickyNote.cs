@@ -11,9 +11,6 @@ public class StickyNote
     /// <summary>Title or heading of the note.</summary>
     public required string Title { get; set; }
 
-    /// <summary>Main content/body of the note.</summary>
-    public required string Content { get; set; }
-
     /// <summary>List of tasks in this note. Used for notes with structured task lists.</summary>
     public List<StickyNoteTask> Tasks { get; set; } = [];
 

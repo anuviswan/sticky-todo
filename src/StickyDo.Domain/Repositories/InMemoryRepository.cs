@@ -43,7 +43,6 @@ public class InMemoryRepository : IStickyNoteRepository
         if (existing != null)
         {
             existing.Title = note.Title;
-            existing.Content = note.Content;
             existing.Status = note.Status;
             existing.UpdatedAt = DateTime.UtcNow;
             existing.ColorArgb = note.ColorArgb;
@@ -69,8 +68,7 @@ public class InMemoryRepository : IStickyNoteRepository
 
         var lowerQuery = query.ToLower();
         var results = _notes.Where(n =>
-            n.Title.ToLower().Contains(lowerQuery) ||
-            n.Content.ToLower().Contains(lowerQuery)
+            n.Title.ToLower().Contains(lowerQuery)
         );
 
         return Task.FromResult(results.AsEnumerable());
@@ -158,7 +156,6 @@ public class InMemoryRepository : IStickyNoteRepository
         {
             Id = Guid.NewGuid(),
             Title = "Project Meeting Notes",
-            Content = "Discuss Q3 roadmap and team assignments\n- Review current backlog\n- Plan sprint goals",
             Status = StickyNoteStatus.Active,
             CreatedAt = DateTime.UtcNow.AddDays(-1),
             UpdatedAt = DateTime.UtcNow.AddHours(-2),
@@ -170,7 +167,6 @@ public class InMemoryRepository : IStickyNoteRepository
         {
             Id = Guid.NewGuid(),
             Title = "Shopping List",
-            Content = "Milk\nEggs\nBread\nCoffee\nButter",
             Status = StickyNoteStatus.Completed,
             CreatedAt = DateTime.UtcNow.AddDays(-2),
             UpdatedAt = DateTime.UtcNow.AddHours(-24),
@@ -182,7 +178,6 @@ public class InMemoryRepository : IStickyNoteRepository
         {
             Id = Guid.NewGuid(),
             Title = "Fix Login Bug",
-            Content = "Session timeout issue on mobile devices\n- Investigate session management\n- Check authentication flow\n- Test on multiple browsers",
             Status = StickyNoteStatus.Urgent,
             CreatedAt = DateTime.UtcNow.AddHours(-6),
             UpdatedAt = DateTime.UtcNow.AddHours(-1),
@@ -194,7 +189,6 @@ public class InMemoryRepository : IStickyNoteRepository
         {
             Id = Guid.NewGuid(),
             Title = "Code Review: PR #456",
-            Content = "Review requested for authentication refactor\n- Check error handling\n- Verify test coverage\n- Ensure backward compatibility",
             Status = StickyNoteStatus.Active,
             CreatedAt = DateTime.UtcNow.AddDays(-3),
             UpdatedAt = DateTime.UtcNow.AddMinutes(-30),
@@ -206,7 +200,6 @@ public class InMemoryRepository : IStickyNoteRepository
         {
             Id = Guid.NewGuid(),
             Title = "Learn C# 14 Features",
-            Content = "New features to explore:\n- Primary constructors\n- Collection initializers\n- LINQ improvements",
             Status = StickyNoteStatus.Active,
             CreatedAt = DateTime.UtcNow.AddDays(-7),
             UpdatedAt = DateTime.UtcNow.AddDays(-4),

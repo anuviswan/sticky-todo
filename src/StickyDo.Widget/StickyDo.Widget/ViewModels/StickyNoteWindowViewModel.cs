@@ -245,7 +245,6 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             await _stickyNoteService.UpdateNoteAsync(
                 _currentNote.Id,
                 _currentNote.Title,
-                _currentNote.Content,
                 _currentNote.Status);
 
             _hasUnsavedChanges = false;

@@ -22,11 +22,12 @@ public enum NavigationView
 
 /// <summary>
 /// ViewModel for the main application window managing the sticky notes list.
+/// Pure MVVM - delegates window management to IStickyNoteWindowService.
 /// </summary>
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
-    private readonly WindowManager? _windowManager;
+    private readonly IStickyNoteWindowService _windowService;
     private ObservableCollection<StickyNoteItemViewModel> _allNotes = new();
 
     [ObservableProperty]
@@ -56,11 +57,12 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string lastSyncDisplay = AppStrings.JustNow;
 
-    public MainWindowViewModel(StickyNoteService stickyNoteService, WindowManager? windowManager = null)
+    public MainWindowViewModel(StickyNoteService stickyNoteService, IStickyNoteWindowService windowService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
+        ArgumentNullException.ThrowIfNull(windowService);
         _stickyNoteService = stickyNoteService;
-        _windowManager = windowManager;
+        _windowService = windowService;
     }
 
     /// <summary>
@@ -81,7 +83,6 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     Id = note.Id,
                     Title = note.Title,
-                    Content = note.Content,
                     Status = note.Status.ToString(),
                     LastModified = note.UpdatedAt,
                     ColorArgb = note.ColorArgb ?? 0xFFFFCC07
@@ -113,9 +114,9 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var noteNumber = await _stickyNoteService.GetNextNoteNumberAsync();
             var noteTitle = $"Note {noteNumber}";
-            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, string.Empty);
+            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle);
 
-            await OpenNoteWindowAsync(noteId);
+            await _windowService.OpenNoteWindowAsync(noteId);
         }
         catch (Exception ex)
         {
@@ -211,8 +212,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             var query = SearchQuery.ToLower();
             filtered = filtered.Where(n =>
-                n.Title.ToLower().Contains(query) ||
-                n.Content.ToLower().Contains(query)
+                n.Title.ToLower().Contains(query)
             );
         }
 
@@ -236,66 +236,4 @@ public partial class MainWindowViewModel : ObservableObject
         };
     }
 
-    /// <summary>
-    /// Opens or focuses a sticky note window for the given note ID.
-    /// </summary>
-    public async Task OpenNoteWindowAsync(Guid noteId)
-    {
-        if (_windowManager == null)
-            return;
-
-        try
-        {
-            // Check if window is already open
-            if (_windowManager.IsNoteWindowOpen(noteId))
-            {
-                var existingWindow = _windowManager.GetNoteWindow(noteId);
-                if (existingWindow != null)
-                {
-                    existingWindow.Activate();
-                    existingWindow.Focus();
-                }
-                return;
-            }
-
-            // Create new window
-            var window = new StickyNoteWindow();
-            var viewModel = new StickyNoteWindowViewModel(_stickyNoteService);
-
-            // Set callback to create new notes from the sticky note window
-            viewModel.SetCreateNoteCallback(CreateNoteAsync);
-
-            await viewModel.LoadNoteAsync(noteId);
-
-            window.DataContext = viewModel;
-            _windowManager.RegisterNoteWindow(noteId, window);
-
-            // Restore window state if available
-            var savedState = _windowManager?.GetSavedNoteWindowState(noteId);
-            if (savedState != null)
-            {
-                window.Left = savedState.Left;
-                window.Top = savedState.Top;
-                window.Width = savedState.Width;
-                window.Height = savedState.Height;
-            }
-            else
-            {
-                window.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
-            }
-
-            window.Closed += (s, e) =>
-            {
-                _windowManager?.SaveNoteWindowState(noteId, window.Left, window.Top, window.Width, window.Height);
-                _windowManager?.UnregisterNoteWindow(noteId);
-            };
-
-            window.Show();
-        }
-        catch (Exception ex)
-        {
-            LoggerHelper.LogException(ex, nameof(OpenNoteWindowAsync));
-            MessageBox.Show($"Error opening note: {ex.Message}", "Open Note Error");
-        }
-    }
 }
