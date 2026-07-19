@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 
 namespace StickyDo.Widget.ViewModels;
@@ -14,6 +14,7 @@ namespace StickyDo.Widget.ViewModels;
 public partial class StickyNoteWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
+    private readonly IDialogService _dialogService;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
     private Func<Task>? _onCreateNewNote;
@@ -54,10 +55,12 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         }
     }
 
-    public StickyNoteWindowViewModel(StickyNoteService stickyNoteService)
+    public StickyNoteWindowViewModel(StickyNoteService stickyNoteService, IDialogService dialogService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
+        ArgumentNullException.ThrowIfNull(dialogService);
         _stickyNoteService = stickyNoteService;
+        _dialogService = dialogService;
     }
 
     /// <summary>
@@ -90,7 +93,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             _currentNote = await _stickyNoteService.GetNoteByIdAsync(noteId);
             if (_currentNote is null)
             {
-                MessageBox.Show("Note not found.", "Error");
+                await _dialogService.ShowMessageAsync("Error", "Note not found.", System.Windows.MessageBoxImage.Error);
                 return;
             }
 
@@ -143,7 +146,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(LoadNoteAsync));
-            MessageBox.Show($"Error loading note: {ex.Message}", "Load Error");
+            await _dialogService.ShowMessageAsync("Load Error", $"Error loading note: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -181,7 +184,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(AddTaskAsync));
-            MessageBox.Show($"Error adding task: {ex.Message}", "Add Task Error");
+            await _dialogService.ShowMessageAsync("Add Task Error", $"Error adding task: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -201,7 +204,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(UpdateTaskAsync));
-            MessageBox.Show($"Error updating task: {ex.Message}", "Update Error");
+            await _dialogService.ShowMessageAsync("Update Error", $"Error updating task: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -227,7 +230,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(DeleteTaskAsync));
-            MessageBox.Show($"Error deleting task: {ex.Message}", "Delete Error");
+            await _dialogService.ShowMessageAsync("Delete Error", $"Error deleting task: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -252,31 +255,29 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(SaveAsync));
-            MessageBox.Show($"Error saving note: {ex.Message}", "Save Error");
+            await _dialogService.ShowMessageAsync("Save Error", $"Error saving note: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 
     /// <summary>
     /// Checks if there are unsaved changes and prompts the user if needed.
     /// </summary>
-    public bool CanCloseWindow()
+    public async Task<bool> CanCloseWindowAsync()
     {
         if (!_hasUnsavedChanges)
             return true;
 
-        var result = MessageBox.Show(
-            "You have unsaved changes. Do you want to save before closing?",
+        var result = await _dialogService.ShowConfirmationAsync(
             "Unsaved Changes",
-            MessageBoxButton.YesNoCancel,
-            MessageBoxImage.Question);
+            "You have unsaved changes. Do you want to save before closing?");
 
-        if (result == MessageBoxResult.Yes)
+        if (result)
         {
-            SaveCommand.Execute(null);
+            await SaveAsync();
             return true;
         }
 
-        return result == MessageBoxResult.No;
+        return true;
     }
 
     /// <summary>
@@ -316,9 +317,10 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     /// Closes the window after checking for unsaved changes.
     /// </summary>
     [RelayCommand]
-    public void CloseWindow()
+    public async Task CloseWindowAsync()
     {
-        _onCloseWindow?.Invoke(CanCloseWindow());
+        var canClose = await CanCloseWindowAsync();
+        _onCloseWindow?.Invoke(canClose);
     }
 
     /// <summary>

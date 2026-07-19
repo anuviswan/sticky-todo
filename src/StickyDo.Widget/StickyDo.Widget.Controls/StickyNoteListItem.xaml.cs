@@ -9,6 +9,10 @@ namespace StickyDo.Widget.Controls;
 /// </summary>
 public partial class StickyNoteListItem : UserControl
 {
+    private static readonly ContentPreviewConverter _previewConverter = new();
+    private static readonly StatusToBrushConverter _statusConverter = new();
+    private static readonly LastModifiedConverter _lastModifiedConverter = new();
+
     public StickyNoteListItem()
     {
         InitializeComponent();
@@ -107,7 +111,7 @@ public partial class StickyNoteListItem : UserControl
         if (d is StickyNoteListItem control)
         {
             var content = (string)e.NewValue ?? string.Empty;
-            control.ContentPreview = GeneratePreview(content);
+            control.ContentPreview = (string)_previewConverter.Convert(content, typeof(string), null, null);
         }
     }
 
@@ -116,7 +120,7 @@ public partial class StickyNoteListItem : UserControl
         if (d is StickyNoteListItem control)
         {
             var status = (string)e.NewValue ?? "Active";
-            control.StatusBackground = GetStatusBackground(status);
+            control.StatusBackground = (Brush)_statusConverter.Convert(status, typeof(Brush), null, null);
         }
     }
 
@@ -125,45 +129,8 @@ public partial class StickyNoteListItem : UserControl
         if (d is StickyNoteListItem control)
         {
             var dateTime = (DateTime)e.NewValue;
-            control.LastModifiedDisplay = FormatLastModified(dateTime);
+            control.LastModifiedDisplay = (string)_lastModifiedConverter.Convert(dateTime, typeof(string), null, null);
         }
-    }
-
-    private static string GeneratePreview(string content)
-    {
-        if (string.IsNullOrEmpty(content))
-            return "(empty)";
-
-        var lines = content.Split('\n');
-        var preview = lines[0].Length > 60
-            ? lines[0].Substring(0, 60) + "…"
-            : lines[0];
-
-        return string.IsNullOrEmpty(preview) && lines.Length > 1
-            ? lines[1].Length > 60 ? lines[1].Substring(0, 60) + "…" : lines[1]
-            : preview;
-    }
-
-    private static Brush GetStatusBackground(string status) => status switch
-    {
-        "Active" => new SolidColorBrush(Color.FromRgb(244, 167, 23)),      // Amber
-        "Completed" => new SolidColorBrush(Color.FromRgb(0, 179, 111)),    // Green
-        "Archived" => new SolidColorBrush(Color.FromRgb(158, 158, 158)),   // Gray
-        "Urgent" => new SolidColorBrush(Color.FromRgb(229, 57, 53)),       // Red
-        _ => new SolidColorBrush(Color.FromRgb(0, 179, 111))
-    };
-
-    private static string FormatLastModified(DateTime dateTime)
-    {
-        var elapsed = DateTime.UtcNow - dateTime;
-
-        return elapsed.TotalSeconds < 60
-            ? "Just now"
-            : elapsed.TotalMinutes < 60
-                ? $"{(int)elapsed.TotalMinutes}m ago"
-                : elapsed.TotalHours < 24
-                    ? $"{(int)elapsed.TotalHours}h ago"
-                    : $"{(int)elapsed.TotalDays}d ago";
     }
 
     private void OnMouseEnter(object sender, System.Windows.Input.MouseEventArgs e)

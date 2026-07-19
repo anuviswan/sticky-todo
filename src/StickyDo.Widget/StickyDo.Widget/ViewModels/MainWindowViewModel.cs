@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
@@ -22,12 +21,14 @@ public enum NavigationView
 
 /// <summary>
 /// ViewModel for the main application window managing the sticky notes list.
-/// Pure MVVM - delegates window management to IStickyNoteWindowService.
+/// Pure MVVM - delegates window management to IStickyNoteWindowService and IWindowService.
 /// </summary>
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
     private readonly IStickyNoteWindowService _windowService;
+    private readonly IDialogService _dialogService;
+    private readonly IWindowService _mainWindowService;
     private ObservableCollection<StickyNoteItemViewModel> _allNotes = new();
 
     [ObservableProperty]
@@ -57,12 +58,20 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string lastSyncDisplay = AppStrings.JustNow;
 
-    public MainWindowViewModel(StickyNoteService stickyNoteService, IStickyNoteWindowService windowService)
+    public MainWindowViewModel(
+        StickyNoteService stickyNoteService,
+        IStickyNoteWindowService windowService,
+        IDialogService dialogService,
+        IWindowService mainWindowService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowService);
+        ArgumentNullException.ThrowIfNull(dialogService);
+        ArgumentNullException.ThrowIfNull(mainWindowService);
         _stickyNoteService = stickyNoteService;
         _windowService = windowService;
+        _dialogService = dialogService;
+        _mainWindowService = mainWindowService;
     }
 
     /// <summary>
@@ -98,9 +107,10 @@ public partial class MainWindowViewModel : ObservableObject
         {
             SyncStatus = AppStrings.ErrorStatus;
             LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
-            System.Windows.MessageBox.Show(
+            await _dialogService.ShowMessageAsync(
+                AppStrings.LoadErrorTitle,
                 string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
-                AppStrings.LoadErrorTitle);
+                System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -121,9 +131,10 @@ public partial class MainWindowViewModel : ObservableObject
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(CreateNoteAsync));
-            MessageBox.Show(
+            await _dialogService.ShowMessageAsync(
+                AppStrings.LoadErrorTitle,
                 string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
-                AppStrings.LoadErrorTitle);
+                System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -188,20 +199,18 @@ public partial class MainWindowViewModel : ObservableObject
     /// Minimizes the application window.
     /// </summary>
     [RelayCommand]
-    public void MinimizeWindow(object? parameter)
+    public void MinimizeWindow()
     {
-        if (parameter is Window window)
-            window.WindowState = System.Windows.WindowState.Minimized;
+        _mainWindowService.RequestMinimize();
     }
 
     /// <summary>
     /// Closes the application window.
     /// </summary>
     [RelayCommand]
-    public void CloseWindow(object? parameter)
+    public void CloseWindow()
     {
-        if (parameter is Window window)
-            window.Close();
+        _mainWindowService.RequestClose();
     }
 
     private void ApplyFilter()

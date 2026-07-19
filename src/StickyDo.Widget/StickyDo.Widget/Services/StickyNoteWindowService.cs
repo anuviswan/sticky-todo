@@ -14,16 +14,20 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 {
     private readonly StickyNoteService _stickyNoteService;
     private readonly WindowManager _windowManager;
+    private readonly IDialogService _dialogService;
     private Func<Task>? _onCreateNote;
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
-        WindowManager windowManager)
+        WindowManager windowManager,
+        IDialogService dialogService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowManager);
+        ArgumentNullException.ThrowIfNull(dialogService);
         _stickyNoteService = stickyNoteService;
         _windowManager = windowManager;
+        _dialogService = dialogService;
     }
 
     /// <summary>
@@ -55,7 +59,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
             // Create new window
             var window = new StickyNoteWindow();
-            var viewModel = new StickyNoteWindowViewModel(_stickyNoteService);
+            var viewModel = new StickyNoteWindowViewModel(_stickyNoteService, _dialogService);
 
             // Set callback to create new notes from the sticky note window
             if (_onCreateNote != null)
@@ -93,7 +97,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(OpenNoteWindowAsync));
-            MessageBox.Show($"Error opening note: {ex.Message}", "Open Note Error");
+            await _dialogService.ShowMessageAsync("Open Note Error", $"Error opening note: {ex.Message}", MessageBoxImage.Error);
         }
     }
 }

@@ -27,11 +27,11 @@ public static class WindowBehavior
         };
 
         // Wire up window closed to save state
-        window.Closed += (s, e) =>
+        window.Closed += async (s, e) =>
         {
             if (window.DataContext is StickyNoteWindowViewModel viewModel)
             {
-                viewModel.SaveCommand.Execute(null);
+                await viewModel.SaveAsync();
             }
         };
 

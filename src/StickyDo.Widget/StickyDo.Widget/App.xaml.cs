@@ -25,7 +25,8 @@ public partial class App : Application
         {
             if (!AcquireSingleInstanceLock())
             {
-                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
+                var dialogService = new DialogService();
+                _ = dialogService.ShowMessageAsync("Application Running", "Sticky TODO is already running.", MessageBoxImage.Information);
                 Shutdown(1);
                 return;
             }
@@ -35,7 +36,8 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to start application: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            var dialogService = new DialogService();
+            _ = dialogService.ShowMessageAsync("Startup Error", $"Failed to start application: {ex.Message}", MessageBoxImage.Error);
             Shutdown(1);
         }
     }
@@ -67,7 +69,11 @@ public partial class App : Application
         // Register repositories
         services.AddSingleton<IStickyNoteRepository, InMemoryRepository>();
 
-        // Register services
+        // Register dialog and window services first (used by other services)
+        services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IWindowService, WindowService>();
+
+        // Register core services
         services.AddSingleton<StickyNoteService>();
         services.AddSingleton<WindowManager>();
         services.AddSingleton<IStickyNoteWindowService, StickyNoteWindowService>();
@@ -84,14 +90,22 @@ public partial class App : Application
         var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
         windowManager.SetMainWindow(mainWindow);
 
+        var windowServiceImpl = _serviceProvider.GetRequiredService<IWindowService>();
+        if (windowServiceImpl is WindowService windowService)
+        {
+            windowService.SetMainWindow(mainWindow);
+        }
+
         var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
-        var windowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
-        var viewModel = new MainWindowViewModel(stickyNoteService, windowService);
+        var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
+        var dialogService = _serviceProvider.GetRequiredService<IDialogService>();
+        var mainWindowService = _serviceProvider.GetRequiredService<IWindowService>();
+        var viewModel = new MainWindowViewModel(stickyNoteService, noteWindowService, dialogService, mainWindowService);
 
         // Set callback for creating new notes from within sticky note windows
-        if (windowService is StickyNoteWindowService noteWindowService)
+        if (noteWindowService is StickyNoteWindowService stickyNoteWindowService)
         {
-            noteWindowService.SetCreateNoteCallback(async () => await viewModel.CreateNoteCommand.ExecuteAsync(null));
+            stickyNoteWindowService.SetCreateNoteCallback(async () => await viewModel.CreateNoteCommand.ExecuteAsync(null));
         }
 
         mainWindow.SetViewModel(viewModel);
