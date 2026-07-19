@@ -82,6 +82,76 @@ public class InMemoryRepository : IStickyNoteRepository
         return Task.FromResult(results.AsEnumerable());
     }
 
+    public Task<Guid> CreateTaskAsync(Guid noteId, StickyNoteTask task)
+    {
+        if (task == null)
+            throw new ArgumentNullException(nameof(task));
+
+        var note = _notes.FirstOrDefault(n => n.Id == noteId);
+        if (note == null)
+            throw new InvalidOperationException($"Note with ID {noteId} not found.");
+
+        note.Tasks.Add(task);
+        note.UpdatedAt = DateTime.UtcNow;
+        return Task.FromResult(task.Id);
+    }
+
+    public Task<IEnumerable<StickyNoteTask>> GetTasksByNoteIdAsync(Guid noteId)
+    {
+        var note = _notes.FirstOrDefault(n => n.Id == noteId);
+        if (note == null)
+            return Task.FromResult(Enumerable.Empty<StickyNoteTask>());
+
+        return Task.FromResult(note.Tasks.OrderBy(t => t.Order).AsEnumerable());
+    }
+
+    public Task<StickyNoteTask?> GetTaskByIdAsync(Guid taskId)
+    {
+        var task = _notes
+            .SelectMany(n => n.Tasks)
+            .FirstOrDefault(t => t.Id == taskId);
+
+        return Task.FromResult(task);
+    }
+
+    public Task UpdateTaskAsync(Guid noteId, StickyNoteTask task)
+    {
+        if (task == null)
+            throw new ArgumentNullException(nameof(task));
+
+        var note = _notes.FirstOrDefault(n => n.Id == noteId);
+        if (note == null)
+            throw new InvalidOperationException($"Note with ID {noteId} not found.");
+
+        var existingTask = note.Tasks.FirstOrDefault(t => t.Id == task.Id);
+        if (existingTask != null)
+        {
+            existingTask.Title = task.Title;
+            existingTask.IsCompleted = task.IsCompleted;
+            existingTask.Order = task.Order;
+            existingTask.UpdatedAt = DateTime.UtcNow;
+            note.UpdatedAt = DateTime.UtcNow;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteTaskAsync(Guid noteId, Guid taskId)
+    {
+        var note = _notes.FirstOrDefault(n => n.Id == noteId);
+        if (note != null)
+        {
+            var task = note.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task != null)
+            {
+                note.Tasks.Remove(task);
+                note.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     private void InitializeSampleData()
     {
         _notes.Add(new StickyNote
