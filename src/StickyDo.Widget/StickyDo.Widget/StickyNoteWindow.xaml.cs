@@ -16,14 +16,29 @@ public partial class StickyNoteWindow : Window
     }
 
     /// <summary>
-    /// Handles dragging the window via the title bar.
+    /// Handles dragging the window via the title bar (only when clicking on empty space).
     /// </summary>
     private void OnTitleBarMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
+        // Don't drag if clicking on a button, textbox, or other interactive element
+        if (e.OriginalSource is System.Windows.Controls.Button ||
+            e.OriginalSource is System.Windows.Controls.TextBox ||
+            e.OriginalSource is System.Windows.Controls.TextBlock)
+        {
+            return;
+        }
+
         if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
         {
             _dragStartPoint = e.GetPosition(this);
-            DragMove();
+            try
+            {
+                DragMove();
+            }
+            catch
+            {
+                // DragMove can throw if called at wrong time
+            }
 
             // Save window position when dragging stops
             if (DataContext is StickyNoteWindowViewModel viewModel)
@@ -32,6 +47,14 @@ public partial class StickyNoteWindow : Window
                 viewModel.WindowY = Top;
             }
         }
+    }
+
+    /// <summary>
+    /// Prevents dragging when clicking in the title textbox.
+    /// </summary>
+    private void OnTitleTextBoxMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        e.Handled = false;
     }
 
     /// <summary>

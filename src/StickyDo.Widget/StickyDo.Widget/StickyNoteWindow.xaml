@@ -47,14 +47,17 @@
                         <TextBlock Text="+" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
                     </Button>
 
-                    <!-- Note Title -->
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                               FontSize="14"
-                               FontWeight="500"
-                               Foreground="#333333"
-                               VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"/>
+                    <!-- Note Title (Editable) -->
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                             FontSize="14"
+                             FontWeight="500"
+                             Foreground="#333333"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="0"
+                             VerticalAlignment="Center"
+                             PreviewMouseLeftButtonDown="OnTitleTextBoxMouseDown"/>
 
                     <!-- Pin Icon -->
                     <Button Grid.Column="2"
