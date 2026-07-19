@@ -125,7 +125,7 @@
             </ScrollViewer>
 
             <!-- Status Bar -->
-            <Border Grid.Row="2" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
+            <Border Grid.Row="2" Background="#F5F0E8" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
