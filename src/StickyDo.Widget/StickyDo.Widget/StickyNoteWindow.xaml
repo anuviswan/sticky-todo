@@ -33,7 +33,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Add New Task Button -->
+                    <!-- Create New Note Button -->
                     <Button Grid.Column="0"
                             Width="24"
                             Height="24"
@@ -42,8 +42,8 @@
                             Cursor="Hand"
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Add task"
-                            Click="OnAddTaskButtonClick">
+                            ToolTip="Create new note"
+                            Command="{Binding CreateNewNoteCommand}">
                         <TextBlock Text="+" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
                     </Button>
 

@@ -261,6 +261,10 @@ public partial class MainWindowViewModel : ObservableObject
             // Create new window
             var window = new StickyNoteWindow();
             var viewModel = new StickyNoteWindowViewModel(_stickyNoteService);
+
+            // Set callback to create new notes from the sticky note window
+            viewModel.SetCreateNoteCallback(CreateNoteAsync);
+
             await viewModel.LoadNoteAsync(noteId);
 
             window.DataContext = viewModel;

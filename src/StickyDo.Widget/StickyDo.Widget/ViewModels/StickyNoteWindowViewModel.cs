@@ -16,6 +16,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private readonly StickyNoteService _stickyNoteService;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
+    private Func<Task>? _onCreateNewNote;
 
     [ObservableProperty]
     private Guid noteId;
@@ -54,6 +55,26 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         _stickyNoteService = stickyNoteService;
+    }
+
+    /// <summary>
+    /// Sets the callback for creating a new note from this window.
+    /// </summary>
+    public void SetCreateNoteCallback(Func<Task> onCreateNewNote)
+    {
+        _onCreateNewNote = onCreateNewNote;
+    }
+
+    /// <summary>
+    /// Creates a new note window.
+    /// </summary>
+    [RelayCommand]
+    public async Task CreateNewNoteAsync()
+    {
+        if (_onCreateNewNote != null)
+        {
+            await _onCreateNewNote();
+        }
     }
 
     /// <summary>
