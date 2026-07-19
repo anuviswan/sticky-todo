@@ -113,8 +113,32 @@
                                    VerticalAlignment="Center"
                                    FontWeight="Bold"/>
 
-                        <!-- Add Task Input Field -->
+                        <!-- Add Task Placeholder (shows when field is empty) -->
+                        <TextBlock Grid.Column="1"
+                                   Text="Add a task..."
+                                   FontSize="13"
+                                   Foreground="#B8A080"
+                                   FontStyle="Italic"
+                                   VerticalAlignment="Center"
+                                   Cursor="IBeam"
+                                   MouseLeftButtonDown="OnAddTaskPlaceholderClick">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NewTaskTitle}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding NewTaskTitle}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <!-- Add Task Input Field (overlaid on placeholder) -->
                         <TextBox Grid.Column="1"
+                                 x:Name="AddTaskInput"
                                  Text="{Binding NewTaskTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  FontSize="13"
                                  Foreground="#333333"
@@ -138,6 +162,7 @@
                                 ToolTip="Add task">
                             <Button.Style>
                                 <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding NewTaskTitle}" Value="">
                                             <Setter Property="Visibility" Value="Collapsed"/>

@@ -40,15 +40,9 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
         _ = UpdateTaskInParent();
     }
 
-    /// <summary>
-    /// Command to toggle the completion status of the task.
-    /// </summary>
-    [RelayCommand]
-    public async Task ToggleCompletion()
+    partial void OnTitleChanged(string value)
     {
-        IsCompleted = !IsCompleted;
-        UpdatedAt = DateTime.UtcNow;
-        await UpdateTaskInParent();
+        _ = UpdateTaskInParent();
     }
 
     /// <summary>

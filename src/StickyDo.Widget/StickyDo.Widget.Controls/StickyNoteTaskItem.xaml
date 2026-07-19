@@ -18,18 +18,20 @@
         <CheckBox Grid.Column="0"
                   IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                   VerticalAlignment="Top"
-                  Margin="0,2,12,0"
-                  Command="{Binding ToggleCompletionCommand}"/>
+                  Margin="0,2,12,0"/>
 
-        <!-- Task Title -->
-        <TextBlock Grid.Column="1"
-                   Text="{Binding Title}"
-                   FontSize="13"
-                   Foreground="#333333"
-                   VerticalAlignment="Top"
-                   TextWrapping="Wrap">
-            <TextBlock.Style>
-                <Style TargetType="TextBlock">
+        <!-- Task Title (Editable TextBox) -->
+        <TextBox Grid.Column="1"
+                 Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                 FontSize="13"
+                 Foreground="#333333"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0"
+                 VerticalAlignment="Top"
+                 TextWrapping="Wrap">
+            <TextBox.Style>
+                <Style TargetType="TextBox">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsCompleted}" Value="True">
                             <Setter Property="TextDecorations" Value="Strikethrough"/>
@@ -37,8 +39,8 @@
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </TextBlock.Style>
-        </TextBlock>
+            </TextBox.Style>
+        </TextBox>
 
         <!-- Delete Button (only visible for unchecked tasks) -->
         <Button Grid.Column="2"

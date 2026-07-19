@@ -35,6 +35,14 @@ public partial class StickyNoteWindow : Window
     }
 
     /// <summary>
+    /// Handles clicking the placeholder text to focus the input field.
+    /// </summary>
+    private void OnAddTaskPlaceholderClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        AddTaskInput?.Focus();
+    }
+
+    /// <summary>
     /// Handles pressing Enter in the add task input field to add a task.
     /// </summary>
     private void OnAddTaskKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
