@@ -18,7 +18,7 @@ public class StickyNoteTask
     public int Order { get; set; }
 
     /// <summary>UTC timestamp when the task was created.</summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
     /// <summary>UTC timestamp when the task was last modified.</summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

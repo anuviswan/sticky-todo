@@ -35,12 +35,15 @@ public partial class StickyNoteWindow : Window
     }
 
     /// <summary>
-    /// Handles clicking the add task area to focus for input.
+    /// Handles pressing Enter in the add task input field to add a task.
     /// </summary>
-    private void OnAddTaskAreaClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    private void OnAddTaskKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
-        // This is a placeholder click handler - in a full implementation,
-        // this could focus an input field for adding tasks
+        if (e.Key == System.Windows.Input.Key.Return && DataContext is StickyNoteWindowViewModel viewModel)
+        {
+            viewModel.AddTaskCommand.Execute(null);
+            e.Handled = true;
+        }
     }
 
     /// <summary>

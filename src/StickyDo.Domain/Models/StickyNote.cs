@@ -11,7 +11,7 @@ public class StickyNote
     /// <summary>Title or heading of the note.</summary>
     public required string Title { get; set; }
 
-    /// <summary>Main content/body of the note. Kept for backward compatibility with Phase 1 notes.</summary>
+    /// <summary>Main content/body of the note.</summary>
     public required string Content { get; set; }
 
     /// <summary>List of tasks in this note. Used for notes with structured task lists.</summary>

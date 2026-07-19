@@ -8,6 +8,9 @@ namespace StickyDo.Widget.ViewModels;
 /// </summary>
 public partial class StickyNoteTaskItemViewModel : ObservableObject
 {
+    private Func<Guid, string, bool, Task>? _onUpdateTask;
+    private Func<Guid, Task>? _onDeleteTask;
+
     [ObservableProperty]
     private Guid id;
 
@@ -26,22 +29,45 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
     [ObservableProperty]
     private DateTime updatedAt = DateTime.UtcNow;
 
+    public void SetCallbacks(Func<Guid, string, bool, Task> onUpdateTask, Func<Guid, Task> onDeleteTask)
+    {
+        _onUpdateTask = onUpdateTask;
+        _onDeleteTask = onDeleteTask;
+    }
+
+    partial void OnIsCompletedChanged(bool value)
+    {
+        _ = UpdateTaskInParent();
+    }
+
     /// <summary>
     /// Command to toggle the completion status of the task.
     /// </summary>
     [RelayCommand]
-    public void ToggleCompletion()
+    public async Task ToggleCompletion()
     {
         IsCompleted = !IsCompleted;
         UpdatedAt = DateTime.UtcNow;
+        await UpdateTaskInParent();
     }
 
     /// <summary>
     /// Command to delete this task (handled by parent ViewModel).
     /// </summary>
     [RelayCommand]
-    public void Delete()
+    public async Task Delete()
     {
-        // Parent ViewModel will handle deletion
+        if (_onDeleteTask != null)
+        {
+            await _onDeleteTask(Id);
+        }
+    }
+
+    private async Task UpdateTaskInParent()
+    {
+        if (_onUpdateTask != null)
+        {
+            await _onUpdateTask(Id, Title, IsCompleted);
+        }
     }
 }

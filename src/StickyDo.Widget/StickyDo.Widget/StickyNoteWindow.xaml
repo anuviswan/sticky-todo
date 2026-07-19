@@ -42,7 +42,8 @@
                             Cursor="Hand"
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Add task">
+                            ToolTip="Add task"
+                            Command="{Binding AddTaskCommand}">
                         <TextBlock Text="+" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
                     </Button>
 
@@ -100,6 +101,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Plus Icon -->
@@ -111,15 +113,40 @@
                                    VerticalAlignment="Center"
                                    FontWeight="Bold"/>
 
-                        <!-- Add Task Placeholder -->
-                        <TextBlock Grid.Column="1"
-                                   Text="Add a task..."
-                                   FontSize="13"
-                                   Foreground="#B8A080"
-                                   FontStyle="Italic"
-                                   VerticalAlignment="Center"
-                                   Cursor="IBeam"
-                                   MouseLeftButtonDown="OnAddTaskAreaClick"/>
+                        <!-- Add Task Input Field -->
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding NewTaskTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 FontSize="13"
+                                 Foreground="#333333"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 VerticalAlignment="Center"
+                                 KeyDown="OnAddTaskKeyDown"/>
+
+                        <!-- Add Button (visible when text is entered) -->
+                        <Button Grid.Column="2"
+                                Width="20"
+                                Height="20"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Padding="0"
+                                VerticalAlignment="Center"
+                                Margin="8,0,0,0"
+                                Command="{Binding AddTaskCommand}"
+                                ToolTip="Add task">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NewTaskTitle}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="✓" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#B8A080" FontWeight="Bold"/>
+                        </Button>
                     </Grid>
                 </StackPanel>
             </ScrollViewer>
