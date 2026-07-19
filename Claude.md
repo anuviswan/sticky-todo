@@ -53,11 +53,14 @@ StickyDo.Api
 
 ---
 
-## Definition of Done
+## Working on a ticket
+
+- Always create a feature branch when working on a ticket
+
+### Definition of Done
 
 A feature is complete when:
 
-- Always create a feature branch for new ticket
 - implementation is complete
 - Solution can be build without errors or warnings
 - tests pass
