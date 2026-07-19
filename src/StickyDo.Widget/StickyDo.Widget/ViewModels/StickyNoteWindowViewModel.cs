@@ -74,17 +74,39 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             Title = _currentNote.Title;
 
             Tasks.Clear();
-            foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
+
+            // If no tasks exist, add a sample task for demonstration
+            if (!_currentNote.Tasks.Any())
             {
-                Tasks.Add(new StickyNoteTaskItemViewModel
+                var sampleTaskId = await _stickyNoteService.CreateTaskAsync(_currentNote.Id, "First Task");
+                var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
+                if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
                 {
-                    Id = task.Id,
-                    Title = task.Title,
-                    IsCompleted = task.IsCompleted,
-                    Order = task.Order,
-                    CreatedAt = task.CreatedAt,
-                    UpdatedAt = task.UpdatedAt
-                });
+                    Tasks.Add(new StickyNoteTaskItemViewModel
+                    {
+                        Id = newTask.Id,
+                        Title = newTask.Title,
+                        IsCompleted = newTask.IsCompleted,
+                        Order = newTask.Order,
+                        CreatedAt = newTask.CreatedAt,
+                        UpdatedAt = newTask.UpdatedAt
+                    });
+                }
+            }
+            else
+            {
+                foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
+                {
+                    Tasks.Add(new StickyNoteTaskItemViewModel
+                    {
+                        Id = task.Id,
+                        Title = task.Title,
+                        IsCompleted = task.IsCompleted,
+                        Order = task.Order,
+                        CreatedAt = task.CreatedAt,
+                        UpdatedAt = task.UpdatedAt
+                    });
+                }
             }
 
             _hasUnsavedChanges = false;

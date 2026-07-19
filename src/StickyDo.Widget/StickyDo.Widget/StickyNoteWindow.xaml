@@ -6,11 +6,11 @@
         xmlns:local="clr-namespace:StickyDo.Widget"
         xmlns:controls="clr-namespace:StickyDo.Widget;assembly=StickyDo.Widget.Controls"
         mc:Ignorable="d"
-        Title="Sticky Note" Height="400" Width="320"
+        Title="Sticky Note" Height="400" Width="320" MinHeight="200" MinWidth="250"
         Background="#FFF9E6"
         WindowStyle="None"
         AllowsTransparency="True"
-        ResizeMode="CanResize"
+        ResizeMode="CanResizeWithGrip"
         ShowInTaskbar="False"
         Topmost="False">
 
@@ -19,7 +19,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="44"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
@@ -56,7 +55,7 @@
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"/>
 
-                    <!-- Bell Icon (Notifications) -->
+                    <!-- Pin Icon -->
                     <Button Grid.Column="2"
                             Width="24"
                             Height="24"
@@ -65,8 +64,8 @@
                             Cursor="Hand"
                             Margin="12,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Notifications">
-                        <TextBlock Text="🔔" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            ToolTip="Pin">
+                        <TextBlock Text="📌" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
 
                     <!-- Close Button -->
@@ -84,48 +83,49 @@
                 </Grid>
             </Border>
 
-            <!-- Task List -->
+            <!-- Task List with Add Task -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8">
-                <ItemsControl ItemsSource="{Binding Tasks}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <controls:StickyNoteTaskItem Margin="0,0,0,8"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <StackPanel>
+                    <!-- Existing Tasks -->
+                    <ItemsControl ItemsSource="{Binding Tasks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:StickyNoteTaskItem Margin="0,0,0,8"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Add a task input area - appears as next line in task list -->
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Plus Icon -->
+                        <TextBlock Grid.Column="0"
+                                   Text="+"
+                                   FontSize="16"
+                                   Foreground="#B8A080"
+                                   Margin="0,0,12,0"
+                                   VerticalAlignment="Center"
+                                   FontWeight="Bold"/>
+
+                        <!-- Add Task Placeholder -->
+                        <TextBlock Grid.Column="1"
+                                   Text="Add a task..."
+                                   FontSize="13"
+                                   Foreground="#B8A080"
+                                   FontStyle="Italic"
+                                   VerticalAlignment="Center"
+                                   Cursor="IBeam"
+                                   MouseLeftButtonDown="OnAddTaskAreaClick"/>
+                    </Grid>
+                </StackPanel>
             </ScrollViewer>
 
-            <!-- Add Task Input Area -->
-            <Border Grid.Row="2" Background="#FFF9E6" Padding="12,8,12,8">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Plus Icon -->
-                    <TextBlock Grid.Column="0"
-                               Text="+"
-                               FontSize="16"
-                               Foreground="#B8A080"
-                               Margin="0,0,8,0"
-                               VerticalAlignment="Center"
-                               FontWeight="Bold"/>
-
-                    <!-- Add Task Placeholder -->
-                    <TextBlock Grid.Column="1"
-                               Text="Add a task..."
-                               FontSize="13"
-                               Foreground="#B8A080"
-                               FontStyle="Italic"
-                               VerticalAlignment="Center"
-                               Cursor="IBeam"
-                               MouseLeftButtonDown="OnAddTaskAreaClick"/>
-                </Grid>
-            </Border>
-
             <!-- Status Bar -->
-            <Border Grid.Row="3" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
+            <Border Grid.Row="2" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -149,7 +149,7 @@
                                Foreground="#999999"
                                VerticalAlignment="Center"/>
 
-                    <!-- Settings Icon -->
+                    <!-- Color Palette Icon -->
                     <Button Grid.Column="2"
                             Width="20"
                             Height="20"
@@ -158,8 +158,8 @@
                             Cursor="Hand"
                             Margin="12,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Settings">
-                        <TextBlock Text="⚙" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#999999"/>
+                            ToolTip="Color palette">
+                        <TextBlock Text="🎨" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
 
                     <!-- Menu Icon -->
