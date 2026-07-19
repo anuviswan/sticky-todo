@@ -23,10 +23,7 @@
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
-            <Border Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8">
-                <Border.InputBindings>
-                    <MouseBinding MouseAction="LeftClick" Command="{Binding OnTitleBarMouseDownCommand}"/>
-                </Border.InputBindings>
+            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
