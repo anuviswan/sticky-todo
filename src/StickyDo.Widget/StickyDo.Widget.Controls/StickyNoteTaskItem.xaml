@@ -4,56 +4,64 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Height="32">
+             Height="Auto"
+             Padding="0,4,0,4">
 
-    <Border Background="Transparent" Padding="0,0,0,0">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+    <Grid Background="Transparent">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
-            <!-- Checkbox -->
-            <CheckBox Grid.Column="0"
-                      IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                      VerticalAlignment="Center"
-                      Margin="0,0,8,0"
-                      Command="{Binding ToggleCompletionCommand}"/>
+        <!-- Checkbox -->
+        <CheckBox Grid.Column="0"
+                  IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  VerticalAlignment="Top"
+                  Margin="0,2,12,0"
+                  Command="{Binding ToggleCompletionCommand}"/>
 
-            <!-- Task Title -->
-            <TextBlock Grid.Column="1"
-                       Text="{Binding Title}"
-                       FontSize="12"
-                       Foreground="#1F1F1F"
-                       VerticalAlignment="Center"
-                       TextTrimming="CharacterEllipsis">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsCompleted}" Value="True">
-                                <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                <Setter Property="Foreground" Value="#999999"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
+        <!-- Task Title -->
+        <TextBlock Grid.Column="1"
+                   Text="{Binding Title}"
+                   FontSize="13"
+                   Foreground="#333333"
+                   VerticalAlignment="Top"
+                   TextWrapping="Wrap">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                            <Setter Property="TextDecorations" Value="Strikethrough"/>
+                            <Setter Property="Foreground" Value="#999999"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
 
-            <!-- Delete Button -->
-            <Button Grid.Column="2"
-                    Width="20"
-                    Height="20"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Padding="0"
-                    VerticalAlignment="Center"
-                    Margin="8,0,0,0"
-                    Command="{Binding DeleteCommand}"
-                    ToolTip="Delete task">
-                <TextBlock Text="✕" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#CCCCCC"/>
-            </Button>
-        </Grid>
-    </Border>
+        <!-- Delete Button (only visible for unchecked tasks) -->
+        <Button Grid.Column="2"
+                Width="20"
+                Height="20"
+                Background="Transparent"
+                BorderThickness="0"
+                Cursor="Hand"
+                Padding="0"
+                VerticalAlignment="Top"
+                Margin="12,0,0,0"
+                Command="{Binding DeleteCommand}"
+                ToolTip="Delete task">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+            <TextBlock Text="×" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#CCCCCC" FontWeight="Bold"/>
+        </Button>
+    </Grid>
 </UserControl>

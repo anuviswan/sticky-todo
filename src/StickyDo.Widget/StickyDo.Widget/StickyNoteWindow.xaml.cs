@@ -35,6 +35,15 @@ public partial class StickyNoteWindow : Window
     }
 
     /// <summary>
+    /// Handles clicking the add task area to focus for input.
+    /// </summary>
+    private void OnAddTaskAreaClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        // This is a placeholder click handler - in a full implementation,
+        // this could focus an input field for adding tasks
+    }
+
+    /// <summary>
     /// Handles the close button click with unsaved changes check.
     /// </summary>
     private void OnCloseButtonClick(object sender, RoutedEventArgs e)
