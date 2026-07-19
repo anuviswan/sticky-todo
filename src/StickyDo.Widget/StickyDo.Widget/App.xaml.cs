@@ -3,6 +3,7 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget;
@@ -69,9 +70,6 @@ public partial class App : Application
         // Register services
         services.AddSingleton<StickyNoteService>();
 
-        // Register view models
-        services.AddSingleton<MainWindowViewModel>();
-
         _serviceProvider = services.BuildServiceProvider();
     }
 
@@ -81,7 +79,9 @@ public partial class App : Application
             throw new InvalidOperationException("Services not configured");
 
         var mainWindow = new MainWindow();
-        var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+        var windowManager = new WindowManager(mainWindow);
+        var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
+        var viewModel = new MainWindowViewModel(stickyNoteService, windowManager);
 
         mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;

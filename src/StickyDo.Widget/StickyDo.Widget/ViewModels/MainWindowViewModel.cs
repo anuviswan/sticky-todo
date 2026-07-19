@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Resources;
+using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 
 namespace StickyDo.Widget.ViewModels;
@@ -25,6 +26,7 @@ public enum NavigationView
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
+    private readonly WindowManager? _windowManager;
     private ObservableCollection<StickyNoteItemViewModel> _allNotes = new();
 
     [ObservableProperty]
@@ -54,10 +56,11 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string lastSyncDisplay = AppStrings.JustNow;
 
-    public MainWindowViewModel(StickyNoteService stickyNoteService)
+    public MainWindowViewModel(StickyNoteService stickyNoteService, WindowManager? windowManager = null)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         _stickyNoteService = stickyNoteService;
+        _windowManager = windowManager;
     }
 
     /// <summary>
@@ -101,13 +104,26 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Creates a new sticky note (placeholder for Phase 2).
+    /// Creates a new sticky note and opens it in a floating window.
     /// </summary>
     [RelayCommand]
     public async Task CreateNoteAsync()
     {
-        // Placeholder for Phase 2 implementation
-        await Task.CompletedTask;
+        try
+        {
+            var noteNumber = await _stickyNoteService.GetNextNoteNumberAsync();
+            var noteTitle = $"Note {noteNumber}";
+            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, string.Empty);
+
+            await OpenNoteWindowAsync(noteId);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(CreateNoteAsync));
+            MessageBox.Show(
+                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
+                AppStrings.LoadErrorTitle);
+        }
     }
 
     /// <summary>
@@ -174,7 +190,7 @@ public partial class MainWindowViewModel : ObservableObject
     public void MinimizeWindow(object? parameter)
     {
         if (parameter is Window window)
-            window.WindowState = WindowState.Minimized;
+            window.WindowState = System.Windows.WindowState.Minimized;
     }
 
     /// <summary>
@@ -218,5 +234,64 @@ public partial class MainWindowViewModel : ObservableObject
             1 => AppStrings.SingleNote,
             _ => string.Format(AppStrings.MultipleNotesFormat, count)
         };
+    }
+
+    /// <summary>
+    /// Opens or focuses a sticky note window for the given note ID.
+    /// </summary>
+    public async Task OpenNoteWindowAsync(Guid noteId)
+    {
+        if (_windowManager == null)
+            return;
+
+        try
+        {
+            // Check if window is already open
+            if (_windowManager.IsNoteWindowOpen(noteId))
+            {
+                var existingWindow = _windowManager.GetNoteWindow(noteId);
+                if (existingWindow != null)
+                {
+                    existingWindow.Activate();
+                    existingWindow.Focus();
+                }
+                return;
+            }
+
+            // Create new window
+            var window = new StickyNoteWindow();
+            var viewModel = new StickyNoteWindowViewModel(_stickyNoteService);
+            await viewModel.LoadNoteAsync(noteId);
+
+            window.DataContext = viewModel;
+            _windowManager.RegisterNoteWindow(noteId, window);
+
+            // Restore window state if available
+            var savedState = _windowManager?.GetSavedNoteWindowState(noteId);
+            if (savedState != null)
+            {
+                window.Left = savedState.Left;
+                window.Top = savedState.Top;
+                window.Width = savedState.Width;
+                window.Height = savedState.Height;
+            }
+            else
+            {
+                window.WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner;
+            }
+
+            window.Closed += (s, e) =>
+            {
+                _windowManager?.SaveNoteWindowState(noteId, window.Left, window.Top, window.Width, window.Height);
+                _windowManager?.UnregisterNoteWindow(noteId);
+            };
+
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(OpenNoteWindowAsync));
+            MessageBox.Show($"Error opening note: {ex.Message}", "Open Note Error");
+        }
     }
 }
