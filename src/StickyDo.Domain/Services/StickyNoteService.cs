@@ -8,14 +8,16 @@ using StickyDo.Domain.Repositories;
 /// </summary>
 public class StickyNoteService
 {
-    private readonly IStickyNoteRepository _repository;
+    private readonly IStickyNoteRepository _noteRepository;
+    private readonly IStickyNoteTaskRepository _taskRepository;
 
     /// <summary>
     /// Initializes a new instance of the StickyNoteService.
     /// </summary>
-    public StickyNoteService(IStickyNoteRepository repository)
+    public StickyNoteService(IStickyNoteRepository noteRepository, IStickyNoteTaskRepository taskRepository)
     {
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _noteRepository = noteRepository ?? throw new ArgumentNullException(nameof(noteRepository));
+        _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
     }
 
     /// <summary>
@@ -23,7 +25,7 @@ public class StickyNoteService
     /// </summary>
     public async Task<IEnumerable<StickyNote>> GetAllNotesAsync()
     {
-        return await _repository.GetAllAsync();
+        return await _noteRepository.GetAllAsync();
     }
 
     /// <summary>
@@ -34,7 +36,7 @@ public class StickyNoteService
         if (id == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(id));
 
-        return await _repository.GetByIdAsync(id);
+        return await _noteRepository.GetByIdAsync(id);
     }
 
     /// <summary>
@@ -55,7 +57,7 @@ public class StickyNoteService
             DisplayOrder = 0
         };
 
-        return await _repository.CreateAsync(note);
+        return await _noteRepository.CreateAsync(note);
     }
 
     /// <summary>
@@ -69,7 +71,7 @@ public class StickyNoteService
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Note title cannot be empty.", nameof(title));
 
-        var note = await _repository.GetByIdAsync(id);
+        var note = await _noteRepository.GetByIdAsync(id);
         if (note is null)
             throw new InvalidOperationException($"Note with ID {id} not found.");
 
@@ -77,7 +79,7 @@ public class StickyNoteService
         note.Status = status;
         note.UpdatedAt = DateTime.UtcNow;
 
-        await _repository.UpdateAsync(note);
+        await _noteRepository.UpdateAsync(note);
     }
 
     /// <summary>
@@ -88,7 +90,7 @@ public class StickyNoteService
         if (id == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(id));
 
-        await _repository.DeleteAsync(id);
+        await _noteRepository.DeleteAsync(id);
     }
 
     /// <summary>
@@ -97,9 +99,9 @@ public class StickyNoteService
     public async Task<IEnumerable<StickyNote>> SearchNotesAsync(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
-            return await _repository.GetAllAsync();
+            return await _noteRepository.GetAllAsync();
 
-        return await _repository.SearchAsync(query.Trim());
+        return await _noteRepository.SearchAsync(query.Trim());
     }
 
     /// <summary>
@@ -107,7 +109,7 @@ public class StickyNoteService
     /// </summary>
     public async Task<IEnumerable<StickyNote>> GetNotesByStatusAsync(StickyNoteStatus status)
     {
-        return await _repository.GetByStatusAsync(status);
+        return await _noteRepository.GetByStatusAsync(status);
     }
 
     /// <summary>
@@ -121,7 +123,7 @@ public class StickyNoteService
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Task title cannot be empty.", nameof(title));
 
-        var note = await _repository.GetByIdAsync(noteId);
+        var note = await _noteRepository.GetByIdAsync(noteId);
         if (note is null)
             throw new InvalidOperationException($"Note with ID {noteId} not found.");
 
@@ -135,7 +137,7 @@ public class StickyNoteService
             UpdatedAt = DateTime.UtcNow
         };
 
-        return await _repository.CreateTaskAsync(noteId, task);
+        return await _taskRepository.CreateAsync(noteId, task);
     }
 
     /// <summary>
@@ -146,7 +148,7 @@ public class StickyNoteService
         if (noteId == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(noteId));
 
-        return await _repository.GetTasksByNoteIdAsync(noteId);
+        return await _taskRepository.GetByNoteIdAsync(noteId);
     }
 
     /// <summary>
@@ -163,7 +165,7 @@ public class StickyNoteService
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Task title cannot be empty.", nameof(title));
 
-        var task = await _repository.GetTaskByIdAsync(taskId);
+        var task = await _taskRepository.GetByIdAsync(taskId);
         if (task is null)
             throw new InvalidOperationException($"Task with ID {taskId} not found.");
 
@@ -171,7 +173,7 @@ public class StickyNoteService
         task.IsCompleted = isCompleted;
         task.UpdatedAt = DateTime.UtcNow;
 
-        await _repository.UpdateTaskAsync(noteId, task);
+        await _taskRepository.UpdateAsync(noteId, task);
     }
 
     /// <summary>
@@ -185,7 +187,7 @@ public class StickyNoteService
         if (taskId == Guid.Empty)
             throw new ArgumentException("Task ID cannot be empty.", nameof(taskId));
 
-        await _repository.DeleteTaskAsync(noteId, taskId);
+        await _taskRepository.DeleteAsync(noteId, taskId);
     }
 
     /// <summary>
@@ -193,7 +195,7 @@ public class StickyNoteService
     /// </summary>
     public async Task<int> GetNextNoteNumberAsync()
     {
-        var allNotes = await _repository.GetAllAsync();
+        var allNotes = await _noteRepository.GetAllAsync();
         var noteNumbers = allNotes
             .Where(n => n.Title.StartsWith("Note ") && int.TryParse(n.Title.Substring(5), out _))
             .Select(n => int.Parse(n.Title.Substring(5)))

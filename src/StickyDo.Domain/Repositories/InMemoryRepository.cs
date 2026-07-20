@@ -3,10 +3,10 @@ using StickyDo.Domain.Models;
 namespace StickyDo.Domain.Repositories;
 
 /// <summary>
-/// In-memory implementation of sticky note repository for Phase 1 testing.
+/// In-memory implementation of sticky note and task repositories for Phase 1 testing.
 /// Will be replaced with SQLite implementation in Phase 2.
 /// </summary>
-public class InMemoryRepository : IStickyNoteRepository
+public class InMemoryRepository : IStickyNoteRepository, IStickyNoteTaskRepository
 {
     private readonly List<StickyNote> _notes = new();
 
@@ -80,7 +80,9 @@ public class InMemoryRepository : IStickyNoteRepository
         return Task.FromResult(results.AsEnumerable());
     }
 
-    public Task<Guid> CreateTaskAsync(Guid noteId, StickyNoteTask task)
+    // IStickyNoteTaskRepository implementation - explicit interface implementation
+
+    Task<Guid> IStickyNoteTaskRepository.CreateAsync(Guid noteId, StickyNoteTask task)
     {
         if (task == null)
             throw new ArgumentNullException(nameof(task));
@@ -94,7 +96,7 @@ public class InMemoryRepository : IStickyNoteRepository
         return Task.FromResult(task.Id);
     }
 
-    public Task<IEnumerable<StickyNoteTask>> GetTasksByNoteIdAsync(Guid noteId)
+    Task<IEnumerable<StickyNoteTask>> IStickyNoteTaskRepository.GetByNoteIdAsync(Guid noteId)
     {
         var note = _notes.FirstOrDefault(n => n.Id == noteId);
         if (note == null)
@@ -103,7 +105,7 @@ public class InMemoryRepository : IStickyNoteRepository
         return Task.FromResult(note.Tasks.OrderBy(t => t.Order).AsEnumerable());
     }
 
-    public Task<StickyNoteTask?> GetTaskByIdAsync(Guid taskId)
+    Task<StickyNoteTask?> IStickyNoteTaskRepository.GetByIdAsync(Guid taskId)
     {
         var task = _notes
             .SelectMany(n => n.Tasks)
@@ -112,7 +114,7 @@ public class InMemoryRepository : IStickyNoteRepository
         return Task.FromResult(task);
     }
 
-    public Task UpdateTaskAsync(Guid noteId, StickyNoteTask task)
+    Task IStickyNoteTaskRepository.UpdateAsync(Guid noteId, StickyNoteTask task)
     {
         if (task == null)
             throw new ArgumentNullException(nameof(task));
@@ -134,7 +136,7 @@ public class InMemoryRepository : IStickyNoteRepository
         return Task.CompletedTask;
     }
 
-    public Task DeleteTaskAsync(Guid noteId, Guid taskId)
+    Task IStickyNoteTaskRepository.DeleteAsync(Guid noteId, Guid taskId)
     {
         var note = _notes.FirstOrDefault(n => n.Id == noteId);
         if (note != null)

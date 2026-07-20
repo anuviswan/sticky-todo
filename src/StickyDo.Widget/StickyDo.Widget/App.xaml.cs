@@ -66,8 +66,10 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Register repositories
-        services.AddSingleton<IStickyNoteRepository, InMemoryRepository>();
+        // Register repositories - InMemoryRepository implements both interfaces
+        var inMemoryRepository = new InMemoryRepository();
+        services.AddSingleton<IStickyNoteRepository>(inMemoryRepository);
+        services.AddSingleton<IStickyNoteTaskRepository>(inMemoryRepository);
 
         // Register dialog and window services first (used by other services)
         services.AddSingleton<IDialogService, DialogService>();
@@ -77,6 +79,7 @@ public partial class App : Application
         services.AddSingleton<StickyNoteService>();
         services.AddSingleton<WindowManager>();
         services.AddSingleton<IStickyNoteWindowService, StickyNoteWindowService>();
+        services.AddSingleton<IStickyNoteWindowCoordinator, StickyNoteWindowCoordinator>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -103,12 +106,6 @@ public partial class App : Application
 
         var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
         var viewModel = new MainWindowViewModel(mainWindowService, notesListViewModel);
-
-        // Set callback for creating new notes from within sticky note windows
-        if (noteWindowService is StickyNoteWindowService stickyNoteWindowService)
-        {
-            stickyNoteWindowService.SetCreateNoteCallback(async () => await notesListViewModel.CreateNoteCommand.ExecuteAsync(null));
-        }
 
         mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;

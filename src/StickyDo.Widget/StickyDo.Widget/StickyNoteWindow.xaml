@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StickyDo.Widget"
         xmlns:controls="clr-namespace:StickyDo.Widget;assembly=StickyDo.Widget.Controls"
+        xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
         Title="Sticky Note" Height="400" Width="320" MinHeight="200" MinWidth="250"
         Background="#FFF9E6"
@@ -23,7 +24,8 @@
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
-            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8">
+            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
+                    behaviors:DragWindowBehavior.CanDrag="True">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -143,6 +145,7 @@
                         <TextBox Grid.Column="1"
                                  x:Name="AddTaskInput"
                                  Text="{Binding NewTaskTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 behaviors:FocusBehavior.IsFocused="{Binding ShouldFocusAddTaskInput, Mode=OneWay}"
                                  FontSize="13"
                                  Foreground="#333333"
                                  Background="Transparent"

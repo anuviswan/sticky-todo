@@ -15,27 +15,26 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     private readonly StickyNoteService _stickyNoteService;
     private readonly WindowManager _windowManager;
     private readonly IDialogService _dialogService;
-    private Func<Task>? _onCreateNote;
+    private readonly IWindowService _windowService;
+    private readonly IStickyNoteWindowCoordinator _windowCoordinator;
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
         WindowManager windowManager,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        IWindowService windowService,
+        IStickyNoteWindowCoordinator windowCoordinator)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowManager);
         ArgumentNullException.ThrowIfNull(dialogService);
+        ArgumentNullException.ThrowIfNull(windowService);
+        ArgumentNullException.ThrowIfNull(windowCoordinator);
         _stickyNoteService = stickyNoteService;
         _windowManager = windowManager;
         _dialogService = dialogService;
-    }
-
-    /// <summary>
-    /// Sets the callback for creating new notes from sticky note windows.
-    /// </summary>
-    public void SetCreateNoteCallback(Func<Task> callback)
-    {
-        _onCreateNote = callback;
+        _windowService = windowService;
+        _windowCoordinator = windowCoordinator;
     }
 
     /// <summary>
@@ -59,13 +58,11 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
             // Create new window
             var window = new StickyNoteWindow();
-            var viewModel = new StickyNoteWindowViewModel(_stickyNoteService, _dialogService);
-
-            // Set callback to create new notes from the sticky note window
-            if (_onCreateNote != null)
-            {
-                viewModel.SetCreateNoteCallback(_onCreateNote);
-            }
+            var viewModel = new StickyNoteWindowViewModel(
+                _stickyNoteService,
+                _dialogService,
+                _windowService,
+                _windowCoordinator);
 
             await viewModel.LoadNoteAsync(noteId);
 

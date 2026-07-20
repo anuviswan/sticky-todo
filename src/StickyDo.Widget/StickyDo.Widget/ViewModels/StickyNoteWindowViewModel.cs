@@ -10,17 +10,16 @@ namespace StickyDo.Widget.ViewModels;
 
 /// <summary>
 /// ViewModel for a floating sticky note window with task management.
+/// Pure MVVM - communicates via services and observable properties, not callbacks.
 /// </summary>
 public partial class StickyNoteWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
     private readonly IDialogService _dialogService;
+    private readonly IWindowService _windowService;
+    private readonly IStickyNoteWindowCoordinator _windowCoordinator;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
-    private Func<Task>? _onCreateNewNote;
-    private Action? _onDragWindow;
-    private Action? _onFocusAddTaskInput;
-    private Action<bool>? _onCloseWindow;
 
     [ObservableProperty]
     private Guid noteId;
@@ -33,6 +32,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private string newTaskTitle = string.Empty;
+
+    [ObservableProperty]
+    private bool shouldFocusAddTaskInput = false;
 
     [ObservableProperty]
     private double windowX;
@@ -55,31 +57,39 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         }
     }
 
-    public StickyNoteWindowViewModel(StickyNoteService stickyNoteService, IDialogService dialogService)
+    public StickyNoteWindowViewModel(
+        StickyNoteService stickyNoteService,
+        IDialogService dialogService,
+        IWindowService windowService,
+        IStickyNoteWindowCoordinator windowCoordinator)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(dialogService);
+        ArgumentNullException.ThrowIfNull(windowService);
+        ArgumentNullException.ThrowIfNull(windowCoordinator);
         _stickyNoteService = stickyNoteService;
         _dialogService = dialogService;
+        _windowService = windowService;
+        _windowCoordinator = windowCoordinator;
     }
 
     /// <summary>
-    /// Sets the callback for creating a new note from this window.
-    /// </summary>
-    public void SetCreateNoteCallback(Func<Task> onCreateNewNote)
-    {
-        _onCreateNewNote = onCreateNewNote;
-    }
-
-    /// <summary>
-    /// Creates a new note window.
+    /// Creates a new note window via the coordinator.
     /// </summary>
     [RelayCommand]
     public async Task CreateNewNoteAsync()
     {
-        if (_onCreateNewNote != null)
+        try
         {
-            await _onCreateNewNote();
+            await _windowCoordinator.CreateNewNoteAsync();
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(CreateNewNoteAsync));
+            await _dialogService.ShowMessageAsync(
+                "Create Note Error",
+                $"Error creating new note: {ex.Message}",
+                System.Windows.MessageBoxImage.Error);
         }
     }
 
@@ -281,36 +291,14 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Sets the callback for window drag operations.
-    /// </summary>
-    public void SetDragWindowCallback(Action onDragWindow)
-    {
-        _onDragWindow = onDragWindow;
-    }
-
-    /// <summary>
-    /// Sets the callback for focusing the add task input field.
-    /// </summary>
-    public void SetFocusAddTaskInputCallback(Action onFocusAddTaskInput)
-    {
-        _onFocusAddTaskInput = onFocusAddTaskInput;
-    }
-
-    /// <summary>
-    /// Sets the callback for closing the window.
-    /// </summary>
-    public void SetCloseWindowCallback(Action<bool> onCloseWindow)
-    {
-        _onCloseWindow = onCloseWindow;
-    }
-
-    /// <summary>
     /// Focuses the add task input field when placeholder is clicked.
     /// </summary>
     [RelayCommand]
     public void FocusAddTaskInput()
     {
-        _onFocusAddTaskInput?.Invoke();
+        ShouldFocusAddTaskInput = true;
+        // Reset after a brief delay so behavior can be triggered again
+        Task.Delay(100).ContinueWith(_ => ShouldFocusAddTaskInput = false);
     }
 
     /// <summary>
@@ -320,24 +308,10 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     public async Task CloseWindowAsync()
     {
         var canClose = await CanCloseWindowAsync();
-        _onCloseWindow?.Invoke(canClose);
+        if (canClose)
+        {
+            _windowService.RequestClose();
+        }
     }
 
-    /// <summary>
-    /// Handles window closed event to save state.
-    /// </summary>
-    [RelayCommand]
-    public async Task OnWindowClosed()
-    {
-        await SaveAsync();
-    }
-
-    /// <summary>
-    /// Handles title bar mouse down for dragging.
-    /// </summary>
-    [RelayCommand]
-    public void OnTitleBarMouseDown()
-    {
-        _onDragWindow?.Invoke();
-    }
 }
