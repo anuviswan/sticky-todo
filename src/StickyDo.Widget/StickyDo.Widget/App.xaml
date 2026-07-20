@@ -11,6 +11,7 @@
             </ResourceDictionary.MergedDictionaries>
             <converters:ColorArgbToBrushConverter x:Key="ColorArgbToBrushConverter"/>
             <converters:CompareColorConverter x:Key="CompareColorConverter"/>
+            <converters:ColorNameConverter x:Key="ColorNameConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

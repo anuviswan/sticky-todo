@@ -6,7 +6,8 @@
              mc:Ignorable="d"
              d:DesignHeight="100"
              d:DesignWidth="180"
-             Background="White">
+             Background="White"
+             x:Name="root">
 
     <Border Background="White" BorderBrush="#CCCCCC" BorderThickness="1">
         <Grid>
@@ -15,7 +16,7 @@
             </Grid.RowDefinitions>
 
             <!-- Color Grid: 5 columns x 2 rows for 10 colors -->
-            <ItemsControl ItemsSource="{Binding AvailableColors}" Margin="8">
+            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="8">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="5" HorizontalAlignment="Left" VerticalAlignment="Top"/>
@@ -23,38 +24,57 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Color Button -->
-                        <Button Width="28"
-                                Height="28"
-                                Margin="3"
-                                Cursor="Hand"
-                                Command="{Binding DataContext.SelectColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                CommandParameter="{Binding .}"
-                                ToolTip="Select color">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="{Binding ., Converter={StaticResource ColorArgbToBrushConverter}}"/>
-                                    <Setter Property="BorderThickness" Value="1"/>
-                                    <Setter Property="BorderBrush" Value="Transparent"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}"
-                                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                                        BorderThickness="{TemplateBinding BorderThickness}">
-                                                    <ContentPresenter/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Opacity" Value="0.7"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+                        <!-- Color Button with Checkmark Overlay -->
+                        <Grid Width="32" Height="32" Margin="4">
+                            <!-- Color Button -->
+                            <Button x:Name="ColorButton"
+                                    Cursor="Hand"
+                                    Command="{Binding DataContext.SelectColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding .}"
+                                    Tag="{Binding .}"
+                                    ToolTip="{Binding Converter={StaticResource ColorNameConverter}}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="{Binding ., Converter={StaticResource ColorArgbToBrushConverter}}"/>
+                                        <Setter Property="BorderThickness" Value="2"/>
+                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="0.7"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <!-- Checkmark (visible only if color is selected) -->
+                            <Border x:Name="CheckmarkBorder"
+                                    Background="Transparent"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="Collapsed">
+                                <TextBlock x:Name="Checkmark"
+                                           Text="✓"
+                                           FontSize="18"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Opacity="0.95"/>
+                            </Border>
+                        </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
