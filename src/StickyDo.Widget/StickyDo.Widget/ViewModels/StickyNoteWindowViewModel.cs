@@ -18,7 +18,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private readonly StickyNoteService _stickyNoteService;
     private readonly IDialogService _dialogService;
     private readonly IWindowService _windowService;
-    private readonly IStickyNoteWindowCoordinator _windowCoordinator;
+    private readonly IStickyNoteCreationService _creationService;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
 
@@ -62,27 +62,27 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         StickyNoteService stickyNoteService,
         IDialogService dialogService,
         IWindowService windowService,
-        IStickyNoteWindowCoordinator windowCoordinator)
+        IStickyNoteCreationService creationService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(windowService);
-        ArgumentNullException.ThrowIfNull(windowCoordinator);
+        ArgumentNullException.ThrowIfNull(creationService);
         _stickyNoteService = stickyNoteService;
         _dialogService = dialogService;
         _windowService = windowService;
-        _windowCoordinator = windowCoordinator;
+        _creationService = creationService;
     }
 
     /// <summary>
-    /// Creates a new note window via the coordinator.
+    /// Creates a new note window via the creation service.
     /// </summary>
     [RelayCommand]
     public async Task CreateNewNoteAsync()
     {
         try
         {
-            await _windowCoordinator.CreateNewNoteAsync();
+            await _creationService.CreateNewNoteAsync();
         }
         catch (Exception ex)
         {

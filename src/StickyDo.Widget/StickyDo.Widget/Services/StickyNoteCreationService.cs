@@ -4,15 +4,15 @@ using StickyDo.Widget.Interfaces;
 namespace StickyDo.Widget.Services;
 
 /// <summary>
-/// Implementation of sticky note window coordinator.
-/// Delegates note creation to the main window's ViewModel.
+/// Implementation of sticky note creation service.
+/// Orchestrates creating a new note and opening it in a window.
 /// </summary>
-public class StickyNoteWindowCoordinator : IStickyNoteWindowCoordinator
+public class StickyNoteCreationService : IStickyNoteCreationService
 {
     private readonly StickyNoteService _stickyNoteService;
     private readonly IStickyNoteWindowService _windowService;
 
-    public StickyNoteWindowCoordinator(
+    public StickyNoteCreationService(
         StickyNoteService stickyNoteService,
         IStickyNoteWindowService windowService)
     {

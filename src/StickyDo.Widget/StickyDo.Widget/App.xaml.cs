@@ -80,7 +80,7 @@ public partial class App : Application
         services.AddSingleton<StickyNoteService>();
         services.AddSingleton<WindowManager>();
         services.AddSingleton<IStickyNoteWindowService, StickyNoteWindowService>();
-        services.AddSingleton<IStickyNoteWindowCoordinator, StickyNoteWindowCoordinator>();
+        services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
