@@ -17,14 +17,14 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     private readonly WindowManager _windowManager;
     private readonly IDialogService _dialogService;
     private readonly IWindowService _windowService;
-    private readonly IStickyNoteCreationService _creationService;
+    private readonly Lazy<IStickyNoteCreationService> _creationService;
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
         WindowManager windowManager,
         IDialogService dialogService,
         IWindowService windowService,
-        IStickyNoteCreationService creationService)
+        Lazy<IStickyNoteCreationService> creationService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowManager);
@@ -63,7 +63,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                 _stickyNoteService,
                 _dialogService,
                 _windowService,
-                _creationService);
+                _creationService.Value);
 
             await viewModel.LoadNoteAsync(noteId);
 
