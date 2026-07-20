@@ -16,15 +16,25 @@
         Topmost="False">
 
     <Border Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="1">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="#FFF9E6"/>
+                <Setter Property="BorderBrush" Value="#E8D4B8"/>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="4"/>
                 <RowDefinition Height="44"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="40"/>
             </Grid.RowDefinitions>
 
+            <!-- Color Indicator Bar -->
+            <Rectangle Grid.Row="0" Fill="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}"/>
+
             <!-- Title Bar -->
-            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
+            <Border x:Name="TitleBarBorder" Grid.Row="1" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
                     behaviors:DragWindowBehavior.CanDrag="True">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -88,7 +98,7 @@
             </Border>
 
             <!-- Task List with Add Task -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8">
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8">
                 <StackPanel>
                     <!-- Existing Tasks -->
                     <ItemsControl ItemsSource="{Binding Tasks}">
@@ -186,7 +196,7 @@
             </ScrollViewer>
 
             <!-- Status Bar -->
-            <Border Grid.Row="2" Background="#F5F0E8" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
+            <Border Grid.Row="3" Background="#F5F0E8" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -211,7 +221,8 @@
                                VerticalAlignment="Center"/>
 
                     <!-- Color Palette Icon -->
-                    <Button Grid.Column="2"
+                    <Button x:Name="PaletteButton"
+                            Grid.Column="2"
                             Width="20"
                             Height="20"
                             Background="Transparent"
@@ -219,7 +230,8 @@
                             Cursor="Hand"
                             Margin="12,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Color palette">
+                            ToolTip="Color palette"
+                            Command="{Binding OpenColorPickerCommand}">
                         <TextBlock Text="🎨" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
 
@@ -236,6 +248,17 @@
                     </Button>
                 </Grid>
             </Border>
+
+            <!-- Color Picker Popup -->
+            <Popup x:Name="ColorPickerPopup"
+                   IsOpen="{Binding IsColorPickerOpen, Mode=TwoWay}"
+                   PlacementTarget="{Binding ElementName=TitleBarBorder}"
+                   Placement="Bottom"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade"
+                   StaysOpen="False">
+                <controls:ColorPalettePopup DataContext="{Binding}"/>
+            </Popup>
         </Grid>
     </Border>
 </Window>

@@ -63,7 +63,7 @@ public class StickyNoteService
     /// <summary>
     /// Updates an existing sticky note.
     /// </summary>
-    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status)
+    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status, uint? color = null)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(id));
@@ -78,6 +78,9 @@ public class StickyNoteService
         note.Title = title.Trim();
         note.Status = status;
         note.UpdatedAt = DateTime.UtcNow;
+
+        if (color.HasValue)
+            note.ColorArgb = color.Value;
 
         await _noteRepository.UpdateAsync(note);
     }
