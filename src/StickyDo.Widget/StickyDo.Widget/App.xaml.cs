@@ -3,6 +3,8 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget;
@@ -24,7 +26,8 @@ public partial class App : Application
         {
             if (!AcquireSingleInstanceLock())
             {
-                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
+                var dialogService = new DialogService();
+                _ = dialogService.ShowMessageAsync("Application Running", "Sticky TODO is already running.", MessageBoxImage.Information);
                 Shutdown(1);
                 return;
             }
@@ -34,7 +37,8 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Failed to start application: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            var dialogService = new DialogService();
+            _ = dialogService.ShowMessageAsync("Startup Error", $"Failed to start application: {ex.Message}", MessageBoxImage.Error);
             Shutdown(1);
         }
     }
@@ -63,14 +67,20 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Register repositories
-        services.AddSingleton<IStickyNoteRepository, InMemoryRepository>();
+        // Register repositories - InMemoryRepository implements both interfaces
+        var inMemoryRepository = new InMemoryRepository();
+        services.AddSingleton<IStickyNoteRepository>(inMemoryRepository);
+        services.AddSingleton<IStickyNoteTaskRepository>(inMemoryRepository);
 
-        // Register services
+        // Register dialog and window services first (used by other services)
+        services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IWindowService, WindowService>();
+
+        // Register core services
         services.AddSingleton<StickyNoteService>();
-
-        // Register view models
-        services.AddSingleton<MainWindowViewModel>();
+        services.AddSingleton<WindowManager>();
+        services.AddSingleton<IStickyNoteWindowService, StickyNoteWindowService>();
+        services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
@@ -81,7 +91,22 @@ public partial class App : Application
             throw new InvalidOperationException("Services not configured");
 
         var mainWindow = new MainWindow();
-        var viewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+        var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
+        windowManager.SetMainWindow(mainWindow);
+
+        var windowServiceImpl = _serviceProvider.GetRequiredService<IWindowService>();
+        if (windowServiceImpl is WindowService windowService)
+        {
+            windowService.SetMainWindow(mainWindow);
+        }
+
+        var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
+        var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
+        var dialogService = _serviceProvider.GetRequiredService<IDialogService>();
+        var mainWindowService = _serviceProvider.GetRequiredService<IWindowService>();
+
+        var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
+        var viewModel = new MainWindowViewModel(mainWindowService, notesListViewModel);
 
         mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;

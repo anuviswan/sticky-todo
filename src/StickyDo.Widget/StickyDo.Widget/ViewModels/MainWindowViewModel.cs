@@ -1,10 +1,8 @@
-using System.Collections.ObjectModel;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using StickyDo.Domain.Models;
-using StickyDo.Domain.Services;
+using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Resources;
+using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 
 namespace StickyDo.Widget.ViewModels;
@@ -20,30 +18,18 @@ public enum NavigationView
 }
 
 /// <summary>
-/// ViewModel for the main application window managing the sticky notes list.
+/// ViewModel for the main application window managing navigation and window operations.
+/// Pure MVVM - delegates notes list management to NotesListViewModel.
 /// </summary>
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly StickyNoteService _stickyNoteService;
-    private ObservableCollection<StickyNoteItemViewModel> _allNotes = new();
+    private readonly IWindowService _mainWindowService;
+
+    [ObservableProperty]
+    private NotesListViewModel notesListViewModel;
 
     [ObservableProperty]
     private NavigationView selectedNavView = NavigationView.AllNotes;
-
-    [ObservableProperty]
-    private ObservableCollection<StickyNoteItemViewModel> filteredNotes = new();
-
-    [ObservableProperty]
-    private string searchQuery = string.Empty;
-
-    partial void OnSearchQueryChanged(string value)
-    {
-        ApplyFilter();
-        UpdateNoteCount();
-    }
-
-    [ObservableProperty]
-    private StickyNoteItemViewModel? selectedNote;
 
     [ObservableProperty]
     private string syncStatus = AppStrings.SyncedStatus;
@@ -54,14 +40,18 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string lastSyncDisplay = AppStrings.JustNow;
 
-    public MainWindowViewModel(StickyNoteService stickyNoteService)
+    public MainWindowViewModel(
+        IWindowService mainWindowService,
+        NotesListViewModel notesListViewModel)
     {
-        ArgumentNullException.ThrowIfNull(stickyNoteService);
-        _stickyNoteService = stickyNoteService;
+        ArgumentNullException.ThrowIfNull(mainWindowService);
+        ArgumentNullException.ThrowIfNull(notesListViewModel);
+        _mainWindowService = mainWindowService;
+        NotesListViewModel = notesListViewModel;
     }
 
     /// <summary>
-    /// Loads all sticky notes from the repository.
+    /// Loads all sticky notes by delegating to NotesListViewModel.
     /// </summary>
     [RelayCommand]
     public async Task LoadNotesAsync()
@@ -69,24 +59,7 @@ public partial class MainWindowViewModel : ObservableObject
         try
         {
             SyncStatus = AppStrings.SyncingStatus;
-            var notes = await _stickyNoteService.GetAllNotesAsync();
-
-            _allNotes.Clear();
-            foreach (var note in notes.OrderByDescending(n => n.UpdatedAt))
-            {
-                _allNotes.Add(new StickyNoteItemViewModel
-                {
-                    Id = note.Id,
-                    Title = note.Title,
-                    Content = note.Content,
-                    Status = note.Status.ToString(),
-                    LastModified = note.UpdatedAt,
-                    ColorArgb = note.ColorArgb ?? 0xFFFFCC07
-                });
-            }
-
-            ApplyFilter();
-            UpdateNoteCount();
+            await NotesListViewModel.LoadNotesAsync();
             SyncStatus = AppStrings.SyncedStatus;
             LastSyncDisplay = AppStrings.JustNow;
         }
@@ -94,55 +67,17 @@ public partial class MainWindowViewModel : ObservableObject
         {
             SyncStatus = AppStrings.ErrorStatus;
             LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
-            System.Windows.MessageBox.Show(
-                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
-                AppStrings.LoadErrorTitle);
         }
     }
 
     /// <summary>
-    /// Creates a new sticky note (placeholder for Phase 2).
-    /// </summary>
-    [RelayCommand]
-    public async Task CreateNoteAsync()
-    {
-        // Placeholder for Phase 2 implementation
-        await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Deletes the selected sticky note (placeholder for Phase 2).
-    /// </summary>
-    [RelayCommand]
-    public async Task DeleteNoteAsync()
-    {
-        if (SelectedNote is null)
-            return;
-
-        // Placeholder for Phase 2 implementation
-        await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Searches notes based on the search query.
-    /// </summary>
-    [RelayCommand]
-    public async Task SearchNotesAsync()
-    {
-        ApplyFilter();
-        UpdateNoteCount();
-        await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Shows all notes by clearing search filter.
+    /// Shows all notes by clearing search filter (placeholder for Phase 2).
     /// </summary>
     [RelayCommand]
     public void ShowAllNotes()
     {
         SelectedNavView = NavigationView.AllNotes;
-        SearchQuery = string.Empty;
-        ApplyFilter();
+        NotesListViewModel.SearchQuery = string.Empty;
     }
 
     /// <summary>
@@ -152,8 +87,7 @@ public partial class MainWindowViewModel : ObservableObject
     public void ShowFavorites()
     {
         SelectedNavView = NavigationView.Favorites;
-        SearchQuery = string.Empty;
-        ApplyFilter();
+        NotesListViewModel.SearchQuery = string.Empty;
     }
 
     /// <summary>
@@ -163,60 +97,25 @@ public partial class MainWindowViewModel : ObservableObject
     public void ShowTrash()
     {
         SelectedNavView = NavigationView.Trash;
-        SearchQuery = string.Empty;
-        ApplyFilter();
+        NotesListViewModel.SearchQuery = string.Empty;
     }
 
     /// <summary>
     /// Minimizes the application window.
     /// </summary>
     [RelayCommand]
-    public void MinimizeWindow(object? parameter)
+    public void MinimizeWindow()
     {
-        if (parameter is Window window)
-            window.WindowState = WindowState.Minimized;
+        _mainWindowService.RequestMinimize();
     }
 
     /// <summary>
     /// Closes the application window.
     /// </summary>
     [RelayCommand]
-    public void CloseWindow(object? parameter)
+    public void CloseWindow()
     {
-        if (parameter is Window window)
-            window.Close();
+        _mainWindowService.RequestClose();
     }
 
-    private void ApplyFilter()
-    {
-        var filtered = _allNotes.AsEnumerable();
-
-        if (!string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            var query = SearchQuery.ToLower();
-            filtered = filtered.Where(n =>
-                n.Title.ToLower().Contains(query) ||
-                n.Content.ToLower().Contains(query)
-            );
-        }
-
-        FilteredNotes.Clear();
-        foreach (var note in filtered)
-        {
-            FilteredNotes.Add(note);
-        }
-
-        UpdateNoteCount();
-    }
-
-    private void UpdateNoteCount()
-    {
-        var count = FilteredNotes.Count;
-        NoteCountDisplay = count switch
-        {
-            0 => AppStrings.ZeroNotes,
-            1 => AppStrings.SingleNote,
-            _ => string.Format(AppStrings.MultipleNotesFormat, count)
-        };
-    }
 }

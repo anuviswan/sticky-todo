@@ -11,4 +11,4 @@ description: Responsibile for development for WPF Widget.
 # MVVM
 
 - Use MVVM Community Toolkit
-- Use ShellRoute and DI for creating ViewModel instance in View for assigning data context
+- Always use MVVM Pattern, do not use code-behind

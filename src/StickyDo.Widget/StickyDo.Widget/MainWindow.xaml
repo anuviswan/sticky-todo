@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StickyDo.Widget"
         xmlns:controls="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
+        xmlns:views="clr-namespace:StickyDo.Widget.Views"
         xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
+        xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
         Title="StickyDo" Height="700" Width="1200"
         Background="White" ResizeMode="CanResizeWithGrip"
@@ -27,7 +29,7 @@
             <controls:SidebarNavigation Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"/>
 
             <!-- Header Bar -->
-            <Border Grid.Column="1" Grid.Row="0" Background="#FFFFFF" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1" MouseLeftButtonDown="OnTitleBarMouseLeftButtonDown">
+            <Border x:Name="TitleBarBorder" Grid.Column="1" Grid.Row="0" Background="#FFFFFF" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1">
                 <Grid Margin="24,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -56,7 +58,8 @@
                                      Background="Transparent"
                                      BorderThickness="0"
                                      Foreground="#666666"
-                                     Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                     Text="{Binding NotesListViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     behaviors:SearchBoxBehavior.IsSearchBox="True"/>
                         </Grid>
                     </Border>
 
@@ -77,14 +80,13 @@
                             FontSize="12" FontWeight="500"
                             Background="#0066CC" Foreground="White"
                             BorderThickness="0" Cursor="Hand"
-                            Command="{Binding CreateNoteCommand}" Margin="0,0,12,0"
+                            Command="{Binding NotesListViewModel.CreateNoteCommand}" Margin="0,0,12,0"
                             Height="32" VerticalAlignment="Center"/>
 
                     <!-- Minimize Button -->
                     <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Minimize"
-                            Command="{Binding MinimizeWindowCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
+                            Command="{Binding MinimizeWindowCommand}">
                         <TextBlock Text="−" FontSize="18" FontWeight="300" Foreground="#666666"
                                    VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
@@ -92,8 +94,7 @@
                     <!-- Close Button -->
                     <Button Grid.Column="5" Width="40" Height="40" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Close"
-                            Command="{Binding CloseWindowCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}">
+                            Command="{Binding CloseWindowCommand}">
                         <TextBlock Text="✕" FontSize="16" FontWeight="400" Foreground="#666666"
                                    VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
@@ -102,7 +103,7 @@
 
             <!-- Notes Content Area -->
             <Border Grid.Column="1" Grid.Row="1" Background="#F5F5F5">
-                <controls:NotesListView/>
+                <views:NotesListView DataContext="{Binding NotesListViewModel}"/>
             </Border>
         </Grid>
     </Border>

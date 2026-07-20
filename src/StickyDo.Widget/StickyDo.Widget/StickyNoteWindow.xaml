@@ -1,0 +1,241 @@
+<Window x:Class="StickyDo.Widget.StickyNoteWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StickyDo.Widget"
+        xmlns:controls="clr-namespace:StickyDo.Widget;assembly=StickyDo.Widget.Controls"
+        xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
+        mc:Ignorable="d"
+        Title="Sticky Note" Height="400" Width="320" MinHeight="200" MinWidth="250"
+        Background="#FFF9E6"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="CanResizeWithGrip"
+        ShowInTaskbar="False"
+        Topmost="False">
+
+    <Border Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="44"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
+                    behaviors:DragWindowBehavior.CanDrag="True">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Create New Note Button -->
+                    <Button Grid.Column="0"
+                            Width="24"
+                            Height="24"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,8,0"
+                            VerticalAlignment="Center"
+                            ToolTip="Create new note"
+                            Command="{Binding CreateNewNoteCommand}">
+                        <TextBlock Text="+" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
+                    </Button>
+
+                    <!-- Note Title (Editable) -->
+                    <TextBox Grid.Column="1"
+                             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                             FontSize="14"
+                             FontWeight="500"
+                             Foreground="#333333"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="0"
+                             VerticalAlignment="Center"/>
+
+                    <!-- Pin Icon -->
+                    <Button Grid.Column="2"
+                            Width="24"
+                            Height="24"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="12,0,8,0"
+                            VerticalAlignment="Center"
+                            ToolTip="Pin">
+                        <TextBlock Text="📌" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Close Button -->
+                    <Button Grid.Column="3"
+                            Width="24"
+                            Height="24"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Command="{Binding CloseWindowCommand}"
+                            VerticalAlignment="Center"
+                            ToolTip="Close">
+                        <TextBlock Text="×" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Task List with Add Task -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8">
+                <StackPanel>
+                    <!-- Existing Tasks -->
+                    <ItemsControl ItemsSource="{Binding Tasks}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:StickyNoteTaskItem Margin="0,0,0,8"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Add a task input area - appears as next line in task list -->
+                    <Grid Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Plus Icon -->
+                        <TextBlock Grid.Column="0"
+                                   Text="+"
+                                   FontSize="16"
+                                   Foreground="#B8A080"
+                                   Margin="0,0,12,0"
+                                   VerticalAlignment="Center"
+                                   FontWeight="Bold"/>
+
+                        <!-- Add Task Placeholder (shows when field is empty) -->
+                        <TextBlock Grid.Column="1"
+                                   Text="Add a task..."
+                                   FontSize="13"
+                                   Foreground="#B8A080"
+                                   FontStyle="Italic"
+                                   VerticalAlignment="Center"
+                                   Cursor="IBeam">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding FocusAddTaskInputCommand}"/>
+                            </TextBlock.InputBindings>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NewTaskTitle}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding NewTaskTitle}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <!-- Add Task Input Field (overlaid on placeholder) -->
+                        <TextBox Grid.Column="1"
+                                 x:Name="AddTaskInput"
+                                 Text="{Binding NewTaskTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 behaviors:FocusBehavior.IsFocused="{Binding ShouldFocusAddTaskInput, Mode=OneWay}"
+                                 FontSize="13"
+                                 Foreground="#333333"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 Padding="0"
+                                 VerticalAlignment="Center">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding AddTaskCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+
+                        <!-- Add Button (visible when text is entered) -->
+                        <Button Grid.Column="2"
+                                Width="20"
+                                Height="20"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Padding="0"
+                                VerticalAlignment="Center"
+                                Margin="8,0,0,0"
+                                Command="{Binding AddTaskCommand}"
+                                ToolTip="Add task">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NewTaskTitle}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                            <TextBlock Text="✓" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#B8A080" FontWeight="Bold"/>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Status Bar -->
+            <Border Grid.Row="2" Background="#F5F0E8" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Sync Status Icon -->
+                    <TextBlock Grid.Column="0"
+                               Text="☁"
+                               FontSize="12"
+                               Foreground="#999999"
+                               Margin="0,0,4,0"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Sync Status Text -->
+                    <TextBlock Grid.Column="1"
+                               Text="Synced"
+                               FontSize="11"
+                               Foreground="#999999"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Color Palette Icon -->
+                    <Button Grid.Column="2"
+                            Width="20"
+                            Height="20"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="12,0,8,0"
+                            VerticalAlignment="Center"
+                            ToolTip="Color palette">
+                        <TextBlock Text="🎨" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Menu Icon -->
+                    <Button Grid.Column="3"
+                            Width="20"
+                            Height="20"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            VerticalAlignment="Center"
+                            ToolTip="More options">
+                        <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#999999"/>
+                    </Button>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

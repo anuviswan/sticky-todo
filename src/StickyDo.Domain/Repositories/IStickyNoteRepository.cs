@@ -4,6 +4,7 @@ using StickyDo.Domain.Models;
 
 /// <summary>
 /// Repository interface for sticky note data access.
+/// Handles CRUD and query operations for sticky notes.
 /// </summary>
 public interface IStickyNoteRepository
 {
