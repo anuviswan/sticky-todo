@@ -1,4 +1,4 @@
-namespace StickyDo.Widget.Services;
+namespace StickyDo.Widget.Interfaces;
 
 /// <summary>
 /// Coordinator for communication between main window and sticky note windows.

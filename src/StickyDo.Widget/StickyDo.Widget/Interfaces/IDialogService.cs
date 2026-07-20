@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace StickyDo.Widget.Services;
+namespace StickyDo.Widget.Interfaces;
 
 /// <summary>
 /// Abstraction for showing dialogs and messages.

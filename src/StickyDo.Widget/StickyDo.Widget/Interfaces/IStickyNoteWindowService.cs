@@ -1,4 +1,4 @@
-namespace StickyDo.Widget.Services;
+namespace StickyDo.Widget.Interfaces;
 
 /// <summary>
 /// Service interface for managing sticky note window operations.

@@ -1,4 +1,5 @@
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Interfaces;
 
 namespace StickyDo.Widget.Services;
 

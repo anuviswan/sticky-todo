@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Resources;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;

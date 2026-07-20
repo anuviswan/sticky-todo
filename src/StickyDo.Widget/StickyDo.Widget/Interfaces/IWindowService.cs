@@ -1,4 +1,4 @@
-namespace StickyDo.Widget.Services;
+namespace StickyDo.Widget.Interfaces;
 
 /// <summary>
 /// Abstraction for window operations (minimize, close, etc).

@@ -1,4 +1,5 @@
 using System.Windows;
+using StickyDo.Widget.Interfaces;
 
 namespace StickyDo.Widget.Services;
 

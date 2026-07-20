@@ -3,6 +3,7 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
 

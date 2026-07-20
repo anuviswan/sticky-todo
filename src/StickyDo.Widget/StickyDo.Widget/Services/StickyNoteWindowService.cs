@@ -1,5 +1,6 @@
 using System.Windows;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Utilities;
 using StickyDo.Widget.ViewModels;
 
