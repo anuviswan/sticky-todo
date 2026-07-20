@@ -20,6 +20,7 @@ public partial class MainWindow : Window
 
     /// <summary>
     /// Sets the view model for this window.
+    /// Child views bind to their ViewModels via XAML DataContext bindings.
     /// </summary>
     public void SetViewModel(MainWindowViewModel viewModel)
     {

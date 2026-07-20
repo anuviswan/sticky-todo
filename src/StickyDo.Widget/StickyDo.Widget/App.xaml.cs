@@ -100,12 +100,14 @@ public partial class App : Application
         var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
         var dialogService = _serviceProvider.GetRequiredService<IDialogService>();
         var mainWindowService = _serviceProvider.GetRequiredService<IWindowService>();
-        var viewModel = new MainWindowViewModel(stickyNoteService, noteWindowService, dialogService, mainWindowService);
+
+        var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
+        var viewModel = new MainWindowViewModel(mainWindowService, notesListViewModel);
 
         // Set callback for creating new notes from within sticky note windows
         if (noteWindowService is StickyNoteWindowService stickyNoteWindowService)
         {
-            stickyNoteWindowService.SetCreateNoteCallback(async () => await viewModel.CreateNoteCommand.ExecuteAsync(null));
+            stickyNoteWindowService.SetCreateNoteCallback(async () => await notesListViewModel.CreateNoteCommand.ExecuteAsync(null));
         }
 
         mainWindow.SetViewModel(viewModel);

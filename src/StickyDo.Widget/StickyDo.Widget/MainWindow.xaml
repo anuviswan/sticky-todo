@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StickyDo.Widget"
         xmlns:controls="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
+        xmlns:views="clr-namespace:StickyDo.Widget.Views"
         xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
         xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
@@ -57,7 +58,7 @@
                                      Background="Transparent"
                                      BorderThickness="0"
                                      Foreground="#666666"
-                                     Text="{Binding SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Text="{Binding NotesListViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      behaviors:SearchBoxBehavior.IsSearchBox="True"/>
                         </Grid>
                     </Border>
@@ -79,7 +80,7 @@
                             FontSize="12" FontWeight="500"
                             Background="#0066CC" Foreground="White"
                             BorderThickness="0" Cursor="Hand"
-                            Command="{Binding CreateNoteCommand}" Margin="0,0,12,0"
+                            Command="{Binding NotesListViewModel.CreateNoteCommand}" Margin="0,0,12,0"
                             Height="32" VerticalAlignment="Center"/>
 
                     <!-- Minimize Button -->
@@ -102,7 +103,7 @@
 
             <!-- Notes Content Area -->
             <Border Grid.Column="1" Grid.Row="1" Background="#F5F5F5">
-                <controls:NotesListView/>
+                <views:NotesListView DataContext="{Binding NotesListViewModel}"/>
             </Border>
         </Grid>
     </Border>
