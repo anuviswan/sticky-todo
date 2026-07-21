@@ -11,16 +11,16 @@
 
     <Grid>
         <!-- Drop Shadow Border -->
-        <Border Background="White" CornerRadius="12" Margin="0,0,0,12">
+        <Border Background="White" CornerRadius="8" Margin="0,0,0,8">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.2" Direction="270"/>
+                <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
             </Border.Effect>
         </Border>
 
         <!-- Main Content -->
         <StackPanel Orientation="Vertical">
             <!-- Color Grid: 5 columns x 2 rows for 10 colors -->
-            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="16,16,16,12">
+            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="10,10,10,8">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="5" HorizontalAlignment="Center" VerticalAlignment="Top"/>
@@ -29,7 +29,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <!-- Circular Color Button with Selection Indicator -->
-                        <Grid Width="56" Height="56" Margin="8" HorizontalAlignment="Center">
+                        <Grid Width="44" Height="44" Margin="5" HorizontalAlignment="Center">
                             <!-- Color Button (Circular) -->
                             <Button x:Name="ColorButton"
                                     Cursor="Hand"
@@ -49,7 +49,7 @@
                                                     <Border Background="{TemplateBinding Background}"
                                                             BorderBrush="{TemplateBinding BorderBrush}"
                                                             BorderThickness="{TemplateBinding BorderThickness}"
-                                                            CornerRadius="28">
+                                                            CornerRadius="22">
                                                         <ContentPresenter/>
                                                     </Border>
                                                 </ControlTemplate>
@@ -67,16 +67,16 @@
                             <!-- Selection Indicator: Blue Border + Checkmark -->
                             <Border x:Name="SelectionIndicator"
                                     BorderBrush="#2563EB"
-                                    BorderThickness="3"
-                                    CornerRadius="28"
+                                    BorderThickness="2"
+                                    CornerRadius="22"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Width="56"
-                                    Height="56"
+                                    Width="44"
+                                    Height="44"
                                     Visibility="Collapsed">
                                 <TextBlock x:Name="Checkmark"
                                            Text="✓"
-                                           FontSize="28"
+                                           FontSize="22"
                                            FontWeight="Bold"
                                            Foreground="White"
                                            HorizontalAlignment="Center"
@@ -89,8 +89,8 @@
             </ItemsControl>
 
             <!-- Callout Pointer (Triangle pointing down) -->
-            <Canvas Height="12" HorizontalAlignment="Center">
-                <Polygon Points="0,0 12,12 24,0" Fill="White" Canvas.Left="0" Canvas.Top="0"/>
+            <Canvas Height="8" HorizontalAlignment="Center">
+                <Polygon Points="0,0 8,8 16,0" Fill="White" Canvas.Left="0" Canvas.Top="0"/>
             </Canvas>
         </StackPanel>
     </Grid>

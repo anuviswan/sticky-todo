@@ -13,16 +13,16 @@ public static class ColorPalette
     /// </summary>
     public static readonly uint[] Colors =
     [
-        0xFFFDD835,  // Amber - Warm, inviting (Default)
-        0xFF4CAF50,  // Green - Fresh, calm
-        0xFFE53935,  // Red - Urgent, important
-        0xFF1E88E5,  // Blue - Professional, trustworthy
-        0xFFE91E63,  // Pink - Creative, attention-grabbing
-        0xFFFF9800,  // Orange - Energetic, warm
-        0xFF9C27B0,  // Purple - Creative, imaginative
-        0xFF00ACC1,  // Cyan - Clear, modern
-        0xFFD32F2F,  // Deep Red - Critical, alert
-        0xFF512DA8,  // Deep Purple - Formal, important
+        0xFF5B9FD1,  // Blue - Professional, trustworthy (Default)
+        0xFFA4D65E,  // Green - Fresh, calm
+        0xFFC5E1E8,  // Light Blue - Serene, focused
+        0xFFF6D5E8,  // Pink - Creative, attention-grabbing
+        0xFFE8D5F2,  // Purple - Imaginative, thoughtful
+        0xFFE0E0E0,  // Gray - Neutral, balanced
+        0xFF4A4A4A,  // Dark Gray - Professional, formal
+        0xFFC5E8E0,  // Cyan - Clear, modern
+        0xFFF6D8A0,  // Orange - Energetic, warm
+        0xFFF6D0C0,  // Salmon - Soft, warm
     ];
 
     /// <summary>
@@ -38,16 +38,16 @@ public static class ColorPalette
     {
         return color switch
         {
-            0xFFFDD835 => "Amber",
-            0xFF4CAF50 => "Green",
-            0xFFE53935 => "Red",
-            0xFF1E88E5 => "Blue",
-            0xFFE91E63 => "Pink",
-            0xFFFF9800 => "Orange",
-            0xFF9C27B0 => "Purple",
-            0xFF00ACC1 => "Cyan",
-            0xFFD32F2F => "Deep Red",
-            0xFF512DA8 => "Deep Purple",
+            0xFF5B9FD1 => "Blue",
+            0xFFA4D65E => "Green",
+            0xFFC5E1E8 => "Light Blue",
+            0xFFF6D5E8 => "Pink",
+            0xFFE8D5F2 => "Purple",
+            0xFFE0E0E0 => "Gray",
+            0xFF4A4A4A => "Dark Gray",
+            0xFFC5E8E0 => "Cyan",
+            0xFFF6D8A0 => "Orange",
+            0xFFF6D0C0 => "Salmon",
             _ => "Unknown"
         };
     }
