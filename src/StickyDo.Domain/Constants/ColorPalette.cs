@@ -13,16 +13,16 @@ public static class ColorPalette
     /// </summary>
     public static readonly uint[] Colors =
     [
-        0xFF5B9FD1,  // Blue - Professional, trustworthy (Default)
-        0xFFA4D65E,  // Green - Fresh, calm
-        0xFFC5E1E8,  // Light Blue - Serene, focused
-        0xFFF6D5E8,  // Pink - Creative, attention-grabbing
-        0xFFE8D5F2,  // Purple - Imaginative, thoughtful
-        0xFFE0E0E0,  // Gray - Neutral, balanced
-        0xFF4A4A4A,  // Dark Gray - Professional, formal
-        0xFFC5E8E0,  // Cyan - Clear, modern
-        0xFFF6D8A0,  // Orange - Energetic, warm
-        0xFFF6D0C0,  // Salmon - Soft, warm
+        0xFF7EBAE8,  // Blue - Professional, trustworthy (Default)
+        0xFFC1E8A3,  // Green - Fresh, calm
+        0xFFC5E0F0,  // Light Blue - Serene, focused
+        0xFFF5D8E8,  // Pink - Creative, attention-grabbing
+        0xFFE0D8F0,  // Purple - Imaginative, thoughtful
+        0xFFE8E8E8,  // Gray - Neutral, balanced
+        0xFF5A5A5A,  // Dark Gray - Professional, formal
+        0xFFC0E8E0,  // Cyan - Clear, modern
+        0xFFF5D8B0,  // Orange - Energetic, warm
+        0xFFF8D0C0,  // Salmon - Soft, warm
     ];
 
     /// <summary>
@@ -38,16 +38,16 @@ public static class ColorPalette
     {
         return color switch
         {
-            0xFF5B9FD1 => "Blue",
-            0xFFA4D65E => "Green",
-            0xFFC5E1E8 => "Light Blue",
-            0xFFF6D5E8 => "Pink",
-            0xFFE8D5F2 => "Purple",
-            0xFFE0E0E0 => "Gray",
-            0xFF4A4A4A => "Dark Gray",
-            0xFFC5E8E0 => "Cyan",
-            0xFFF6D8A0 => "Orange",
-            0xFFF6D0C0 => "Salmon",
+            0xFF7EBAE8 => "Blue",
+            0xFFC1E8A3 => "Green",
+            0xFFC5E0F0 => "Light Blue",
+            0xFFF5D8E8 => "Pink",
+            0xFFE0D8F0 => "Purple",
+            0xFFE8E8E8 => "Gray",
+            0xFF5A5A5A => "Dark Gray",
+            0xFFC0E8E0 => "Cyan",
+            0xFFF5D8B0 => "Orange",
+            0xFFF8D0C0 => "Salmon",
             _ => "Unknown"
         };
     }

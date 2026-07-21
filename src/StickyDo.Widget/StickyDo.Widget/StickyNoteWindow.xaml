@@ -126,7 +126,7 @@
                         <TextBlock Grid.Column="1"
                                    Text="Add a task..."
                                    FontSize="13"
-                                   Foreground="#B8A080"
+                                   Foreground="#000000"
                                    FontStyle="Italic"
                                    VerticalAlignment="Center"
                                    Cursor="IBeam">
@@ -213,7 +213,7 @@
                     <TextBlock Grid.Column="1"
                                Text="Synced"
                                FontSize="11"
-                               Foreground="#999999"
+                               Foreground="#000000"
                                VerticalAlignment="Center"/>
 
                     <!-- Color Palette Icon -->
@@ -240,7 +240,7 @@
                             Cursor="Hand"
                             VerticalAlignment="Center"
                             ToolTip="More options">
-                        <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#999999"/>
+                        <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#000000"/>
                     </Button>
                 </Grid>
             </Border>
@@ -253,7 +253,8 @@
                    AllowsTransparency="True"
                    PopupAnimation="Fade"
                    StaysOpen="False"
-                   VerticalOffset="-8">
+                   HorizontalOffset="20"
+                   VerticalOffset="-140">
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
             </Popup>
         </Grid>
