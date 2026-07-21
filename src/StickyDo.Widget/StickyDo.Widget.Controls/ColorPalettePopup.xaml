@@ -20,8 +20,8 @@
         <!-- Main Content -->
         <StackPanel Orientation="Vertical">
             <!-- Callout Pointer (Triangle pointing up-right) -->
-            <Canvas Height="8" HorizontalAlignment="Right" Margin="0,0,12,4" VerticalAlignment="Top">
-                <Polygon Points="0,8 8,0 16,8" Fill="White" Canvas.Left="0" Canvas.Top="0"/>
+            <Canvas Height="8" Width="16" HorizontalAlignment="Right" Margin="0,0,12,2" VerticalAlignment="Top">
+                <Polygon Points="0,8 8,0 16,8" Fill="White"/>
             </Canvas>
 
             <!-- Color Grid: 5 columns x 2 rows for 10 colors -->
