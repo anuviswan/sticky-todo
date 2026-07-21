@@ -12,6 +12,7 @@
             <converters:ColorArgbToBrushConverter x:Key="ColorArgbToBrushConverter"/>
             <converters:CompareColorConverter x:Key="CompareColorConverter"/>
             <converters:ColorNameConverter x:Key="ColorNameConverter"/>
+            <converters:ColorToFooterColorConverter x:Key="ColorToFooterColorConverter"/>
             <DropShadowEffect x:Key="CheckmarkShadow" BlurRadius="2" ShadowDepth="1" Opacity="0.6"/>
         </ResourceDictionary>
     </Application.Resources>
