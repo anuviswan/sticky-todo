@@ -9,23 +9,18 @@
              Background="Transparent"
              x:Name="root">
 
-    <Grid>
-        <!-- Drop Shadow Border -->
-        <Border Background="White" CornerRadius="8" Margin="0,0,0,8">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
-            </Border.Effect>
-        </Border>
-
-        <!-- Main Content -->
-        <StackPanel Orientation="Vertical">
-            <!-- Callout Pointer (Triangle pointing up-right) -->
-            <Canvas Height="8" Width="16" HorizontalAlignment="Right" Margin="0,0,12,2" VerticalAlignment="Top">
-                <Polygon Points="0,8 8,0 16,8" Fill="White" Stroke="#E0E0E0" StrokeThickness="1" StrokeLineJoin="Round"/>
-            </Canvas>
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Right" Margin="0,0,20,0">
+        <!-- White Palette Container with Drop Shadow -->
+        <Grid>
+            <!-- Drop Shadow Border -->
+            <Border Background="White" CornerRadius="8">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
+                </Border.Effect>
+            </Border>
 
             <!-- Color Grid: 5 columns x 2 rows for 10 colors -->
-            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="10,0,10,8">
+            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="10,10,10,8">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <UniformGrid Columns="5" HorizontalAlignment="Center" VerticalAlignment="Top"/>
@@ -92,6 +87,11 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </StackPanel>
-    </Grid>
+        </Grid>
+
+        <!-- Callout Pointer Arrow (Below Palette, pointing down to palette icon) -->
+        <Canvas Height="8" Width="16" HorizontalAlignment="Right" Margin="0,-8,8,0">
+            <Polygon Points="0,0 8,8 16,0" Fill="White" Stroke="#E0E0E0" StrokeThickness="1" StrokeLineJoin="Round"/>
+        </Canvas>
+    </StackPanel>
 </UserControl>
