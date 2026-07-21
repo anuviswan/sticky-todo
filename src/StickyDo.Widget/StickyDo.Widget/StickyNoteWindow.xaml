@@ -15,7 +15,13 @@
         ShowInTaskbar="False"
         Topmost="False">
 
-    <Border Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="1">
+    <Border Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="1">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}"/>
+                <Setter Property="BorderBrush" Value="#E8D4B8"/>
+            </Style>
+        </Border.Style>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="44"/>
@@ -24,7 +30,7 @@
             </Grid.RowDefinitions>
 
             <!-- Title Bar -->
-            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="#FFF9E6" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
+            <Border x:Name="TitleBarBorder" Grid.Row="0" Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
                     behaviors:DragWindowBehavior.CanDrag="True">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -120,7 +126,7 @@
                         <TextBlock Grid.Column="1"
                                    Text="Add a task..."
                                    FontSize="13"
-                                   Foreground="#B8A080"
+                                   Foreground="#000000"
                                    FontStyle="Italic"
                                    VerticalAlignment="Center"
                                    Cursor="IBeam">
@@ -186,7 +192,7 @@
             </ScrollViewer>
 
             <!-- Status Bar -->
-            <Border Grid.Row="2" Background="#F5F0E8" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
+            <Border Grid.Row="2" Background="{Binding CurrentColor, Converter={StaticResource ColorToFooterColorConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -207,11 +213,12 @@
                     <TextBlock Grid.Column="1"
                                Text="Synced"
                                FontSize="11"
-                               Foreground="#999999"
+                               Foreground="#000000"
                                VerticalAlignment="Center"/>
 
                     <!-- Color Palette Icon -->
-                    <Button Grid.Column="2"
+                    <Button x:Name="PaletteButton"
+                            Grid.Column="2"
                             Width="20"
                             Height="20"
                             Background="Transparent"
@@ -219,7 +226,8 @@
                             Cursor="Hand"
                             Margin="12,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Color palette">
+                            ToolTip="Color palette"
+                            Command="{Binding OpenColorPickerCommand}">
                         <TextBlock Text="🎨" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
 
@@ -232,10 +240,23 @@
                             Cursor="Hand"
                             VerticalAlignment="Center"
                             ToolTip="More options">
-                        <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#999999"/>
+                        <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#000000"/>
                     </Button>
                 </Grid>
             </Border>
+
+            <!-- Color Picker Popup -->
+            <Popup x:Name="ColorPickerPopup"
+                   IsOpen="{Binding IsColorPickerOpen, Mode=TwoWay}"
+                   PlacementTarget="{Binding ElementName=PaletteButton}"
+                   Placement="Bottom"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade"
+                   StaysOpen="False"
+                   HorizontalOffset="-80"
+                   VerticalOffset="8">
+                <controls:ColorPalettePopup DataContext="{Binding}"/>
+            </Popup>
         </Grid>
     </Border>
 </Window>

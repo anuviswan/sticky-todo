@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
@@ -48,6 +49,15 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private double windowHeight = 400;
+
+    [ObservableProperty]
+    private uint currentColor = ColorPalette.Colors[0];
+
+    [ObservableProperty]
+    private bool isColorPickerOpen = false;
+
+    [ObservableProperty]
+    private ObservableCollection<uint> availableColors = new(ColorPalette.Colors);
 
     partial void OnTitleChanged(string value)
     {
@@ -110,6 +120,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
             NoteId = _currentNote.Id;
             Title = _currentNote.Title;
+            CurrentColor = _currentNote.ColorArgb ?? ColorPalette.GetDefaultColor();
 
             Tasks.Clear();
 
@@ -300,6 +311,53 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         ShouldFocusAddTaskInput = true;
         // Reset after a brief delay so behavior can be triggered again
         Task.Delay(100).ContinueWith(_ => ShouldFocusAddTaskInput = false);
+    }
+
+    /// <summary>
+    /// Opens the color picker overlay.
+    /// </summary>
+    [RelayCommand]
+    public void OpenColorPicker()
+    {
+        IsColorPickerOpen = true;
+    }
+
+    /// <summary>
+    /// Closes the color picker overlay without changing color.
+    /// </summary>
+    [RelayCommand]
+    public void CloseColorPicker()
+    {
+        IsColorPickerOpen = false;
+    }
+
+    /// <summary>
+    /// Selects a color and saves it to the database.
+    /// </summary>
+    [RelayCommand]
+    public async Task SelectColorAsync(uint color)
+    {
+        if (_currentNote is null)
+            return;
+
+        try
+        {
+            CurrentColor = color;
+            _currentNote.ColorArgb = color;
+
+            await _stickyNoteService.UpdateNoteAsync(
+                _currentNote.Id,
+                _currentNote.Title,
+                _currentNote.Status,
+                color);
+
+            IsColorPickerOpen = false;
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(SelectColorAsync));
+            await _dialogService.ShowMessageAsync("Color Error", $"Error changing color: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
     }
 
     /// <summary>

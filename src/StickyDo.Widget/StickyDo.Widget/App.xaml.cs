@@ -79,7 +79,16 @@ public partial class App : Application
         // Register core services
         services.AddSingleton<StickyNoteService>();
         services.AddSingleton<WindowManager>();
-        services.AddSingleton<IStickyNoteWindowService, StickyNoteWindowService>();
+
+        // Register with factory to support Lazy<T> and break circular dependency
+        services.AddSingleton<IStickyNoteWindowService>(sp =>
+            new StickyNoteWindowService(
+                sp.GetRequiredService<StickyNoteService>(),
+                sp.GetRequiredService<WindowManager>(),
+                sp.GetRequiredService<IDialogService>(),
+                sp.GetRequiredService<IWindowService>(),
+                new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>())));
+
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
         _serviceProvider = services.BuildServiceProvider();

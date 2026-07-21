@@ -1,3 +1,4 @@
+using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 
 namespace StickyDo.Domain.Repositories;
@@ -154,59 +155,33 @@ public class InMemoryRepository : IStickyNoteRepository, IStickyNoteTaskReposito
 
     private void InitializeSampleData()
     {
-        _notes.Add(new StickyNote
+        var colors = ColorPalette.Colors;
+        var titles = new[]
         {
-            Id = Guid.NewGuid(),
-            Title = "Project Meeting Notes",
-            Status = StickyNoteStatus.Active,
-            CreatedAt = DateTime.UtcNow.AddDays(-1),
-            UpdatedAt = DateTime.UtcNow.AddHours(-2),
-            ColorArgb = 0xFFFFCC07, // Yellow
-            DisplayOrder = 0
-        });
+            "Project Meeting Notes",
+            "Shopping List",
+            "Fix Login Bug",
+            "Code Review: PR #456",
+            "Learn C# 14 Features",
+            "Design System Review",
+            "Database Migration Plan",
+            "Team Retrospective",
+            "API Documentation",
+            "Performance Optimization"
+        };
 
-        _notes.Add(new StickyNote
+        for (int i = 0; i < titles.Length; i++)
         {
-            Id = Guid.NewGuid(),
-            Title = "Shopping List",
-            Status = StickyNoteStatus.Completed,
-            CreatedAt = DateTime.UtcNow.AddDays(-2),
-            UpdatedAt = DateTime.UtcNow.AddHours(-24),
-            ColorArgb = 0xFF00B36F, // Green
-            DisplayOrder = 1
-        });
-
-        _notes.Add(new StickyNote
-        {
-            Id = Guid.NewGuid(),
-            Title = "Fix Login Bug",
-            Status = StickyNoteStatus.Urgent,
-            CreatedAt = DateTime.UtcNow.AddHours(-6),
-            UpdatedAt = DateTime.UtcNow.AddHours(-1),
-            ColorArgb = 0xFFE53935, // Red
-            DisplayOrder = 2
-        });
-
-        _notes.Add(new StickyNote
-        {
-            Id = Guid.NewGuid(),
-            Title = "Code Review: PR #456",
-            Status = StickyNoteStatus.Active,
-            CreatedAt = DateTime.UtcNow.AddDays(-3),
-            UpdatedAt = DateTime.UtcNow.AddMinutes(-30),
-            ColorArgb = 0xFF0066CC, // Blue
-            DisplayOrder = 3
-        });
-
-        _notes.Add(new StickyNote
-        {
-            Id = Guid.NewGuid(),
-            Title = "Learn C# 14 Features",
-            Status = StickyNoteStatus.Active,
-            CreatedAt = DateTime.UtcNow.AddDays(-7),
-            UpdatedAt = DateTime.UtcNow.AddDays(-4),
-            ColorArgb = 0xFFC2185B, // Pink
-            DisplayOrder = 4
-        });
+            _notes.Add(new StickyNote
+            {
+                Id = Guid.NewGuid(),
+                Title = titles[i],
+                Status = (StickyNoteStatus)(i % 4),
+                CreatedAt = DateTime.UtcNow.AddDays(-i),
+                UpdatedAt = DateTime.UtcNow.AddHours(-i),
+                ColorArgb = colors[i % colors.Length],
+                DisplayOrder = i
+            });
+        }
     }
 }
