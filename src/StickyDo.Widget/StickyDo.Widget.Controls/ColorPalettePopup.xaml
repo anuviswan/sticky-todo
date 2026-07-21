@@ -90,8 +90,8 @@
         </Grid>
 
         <!-- Callout Pointer Arrow (Below Palette, pointing down to palette icon) -->
-        <Canvas Height="8" Width="16" HorizontalAlignment="Right" Margin="0,-8,8,0">
-            <Polygon Points="0,0 8,8 16,0" Fill="White" Stroke="#E0E0E0" StrokeThickness="1" StrokeLineJoin="Round"/>
+        <Canvas Height="8" Width="16" HorizontalAlignment="Right" Margin="0,0,8,0">
+            <Polygon Points="0,0 8,8 16,0" Fill="White" Stroke="#D0D0D0" StrokeThickness="1" StrokeLineJoin="Round"/>
         </Canvas>
     </StackPanel>
 </UserControl>
