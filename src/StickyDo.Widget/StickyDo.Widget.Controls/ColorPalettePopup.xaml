@@ -4,29 +4,33 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="100"
-             d:DesignWidth="180"
-             Background="White"
+             d:DesignHeight="160"
+             d:DesignWidth="340"
+             Background="Transparent"
              x:Name="root">
 
-    <Border Background="White" BorderBrush="#CCCCCC" BorderThickness="1">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+    <Grid>
+        <!-- Drop Shadow Border -->
+        <Border Background="White" CornerRadius="12" Margin="0,0,0,12">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="8" ShadowDepth="2" Opacity="0.2" Direction="270"/>
+            </Border.Effect>
+        </Border>
 
+        <!-- Main Content -->
+        <StackPanel Orientation="Vertical">
             <!-- Color Grid: 5 columns x 2 rows for 10 colors -->
-            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="8">
+            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="16,16,16,12">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="5" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <UniformGrid Columns="5" HorizontalAlignment="Center" VerticalAlignment="Top"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Color Button with Checkmark Overlay -->
-                        <Grid Width="32" Height="32" Margin="4">
-                            <!-- Color Button -->
+                        <!-- Circular Color Button with Selection Indicator -->
+                        <Grid Width="56" Height="56" Margin="8" HorizontalAlignment="Center">
+                            <!-- Color Button (Circular) -->
                             <Button x:Name="ColorButton"
                                     Cursor="Hand"
                                     Command="{Binding DataContext.SelectColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -44,7 +48,8 @@
                                                 <ControlTemplate TargetType="Button">
                                                     <Border Background="{TemplateBinding Background}"
                                                             BorderBrush="{TemplateBinding BorderBrush}"
-                                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="28">
                                                         <ContentPresenter/>
                                                     </Border>
                                                 </ControlTemplate>
@@ -52,32 +57,41 @@
                                         </Setter>
                                         <Style.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Opacity" Value="0.7"/>
+                                                <Setter Property="Opacity" Value="0.85"/>
                                             </Trigger>
                                         </Style.Triggers>
                                     </Style>
                                 </Button.Style>
                             </Button>
 
-                            <!-- Checkmark (visible only if color is selected) -->
-                            <Border x:Name="CheckmarkBorder"
-                                    Background="Transparent"
+                            <!-- Selection Indicator: Blue Border + Checkmark -->
+                            <Border x:Name="SelectionIndicator"
+                                    BorderBrush="#2563EB"
+                                    BorderThickness="3"
+                                    CornerRadius="28"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    Width="56"
+                                    Height="56"
                                     Visibility="Collapsed">
                                 <TextBlock x:Name="Checkmark"
                                            Text="✓"
-                                           FontSize="18"
+                                           FontSize="28"
                                            FontWeight="Bold"
                                            Foreground="White"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           Opacity="0.95"/>
+                                           Effect="{StaticResource CheckmarkShadow}"/>
                             </Border>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </Grid>
-    </Border>
+
+            <!-- Callout Pointer (Triangle pointing down) -->
+            <Canvas Height="12" HorizontalAlignment="Center">
+                <Polygon Points="0,0 12,12 24,0" Fill="White" Canvas.Left="0" Canvas.Top="0"/>
+            </Canvas>
+        </StackPanel>
+    </Grid>
 </UserControl>
