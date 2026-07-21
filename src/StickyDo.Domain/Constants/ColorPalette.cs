@@ -13,16 +13,16 @@ public static class ColorPalette
     /// </summary>
     public static readonly uint[] Colors =
     [
-        0xFF7EBAE8,  // Blue - Professional, trustworthy (Default)
-        0xFFC1E8A3,  // Green - Fresh, calm
-        0xFFC5E0F0,  // Light Blue - Serene, focused
-        0xFFF5D8E8,  // Pink - Creative, attention-grabbing
-        0xFFE0D8F0,  // Purple - Imaginative, thoughtful
-        0xFFE8E8E8,  // Gray - Neutral, balanced
-        0xFF5A5A5A,  // Dark Gray - Professional, formal
-        0xFFC0E8E0,  // Cyan - Clear, modern
-        0xFFF5D8B0,  // Orange - Energetic, warm
-        0xFFF8D0C0,  // Salmon - Soft, warm
+        0xFFfff4ad,  // Yellow - Warm, inviting (Default)
+        0xFFd4f8d4,  // Green - Fresh, calm
+        0xFFe2f1ff,  // Light Blue - Serene, focused
+        0xFFf2d5f2,  // Pink - Creative, attention-grabbing
+        0xFFe3d3fd,  // Purple - Imaginative, thoughtful
+        0xFFf1f1f1,  // Gray - Neutral, balanced
+        0xFF4c4c4c,  // Dark Gray - Professional, formal
+        0xFFc1f3f1,  // Cyan - Clear, modern
+        0xFFffdfb8,  // Orange - Energetic, warm
+        0xFFffcfcf,  // Red - Alert, important
     ];
 
     /// <summary>
@@ -38,16 +38,16 @@ public static class ColorPalette
     {
         return color switch
         {
-            0xFF7EBAE8 => "Blue",
-            0xFFC1E8A3 => "Green",
-            0xFFC5E0F0 => "Light Blue",
-            0xFFF5D8E8 => "Pink",
-            0xFFE0D8F0 => "Purple",
-            0xFFE8E8E8 => "Gray",
-            0xFF5A5A5A => "Dark Gray",
-            0xFFC0E8E0 => "Cyan",
-            0xFFF5D8B0 => "Orange",
-            0xFFF8D0C0 => "Salmon",
+            0xFFfff4ad => "Yellow",
+            0xFFd4f8d4 => "Green",
+            0xFFe2f1ff => "Light Blue",
+            0xFFf2d5f2 => "Pink",
+            0xFFe3d3fd => "Purple",
+            0xFFf1f1f1 => "Gray",
+            0xFF4c4c4c => "Dark Gray",
+            0xFFc1f3f1 => "Cyan",
+            0xFFffdfb8 => "Orange",
+            0xFFffcfcf => "Red",
             _ => "Unknown"
         };
     }
