@@ -10,8 +10,6 @@ public static class AppStrings
     public const string ErrorStatus = "Error";
     public const string JustNow = "Just now";
     public const string ZeroNotes = "0 notes";
-    public const string SingleNote = "1 note";
-    public const string MultipleNotesFormat = "{0} notes";
     public const string ErrorLoadingNotes = "Error loading notes: {0}";
     public const string LoadErrorTitle = "Load Error";
 }

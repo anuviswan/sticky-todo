@@ -37,15 +37,6 @@ public class WindowManager
     /// </summary>
     public void SaveWindowState()
     {
-        try
-        {
-            // TODO: Implement window state persistence to app settings in Phase 2
-            // For now, this is a placeholder for the feature
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error saving window state: {ex.Message}");
-        }
     }
 
     /// <summary>
@@ -53,15 +44,6 @@ public class WindowManager
     /// </summary>
     public void RestoreWindowState()
     {
-        try
-        {
-            // TODO: Implement window state restoration from app settings in Phase 2
-            // For now, use default state
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error restoring window state: {ex.Message}");
-        }
     }
 
     /// <summary>
@@ -72,8 +54,6 @@ public class WindowManager
         if (_window == null)
             return;
 
-        // TODO: Implement screen bounds checking in Phase 2
-        // For now, just ensure basic positioning
         if (_window.Left < 0)
             _window.Left = 0;
         if (_window.Top < 0)

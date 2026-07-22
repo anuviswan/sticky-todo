@@ -133,13 +133,4 @@ public partial class StickyNoteListItem : UserControl
         }
     }
 
-    private void OnMouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-    {
-        // Future: Add hover effects here
-    }
-
-    private void OnMouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-    {
-        // Future: Remove hover effects here
-    }
 }
