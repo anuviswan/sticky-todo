@@ -20,8 +20,7 @@
 
         <!-- Main content area -->
         <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="0.5"
-                Margin="8,0,8,0" Padding="12" CornerRadius="6"
-                MouseEnter="OnMouseEnter" MouseLeave="OnMouseLeave">
+                Margin="8,0,8,0" Padding="12" CornerRadius="6">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
