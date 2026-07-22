@@ -58,9 +58,9 @@ public class FileBasedRepositoryTests
         // Act
         await repository.InitializeAsync();
 
-        // Assert - should initialize with sample data on first run
+        // Assert - should start empty on first run (no sample data)
         var notes = await repository.GetAllAsync();
-        Assert.IsTrue(notes.Count() > 0);
+        Assert.AreEqual(0, notes.Count());
     }
 
     [TestMethod]

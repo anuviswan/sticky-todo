@@ -118,21 +118,31 @@ public static class AtomicFileWriter
                 return;
 
             var tmpFiles = Directory.GetFiles(dataDir, "*.json.tmp", SearchOption.TopDirectoryOnly);
+            System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Found {tmpFiles.Length} orphaned .tmp files to clean up");
+
+            int cleanedCount = 0;
             foreach (var tmpFile in tmpFiles)
             {
                 try
                 {
                     File.Delete(tmpFile);
+                    System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Deleted orphaned file: {Path.GetFileName(tmpFile)}");
+                    cleanedCount++;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore cleanup errors; they may be in-use
+                    System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Failed to delete {Path.GetFileName(tmpFile)}: {ex.Message}");
                 }
             }
+
+            if (cleanedCount > 0)
+            {
+                System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Cleaned up {cleanedCount} orphaned temporary files");
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore directory errors
+            System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Error during cleanup: {ex.Message}");
         }
     }
 

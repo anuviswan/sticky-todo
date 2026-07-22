@@ -93,11 +93,8 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             }
         }
 
-        // Initialize sample data if no notes exist (first run)
-        if (_notes.Count == 0)
-        {
-            await InitializeSampleDataAsync();
-        }
+        // Don't initialize sample data - start with empty list on first run
+        // User can create their own notes from scratch
 
         // Mark all loaded notes as clean
         _dirtyTracker.ClearAll();
@@ -351,6 +348,31 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     /// Checks if any note has unsaved changes.
     /// </summary>
     public bool HasPendingChanges => _dirtyTracker.HasPendingChanges;
+
+    /// <summary>
+    /// Clears all persisted notes by deleting all note files from disk.
+    /// Useful for resetting the application to a clean state.
+    /// </summary>
+    public void ClearAllPersistedNotes()
+    {
+        var noteFiles = PersistencePathHelper.GetAllNoteFiles().ToList();
+        foreach (var filePath in noteFiles)
+        {
+            try
+            {
+                File.Delete(filePath);
+                System.Diagnostics.Debug.WriteLine($"Deleted: {Path.GetFileName(filePath)}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to delete {Path.GetFileName(filePath)}: {ex.Message}");
+            }
+        }
+
+        _notes.Clear();
+        _dirtyTracker.ClearAll();
+        System.Diagnostics.Debug.WriteLine($"Cleared all {noteFiles.Count} persisted notes");
+    }
 
     // ========== Private Helpers ==========
 
