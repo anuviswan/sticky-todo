@@ -180,6 +180,8 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         _notes.Add(note);
         _dirtyTracker.MarkAsDirty(note.Id);
 
+        System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Created note '{note.Title}' (ID: {note.Id}), marked dirty. Total notes: {_notes.Count}");
+
         return Task.FromResult(note.Id);
     }
 
@@ -321,10 +323,23 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     {
         var note = _notes.FirstOrDefault(n => n.Id == noteId);
         if (note == null)
+        {
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Cannot save note {noteId} - not found in memory");
             return;
+        }
 
-        await SaveNoteToDiskAsync(note);
-        _dirtyTracker.MarkAsClean(noteId);
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Saving note '{note.Title}' (ID: {noteId})...");
+            await SaveNoteToDiskAsync(note);
+            _dirtyTracker.MarkAsClean(noteId);
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Successfully saved note '{note.Title}'");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: ERROR saving note '{note.Title}': {ex.Message}");
+            throw;
+        }
     }
 
     /// <summary>
@@ -333,6 +348,13 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     public async Task SaveAllDirtyNotesAsync()
     {
         var dirtyNoteIds = _dirtyTracker.GetDirtyNotes().ToList();
+        if (dirtyNoteIds.Count == 0)
+        {
+            System.Diagnostics.Debug.WriteLine("FileBasedRepository: No dirty notes to save");
+            return;
+        }
+
+        System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Saving {dirtyNoteIds.Count} dirty note(s)...");
         foreach (var noteId in dirtyNoteIds)
         {
             await SaveNoteAsync(noteId);
