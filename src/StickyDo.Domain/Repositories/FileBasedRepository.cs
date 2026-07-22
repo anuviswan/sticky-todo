@@ -33,14 +33,27 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
 
         try
         {
+            System.Diagnostics.Debug.WriteLine("FileBasedRepository: Ensuring data directory exists...");
             PersistencePathHelper.EnsureDataDirectoryExists();
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Data directory ready at {PersistencePathHelper.GetDataDirectoryPath()}");
+
+            System.Diagnostics.Debug.WriteLine("FileBasedRepository: Cleaning up orphaned temporary files...");
             AtomicFileWriter.CleanupOrphanedTemporaryFiles();
+
+            System.Diagnostics.Debug.WriteLine("FileBasedRepository: Loading notes from disk...");
             await LoadAllNotesFromDiskAsync();
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Loaded {_notes.Count} notes from disk");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new InvalidOperationException(
+                $"No permission to access the data directory. Ensure you have write access to %LocalAppData%\\StickyTODO. Error: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository initialization error: {ex}");
             throw new InvalidOperationException(
-                "Failed to initialize file-based repository. See inner exception for details.", ex);
+                $"Failed to initialize file-based repository: {ex.Message}", ex);
         }
 
         _initialized = true;

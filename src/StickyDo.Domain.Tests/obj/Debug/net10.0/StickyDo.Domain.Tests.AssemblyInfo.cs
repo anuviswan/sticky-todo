@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StickyDo.Domain.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+98eaedcc10c344ed454461db0789f104f04bd97b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7569d76c120d4f1d83b076e096e4d240753a804d")]
 [assembly: System.Reflection.AssemblyProductAttribute("StickyDo.Domain.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StickyDo.Domain.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

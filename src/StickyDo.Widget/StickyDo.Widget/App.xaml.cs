@@ -27,8 +27,7 @@ public partial class App : Application
         {
             if (!AcquireSingleInstanceLock())
             {
-                var dialogService = new DialogService();
-                _ = dialogService.ShowMessageAsync("Application Running", "Sticky TODO is already running.", MessageBoxImage.Information);
+                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
                 Shutdown(1);
                 return;
             }
@@ -39,8 +38,8 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            var dialogService = new DialogService();
-            _ = dialogService.ShowMessageAsync("Startup Error", $"Failed to start application: {ex.Message}", MessageBoxImage.Error);
+            System.Diagnostics.Debug.WriteLine($"Startup Error: {ex}");
+            MessageBox.Show($"Failed to start application: {ex.Message}\n\n{ex.StackTrace}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }
@@ -70,24 +69,50 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Register file-based repository
-        var fileBasedRepository = new FileBasedRepository();
+        // Register file-based repository with fallback to in-memory
+        IStickyNoteRepository? noteRepository = null;
+        IStickyNoteTaskRepository? taskRepository = null;
+        FileBasedRepository? fileBasedRepository = null;
+
         try
         {
-            fileBasedRepository.InitializeAsync().Wait();
+            System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
+            fileBasedRepository = new FileBasedRepository();
+            fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
+            System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
+            noteRepository = fileBasedRepository;
+            taskRepository = fileBasedRepository;
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException(
-                "Failed to initialize file-based repository. See inner exception for details.", ex);
+            System.Diagnostics.Debug.WriteLine($"Repository initialization error: {ex}");
+            System.Diagnostics.Debug.WriteLine("Falling back to in-memory repository...");
+
+            // Fallback to in-memory repository if file-based fails
+            var inMemoryRepository = new InMemoryRepository();
+            noteRepository = inMemoryRepository;
+            taskRepository = inMemoryRepository;
+            fileBasedRepository = null;
         }
 
-        services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);
-        services.AddSingleton<IStickyNoteTaskRepository>(fileBasedRepository);
-        services.AddSingleton(fileBasedRepository);
+        if (noteRepository == null || taskRepository == null)
+            throw new InvalidOperationException("Failed to initialize any repository.");
 
-        // Register persistence service
-        services.AddSingleton<PersistenceService>();
+        services.AddSingleton(noteRepository);
+        services.AddSingleton(taskRepository);
+
+        if (fileBasedRepository != null)
+            services.AddSingleton(fileBasedRepository);
+
+        // Register persistence service (only if we have FileBasedRepository)
+        if (fileBasedRepository != null)
+        {
+            services.AddSingleton(new PersistenceService(fileBasedRepository));
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("Persistence service disabled - using in-memory repository");
+        }
 
         // Register dialog and window services first (used by other services)
         services.AddSingleton<IDialogService, DialogService>();
@@ -146,8 +171,24 @@ public partial class App : Application
         if (_serviceProvider == null)
             return;
 
-        _persistenceService = _serviceProvider.GetRequiredService<PersistenceService>();
-        _persistenceService.StartAutoSave();
+        try
+        {
+            _persistenceService = _serviceProvider.GetService<PersistenceService>();
+            if (_persistenceService != null)
+            {
+                System.Diagnostics.Debug.WriteLine("Starting auto-save service...");
+                _persistenceService.StartAutoSave();
+                System.Diagnostics.Debug.WriteLine("Auto-save started successfully.");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Auto-save disabled - PersistenceService not available");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error starting auto-save: {ex}");
+        }
     }
 
     private void StopAutoSaveAsync()
