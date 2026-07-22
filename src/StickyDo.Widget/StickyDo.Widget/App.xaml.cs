@@ -15,6 +15,7 @@ namespace StickyDo.Widget;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+    private PersistenceService? _persistenceService;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
 
@@ -34,6 +35,7 @@ public partial class App : Application
 
             ConfigureServices();
             InitializeMainWindow();
+            StartAutoSave();
         }
         catch (Exception ex)
         {
@@ -45,6 +47,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        StopAutoSaveAsync();
         _serviceProvider?.Dispose();
         ReleaseSingleInstanceLock();
         base.OnExit(e);
@@ -67,10 +70,24 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Register repositories - InMemoryRepository implements both interfaces
-        var inMemoryRepository = new InMemoryRepository();
-        services.AddSingleton<IStickyNoteRepository>(inMemoryRepository);
-        services.AddSingleton<IStickyNoteTaskRepository>(inMemoryRepository);
+        // Register file-based repository
+        var fileBasedRepository = new FileBasedRepository();
+        try
+        {
+            fileBasedRepository.InitializeAsync().Wait();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                "Failed to initialize file-based repository. See inner exception for details.", ex);
+        }
+
+        services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);
+        services.AddSingleton<IStickyNoteTaskRepository>(fileBasedRepository);
+        services.AddSingleton(fileBasedRepository);
+
+        // Register persistence service
+        services.AddSingleton<PersistenceService>();
 
         // Register dialog and window services first (used by other services)
         services.AddSingleton<IDialogService, DialogService>();
@@ -122,5 +139,30 @@ public partial class App : Application
         mainWindow.Show();
 
         _ = viewModel.LoadNotesAsync();
+    }
+
+    private void StartAutoSave()
+    {
+        if (_serviceProvider == null)
+            return;
+
+        _persistenceService = _serviceProvider.GetRequiredService<PersistenceService>();
+        _persistenceService.StartAutoSave();
+    }
+
+    private void StopAutoSaveAsync()
+    {
+        if (_persistenceService == null)
+            return;
+
+        try
+        {
+            _persistenceService.StopAutoSaveAsync().Wait(TimeSpan.FromSeconds(5));
+            _persistenceService.SaveAllDirtyNotesAsync().Wait(TimeSpan.FromSeconds(5));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error during shutdown persistence: {ex}");
+        }
     }
 }
