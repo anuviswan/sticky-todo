@@ -10,20 +10,14 @@ namespace StickyDo.Widget;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
 
+        // Set DataContext from injected ViewModel
+        DataContext = viewModel;
+
         // Attach behaviors for window-specific operations
         MainWindowBehavior.AttachToWindow(this);
-    }
-
-    /// <summary>
-    /// Sets the view model for this window.
-    /// Child views bind to their ViewModels via XAML DataContext bindings.
-    /// </summary>
-    public void SetViewModel(MainWindowViewModel viewModel)
-    {
-        DataContext = viewModel;
     }
 }

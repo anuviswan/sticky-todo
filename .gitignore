@@ -5,6 +5,12 @@ src/StickyDo.Domain/bin*
 src/StickyDo.Domain/obj
 src/StickyDo.Domain/obj/*
 
+src/StickyDo.Domain.Tests/bin
+src/StickyDo.Domain.Tests/bin/*
+
+src/StickyDo.Domain.Tests/obj
+src/StickyDo.Domain.Tests/obj/*
+
 src/StickyDo.Widget/StickyDo.Widget/bin
 src/StickyDo.Widget/StickyDo.Widget/bin/*
 

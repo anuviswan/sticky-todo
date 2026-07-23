@@ -15,6 +15,7 @@ namespace StickyDo.Widget;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+    private PersistenceService? _persistenceService;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
 
@@ -26,25 +27,26 @@ public partial class App : Application
         {
             if (!AcquireSingleInstanceLock())
             {
-                var dialogService = new DialogService();
-                _ = dialogService.ShowMessageAsync("Application Running", "Sticky TODO is already running.", MessageBoxImage.Information);
+                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
                 Shutdown(1);
                 return;
             }
 
             ConfigureServices();
             InitializeMainWindow();
+            StartAutoSave();
         }
         catch (Exception ex)
         {
-            var dialogService = new DialogService();
-            _ = dialogService.ShowMessageAsync("Startup Error", $"Failed to start application: {ex.Message}", MessageBoxImage.Error);
+            System.Diagnostics.Debug.WriteLine($"Startup Error: {ex}");
+            MessageBox.Show($"Failed to start application: {ex.Message}\n\n{ex.StackTrace}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        StopAutoSaveAsync();
         _serviceProvider?.Dispose();
         ReleaseSingleInstanceLock();
         base.OnExit(e);
@@ -67,10 +69,19 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Register repositories - InMemoryRepository implements both interfaces
-        var inMemoryRepository = new InMemoryRepository();
-        services.AddSingleton<IStickyNoteRepository>(inMemoryRepository);
-        services.AddSingleton<IStickyNoteTaskRepository>(inMemoryRepository);
+        // Initialize file-based repository
+        System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
+        var fileBasedRepository = new FileBasedRepository();
+        fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
+        System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
+
+        // Register repositories using interface-based pattern
+        services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);
+        services.AddSingleton<IStickyNoteTaskRepository>(fileBasedRepository);
+        services.AddSingleton(fileBasedRepository);
+
+        // Register persistence service
+        services.AddSingleton(new PersistenceService(fileBasedRepository));
 
         // Register dialog and window services first (used by other services)
         services.AddSingleton<IDialogService, DialogService>();
@@ -91,6 +102,13 @@ public partial class App : Application
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
+        // Register view models
+        services.AddSingleton<NotesListViewModel>();
+        services.AddSingleton<MainWindowViewModel>();
+
+        // Register MainWindow with service provider
+        services.AddSingleton<MainWindow>();
+
         _serviceProvider = services.BuildServiceProvider();
     }
 
@@ -99,7 +117,7 @@ public partial class App : Application
         if (_serviceProvider == null)
             throw new InvalidOperationException("Services not configured");
 
-        var mainWindow = new MainWindow();
+        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
         windowManager.SetMainWindow(mainWindow);
 
@@ -109,18 +127,54 @@ public partial class App : Application
             windowService.SetMainWindow(mainWindow);
         }
 
-        var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
-        var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
-        var dialogService = _serviceProvider.GetRequiredService<IDialogService>();
-        var mainWindowService = _serviceProvider.GetRequiredService<IWindowService>();
-
-        var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
-        var viewModel = new MainWindowViewModel(mainWindowService, notesListViewModel);
-
-        mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;
         mainWindow.Show();
 
-        _ = viewModel.LoadNotesAsync();
+        // Load notes - DataContext is set in MainWindow constructor
+        if (mainWindow.DataContext is MainWindowViewModel viewModel)
+        {
+            _ = viewModel.LoadNotesAsync();
+        }
+    }
+
+    private void StartAutoSave()
+    {
+        if (_serviceProvider == null)
+            return;
+
+        try
+        {
+            _persistenceService = _serviceProvider.GetService<PersistenceService>();
+            if (_persistenceService != null)
+            {
+                System.Diagnostics.Debug.WriteLine("Starting auto-save service...");
+                _persistenceService.StartAutoSave();
+                System.Diagnostics.Debug.WriteLine("Auto-save started successfully.");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Auto-save disabled - PersistenceService not available");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error starting auto-save: {ex}");
+        }
+    }
+
+    private void StopAutoSaveAsync()
+    {
+        if (_persistenceService == null)
+            return;
+
+        try
+        {
+            _persistenceService.StopAutoSaveAsync().Wait(TimeSpan.FromSeconds(5));
+            _persistenceService.SaveAllDirtyNotesAsync().Wait(TimeSpan.FromSeconds(5));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error during shutdown persistence: {ex}");
+        }
     }
 }
