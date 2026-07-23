@@ -282,21 +282,13 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Checks if there are unsaved changes and prompts the user if needed.
+    /// Auto-saves any unsaved changes without prompting the user.
     /// </summary>
     public async Task<bool> CanCloseWindowAsync()
     {
-        if (!_hasUnsavedChanges)
-            return true;
-
-        var result = await _dialogService.ShowConfirmationAsync(
-            "Unsaved Changes",
-            "You have unsaved changes. Do you want to save before closing?");
-
-        if (result)
+        if (_hasUnsavedChanges)
         {
             await SaveAsync();
-            return true;
         }
 
         return true;
