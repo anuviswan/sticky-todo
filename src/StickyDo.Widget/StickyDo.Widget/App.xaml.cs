@@ -102,6 +102,10 @@ public partial class App : Application
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
+        // Register view models
+        services.AddSingleton<NotesListViewModel>();
+        services.AddSingleton<MainWindowViewModel>();
+
         // Register MainWindow with service provider
         services.AddSingleton<MainWindow>();
 

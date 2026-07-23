@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using StickyDo.Domain.Models;
 
 namespace StickyDo.Domain.Serialization;
 
@@ -37,8 +36,6 @@ public static class JsonSerializationOptions
             Converters =
             {
                 new JsonStringEnumConverter(),
-                new StickyNoteJsonConverter(),
-                new StickyNoteTaskJsonConverter(),
             }
         };
 

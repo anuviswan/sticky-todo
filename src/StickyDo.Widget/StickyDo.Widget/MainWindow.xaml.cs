@@ -1,8 +1,6 @@
 using System.Windows;
-using StickyDo.Domain.Services;
 using StickyDo.Widget.ViewModels;
 using StickyDo.Widget.Behaviors;
-using StickyDo.Widget.Interfaces;
 
 namespace StickyDo.Widget;
 
@@ -12,17 +10,12 @@ namespace StickyDo.Widget;
 /// </summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(StickyNoteService stickyNoteService, IStickyNoteWindowService noteWindowService,
-        IDialogService dialogService, IWindowService windowService)
+    public MainWindow(MainWindowViewModel viewModel)
     {
         InitializeComponent();
 
-        // Create view models with injected services
-        var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
-        var mainWindowViewModel = new MainWindowViewModel(windowService, notesListViewModel);
-
-        // Set DataContext
-        DataContext = mainWindowViewModel;
+        // Set DataContext from injected ViewModel
+        DataContext = viewModel;
 
         // Attach behaviors for window-specific operations
         MainWindowBehavior.AttachToWindow(this);
