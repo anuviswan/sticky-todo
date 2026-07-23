@@ -6,7 +6,8 @@ namespace StickyDo.Domain.Serialization;
 
 /// <summary>
 /// Custom JSON converter for StickyNote serialization and deserialization.
-/// Handles proper conversion of Guid, DateTime, and nested collections.
+/// Justification: Provides explicit control over property serialization format, null handling,
+/// and type safety for nested collections. Ensures consistent format across persistence layers.
 /// </summary>
 public class StickyNoteJsonConverter : JsonConverter<StickyNote>
 {

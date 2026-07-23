@@ -69,50 +69,19 @@ public partial class App : Application
     {
         var services = new ServiceCollection();
 
-        // Register file-based repository with fallback to in-memory
-        IStickyNoteRepository? noteRepository = null;
-        IStickyNoteTaskRepository? taskRepository = null;
-        FileBasedRepository? fileBasedRepository = null;
+        // Initialize file-based repository
+        System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
+        var fileBasedRepository = new FileBasedRepository();
+        fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
+        System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
 
-        try
-        {
-            System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
-            fileBasedRepository = new FileBasedRepository();
-            fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
-            System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
-            noteRepository = fileBasedRepository;
-            taskRepository = fileBasedRepository;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Repository initialization error: {ex}");
-            System.Diagnostics.Debug.WriteLine("Falling back to in-memory repository...");
+        // Register repositories using interface-based pattern
+        services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);
+        services.AddSingleton<IStickyNoteTaskRepository>(fileBasedRepository);
+        services.AddSingleton(fileBasedRepository);
 
-            // Fallback to in-memory repository if file-based fails
-            var inMemoryRepository = new InMemoryRepository();
-            noteRepository = inMemoryRepository;
-            taskRepository = inMemoryRepository;
-            fileBasedRepository = null;
-        }
-
-        if (noteRepository == null || taskRepository == null)
-            throw new InvalidOperationException("Failed to initialize any repository.");
-
-        services.AddSingleton(noteRepository);
-        services.AddSingleton(taskRepository);
-
-        if (fileBasedRepository != null)
-            services.AddSingleton(fileBasedRepository);
-
-        // Register persistence service (only if we have FileBasedRepository)
-        if (fileBasedRepository != null)
-        {
-            services.AddSingleton(new PersistenceService(fileBasedRepository));
-        }
-        else
-        {
-            System.Diagnostics.Debug.WriteLine("Persistence service disabled - using in-memory repository");
-        }
+        // Register persistence service
+        services.AddSingleton(new PersistenceService(fileBasedRepository));
 
         // Register dialog and window services first (used by other services)
         services.AddSingleton<IDialogService, DialogService>();

@@ -1,3 +1,6 @@
+using System.Text.Json;
+using StickyDo.Domain.Models;
+using StickyDo.Domain.Serialization;
 using StickyDo.Domain.Utilities;
 
 namespace StickyDo.Domain.Repositories;
@@ -60,22 +63,16 @@ public static class AtomicFileWriter
     {
         try
         {
-            using (var fileStream = new FileStream(
+            using var fileStream = new FileStream(
                 tmpFilePath,
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
                 4096,
-                FileOptions.WriteThrough | FileOptions.SequentialScan))
-            {
-                using (var writer = new StreamWriter(fileStream))
-                {
-                    await writer.WriteAsync(content);
-                    await writer.FlushAsync();
-                    fileStream.Flush();
-                    fileStream.Flush(flushToDisk: true);
-                }
-            }
+                FileOptions.WriteThrough | FileOptions.SequentialScan);
+            using var writer = new StreamWriter(fileStream);
+            await writer.WriteAsync(content);
+            await writer.FlushAsync();
         }
         catch (Exception ex)
         {
@@ -93,9 +90,6 @@ public static class AtomicFileWriter
         {
             try
             {
-                if (File.Exists(targetPath))
-                    File.Delete(targetPath);
-
                 File.Move(tmpPath, targetPath, overwrite: true);
             }
             catch (Exception ex)
@@ -106,8 +100,11 @@ public static class AtomicFileWriter
     }
 
     /// <summary>
-    /// Cleans up orphaned temporary files.
-    /// Called on startup and on write failures.
+    /// Cleans up orphaned temporary files intelligently:
+    /// 1. If .json exists and is newer than or equal to .tmp, delete .tmp
+    /// 2. If .json exists but .tmp is invalid JSON, delete .tmp
+    /// 3. If no .json exists and .tmp is valid JSON, promote .tmp to .json
+    /// 4. If no .json exists and .tmp is invalid JSON, delete .tmp
     /// </summary>
     public static void CleanupOrphanedTemporaryFiles()
     {
@@ -120,29 +117,96 @@ public static class AtomicFileWriter
             var tmpFiles = Directory.GetFiles(dataDir, "*.json.tmp", SearchOption.TopDirectoryOnly);
             System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Found {tmpFiles.Length} orphaned .tmp files to clean up");
 
+            var serializerOptions = JsonSerializationOptions.Default;
             int cleanedCount = 0;
+            int promotedCount = 0;
+
             foreach (var tmpFile in tmpFiles)
             {
                 try
                 {
-                    File.Delete(tmpFile);
-                    System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Deleted orphaned file: {Path.GetFileName(tmpFile)}");
-                    cleanedCount++;
+                    var originalFile = tmpFile[..^4]; // Remove .tmp extension
+                    bool isValidJson = IsValidJsonFile(tmpFile, serializerOptions);
+
+                    if (File.Exists(originalFile))
+                    {
+                        // Original file exists: delete .tmp only if original is newer/equal or .tmp is invalid
+                        var originalUpdatedAt = GetStickyNoteUpdatedAt(originalFile, serializerOptions);
+                        var tmpUpdatedAt = GetStickyNoteUpdatedAt(tmpFile, serializerOptions);
+
+                        if (!isValidJson || (originalUpdatedAt.HasValue && tmpUpdatedAt.HasValue && originalUpdatedAt >= tmpUpdatedAt))
+                        {
+                            File.Delete(tmpFile);
+                            System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Deleted outdated/invalid .tmp file: {Path.GetFileName(tmpFile)}");
+                            cleanedCount++;
+                        }
+                    }
+                    else if (isValidJson)
+                    {
+                        // No original file but .tmp is valid JSON: promote it
+                        File.Move(tmpFile, originalFile, overwrite: false);
+                        System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Promoted .tmp file to original: {Path.GetFileName(originalFile)}");
+                        promotedCount++;
+                    }
+                    else
+                    {
+                        // No original file and .tmp is invalid: delete it
+                        File.Delete(tmpFile);
+                        System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Deleted invalid .tmp file: {Path.GetFileName(tmpFile)}");
+                        cleanedCount++;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Failed to delete {Path.GetFileName(tmpFile)}: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Failed to process {Path.GetFileName(tmpFile)}: {ex.Message}");
                 }
             }
 
-            if (cleanedCount > 0)
+            if (cleanedCount > 0 || promotedCount > 0)
             {
-                System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Cleaned up {cleanedCount} orphaned temporary files");
+                System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Cleanup complete - deleted: {cleanedCount}, promoted: {promotedCount}");
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"AtomicFileWriter: Error during cleanup: {ex.Message}");
+        }
+    }
+
+    private static bool IsValidJsonFile(string filePath, JsonSerializerOptions options)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+                return false;
+
+            var content = File.ReadAllText(filePath);
+            if (string.IsNullOrWhiteSpace(content))
+                return false;
+
+            JsonSerializer.Deserialize<StickyNote>(content, options);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static DateTime? GetStickyNoteUpdatedAt(string filePath, JsonSerializerOptions options)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+                return null;
+
+            var content = File.ReadAllText(filePath);
+            var note = JsonSerializer.Deserialize<StickyNote>(content, options);
+            return note?.UpdatedAt;
+        }
+        catch
+        {
+            return null;
         }
     }
 
