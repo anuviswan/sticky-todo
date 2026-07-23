@@ -1,8 +1,9 @@
 namespace StickyDo.Domain.Utilities;
 
 /// <summary>
-/// Utility for managing persistence paths and directories for the application.
-/// Ensures consistent location for storing note data across platforms.
+/// Centralizes all persistence path logic for consistent file management.
+/// Justification: Encapsulates path construction, enables future platform-specific paths,
+/// and provides single source of truth for file naming conventions (GUIDs, extensions, etc).
 /// </summary>
 public static class PersistencePathHelper
 {

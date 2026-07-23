@@ -102,6 +102,9 @@ public partial class App : Application
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
+        // Register MainWindow with service provider
+        services.AddSingleton<MainWindow>();
+
         _serviceProvider = services.BuildServiceProvider();
     }
 
@@ -110,7 +113,7 @@ public partial class App : Application
         if (_serviceProvider == null)
             throw new InvalidOperationException("Services not configured");
 
-        var mainWindow = new MainWindow();
+        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
         windowManager.SetMainWindow(mainWindow);
 
@@ -120,19 +123,14 @@ public partial class App : Application
             windowService.SetMainWindow(mainWindow);
         }
 
-        var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
-        var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
-        var dialogService = _serviceProvider.GetRequiredService<IDialogService>();
-        var mainWindowService = _serviceProvider.GetRequiredService<IWindowService>();
-
-        var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
-        var viewModel = new MainWindowViewModel(mainWindowService, notesListViewModel);
-
-        mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;
         mainWindow.Show();
 
-        _ = viewModel.LoadNotesAsync();
+        // Load notes - DataContext is set in MainWindow constructor
+        if (mainWindow.DataContext is MainWindowViewModel viewModel)
+        {
+            _ = viewModel.LoadNotesAsync();
+        }
     }
 
     private void StartAutoSave()

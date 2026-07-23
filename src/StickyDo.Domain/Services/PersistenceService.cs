@@ -63,6 +63,9 @@ public class PersistenceService : IAsyncDisposable
 
     /// <summary>
     /// Background task that periodically saves dirty notes.
+    /// Design: Timer runs continuously but only saves if HasPendingChanges is true.
+    /// This is more efficient than starting/stopping timer on demand since timer overhead is minimal
+    /// (PeriodicTimer every 3s just checks a boolean flag). Avoids complexity of change notifications.
     /// </summary>
     private async Task RunAutoSaveLoopAsync(CancellationToken cancellationToken)
     {
