@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 
@@ -21,6 +23,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private readonly IWindowService _windowService;
     private readonly IStickyNoteCreationService _creationService;
     private readonly PersistenceService _persistenceService;
+    private readonly IMessenger _messenger;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
     private CancellationTokenSource? _idleTimerCts;
@@ -77,18 +80,21 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         IDialogService dialogService,
         IWindowService windowService,
         IStickyNoteCreationService creationService,
-        PersistenceService persistenceService)
+        PersistenceService persistenceService,
+        IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
+        ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
         _dialogService = dialogService;
         _windowService = windowService;
         _creationService = creationService;
         _persistenceService = persistenceService;
+        _messenger = messenger;
     }
 
     /// <summary>
@@ -283,6 +289,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 _currentNote.Status);
 
             _hasUnsavedChanges = false;
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)
         {
@@ -355,6 +362,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
             IsColorPickerOpen = false;
             OnEditingStarted();
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)
         {

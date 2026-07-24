@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
@@ -69,6 +70,7 @@ public static class ServiceConfiguration
     {
         services.AddSingleton<StickyNoteService>();
         services.AddSingleton<WindowManager>();
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
     }
 
     /// <summary>
@@ -92,7 +94,8 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<IDialogService>(),
                 sp.GetRequiredService<IWindowService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
-                sp.GetRequiredService<PersistenceService>()));
+                sp.GetRequiredService<PersistenceService>(),
+                sp.GetRequiredService<IMessenger>()));
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
         services.AddSingleton<MainWindow>();

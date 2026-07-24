@@ -11,22 +11,35 @@
         <conv:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid x:Name="ContentGrid">
-        <!-- Notes List -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#F5F5F5"
+        <!-- Notes Board: notes grouped into color-based columns -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#F5F5F5"
                       x:Name="NotesScrollViewer"
-                      Visibility="{Binding FilteredNotes, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}}">
-            <ItemsControl x:Name="NotesItemsControl"
-                          ItemsSource="{Binding FilteredNotes, Mode=OneWay}"
+                      Visibility="{Binding Columns, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}}">
+            <ItemsControl x:Name="ColumnsItemsControl"
+                          ItemsSource="{Binding Columns, Mode=OneWay}"
                           Padding="24,16,24,16">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <local:StickyNoteListItem
-                            Title="{Binding Title, Mode=OneWay}"
-                            NoteContent="{Binding Content, Mode=OneWay}"
-                            Status="{Binding Status, Mode=OneWay}"
-                            LastModified="{Binding LastModified, Mode=OneWay}"
-                            ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
-                            Margin="0,0,0,12"/>
+                        <StackPanel Width="300" Margin="0,0,20,0">
+                            <ItemsControl ItemsSource="{Binding Notes, Mode=OneWay}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <local:StickyNoteListItem
+                                            Title="{Binding Title, Mode=OneWay}"
+                                            NoteContent="{Binding Content, Mode=OneWay}"
+                                            Status="{Binding Status, Mode=OneWay}"
+                                            LastModified="{Binding LastModified, Mode=OneWay}"
+                                            ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
+                                            Margin="0,0,0,12"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -34,7 +47,7 @@
 
         <!-- Empty State -->
         <StackPanel x:Name="EmptyStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center"
-                    Visibility="{Binding FilteredNotes, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}, ConverterParameter=inverted}"
+                    Visibility="{Binding Columns, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}, ConverterParameter=inverted}"
                     Background="#F5F5F5">
             <TextBlock Text="📋" FontSize="64" Foreground="#D0D0D0"
                        HorizontalAlignment="Center" Margin="0,0,0,16"/>

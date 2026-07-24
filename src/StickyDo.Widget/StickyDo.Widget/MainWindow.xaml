@@ -7,7 +7,6 @@
         xmlns:controls="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
         xmlns:views="clr-namespace:StickyDo.Widget.Views"
         xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
-        xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
         Title="StickyDo" Height="700" Width="1200"
         Background="White" ResizeMode="CanResizeWithGrip"
@@ -58,8 +57,23 @@
                                      Background="Transparent"
                                      BorderThickness="0"
                                      Foreground="#666666"
-                                     Text="{Binding NotesListViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                     behaviors:SearchBoxBehavior.IsSearchBox="True"/>
+                                     Text="{Binding NotesListViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Search Placeholder (shown when query is empty; does not touch bound text) -->
+                            <TextBlock Grid.Column="1" Text="Search tasks, notes, or labels..."
+                                       FontSize="13" Foreground="#999999"
+                                       VerticalAlignment="Center" IsHitTestVisible="False">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding NotesListViewModel.SearchQuery}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </Grid>
                     </Border>
 

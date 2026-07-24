@@ -1,4 +1,5 @@
 using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Utilities;
@@ -19,6 +20,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     private readonly IWindowService _windowService;
     private readonly Lazy<IStickyNoteCreationService> _creationService;
     private readonly PersistenceService _persistenceService;
+    private readonly IMessenger _messenger;
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
@@ -26,7 +28,8 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         IDialogService dialogService,
         IWindowService windowService,
         Lazy<IStickyNoteCreationService> creationService,
-        PersistenceService persistenceService)
+        PersistenceService persistenceService,
+        IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowManager);
@@ -34,12 +37,14 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
+        ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
         _windowManager = windowManager;
         _dialogService = dialogService;
         _windowService = windowService;
         _creationService = creationService;
         _persistenceService = persistenceService;
+        _messenger = messenger;
     }
 
     /// <summary>
@@ -68,7 +73,8 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                 _dialogService,
                 _windowService,
                 _creationService.Value,
-                _persistenceService);
+                _persistenceService,
+                _messenger);
 
             await viewModel.LoadNoteAsync(noteId);
 
