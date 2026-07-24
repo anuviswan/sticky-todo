@@ -15,7 +15,6 @@ namespace StickyDo.Widget;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
-    private PersistenceService? _persistenceService;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
 
@@ -34,7 +33,6 @@ public partial class App : Application
 
             ConfigureServices();
             InitializeMainWindow();
-            StartAutoSave();
         }
         catch (Exception ex)
         {
@@ -46,7 +44,7 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        StopAutoSaveAsync();
+        StopAutoSaveAndSaveAllAsync();
         _serviceProvider?.Dispose();
         ReleaseSingleInstanceLock();
         base.OnExit(e);
@@ -98,7 +96,8 @@ public partial class App : Application
                 sp.GetRequiredService<WindowManager>(),
                 sp.GetRequiredService<IDialogService>(),
                 sp.GetRequiredService<IWindowService>(),
-                new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>())));
+                new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
+                sp.GetRequiredService<PersistenceService>()));
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
 
@@ -137,40 +136,20 @@ public partial class App : Application
         }
     }
 
-    private void StartAutoSave()
+    private void StopAutoSaveAndSaveAllAsync()
     {
         if (_serviceProvider == null)
             return;
 
         try
         {
-            _persistenceService = _serviceProvider.GetService<PersistenceService>();
-            if (_persistenceService != null)
+            var persistenceService = _serviceProvider.GetService<PersistenceService>();
+            if (persistenceService != null)
             {
-                System.Diagnostics.Debug.WriteLine("Starting auto-save service...");
-                _persistenceService.StartAutoSave();
-                System.Diagnostics.Debug.WriteLine("Auto-save started successfully.");
+                persistenceService.StopAutoSaveAsync().Wait(TimeSpan.FromSeconds(5));
+                persistenceService.SaveAllDirtyNotesAsync().Wait(TimeSpan.FromSeconds(5));
+                System.Diagnostics.Debug.WriteLine("All pending changes saved before exit.");
             }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine("Auto-save disabled - PersistenceService not available");
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Error starting auto-save: {ex}");
-        }
-    }
-
-    private void StopAutoSaveAsync()
-    {
-        if (_persistenceService == null)
-            return;
-
-        try
-        {
-            _persistenceService.StopAutoSaveAsync().Wait(TimeSpan.FromSeconds(5));
-            _persistenceService.SaveAllDirtyNotesAsync().Wait(TimeSpan.FromSeconds(5));
         }
         catch (Exception ex)
         {

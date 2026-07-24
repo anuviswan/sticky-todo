@@ -4,7 +4,7 @@ namespace StickyDo.Domain.Services;
 
 /// <summary>
 /// Orchestrates automatic persistence of sticky notes.
-/// Handles 3-second debounced auto-save and graceful shutdown saves.
+/// Auto-save timer only runs when the user is actively editing.
 /// </summary>
 public class PersistenceService : IAsyncDisposable
 {
@@ -21,7 +21,8 @@ public class PersistenceService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Starts the auto-save background task with the configured debounce interval.
+    /// Starts the auto-save background task when user begins editing.
+    /// If already running, does nothing.
     /// </summary>
     public void StartAutoSave()
     {
@@ -31,16 +32,18 @@ public class PersistenceService : IAsyncDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         _autoSaveTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(_debounceMs));
         _autoSaveTask = RunAutoSaveLoopAsync(_cancellationTokenSource.Token);
+        System.Diagnostics.Debug.WriteLine("Auto-save timer started - user is editing");
     }
 
     /// <summary>
-    /// Stops the auto-save background task gracefully.
+    /// Stops the auto-save background task when user finishes editing.
     /// </summary>
     public async Task StopAutoSaveAsync()
     {
         if (_autoSaveTimer == null)
             return;
 
+        System.Diagnostics.Debug.WriteLine("Auto-save timer stopped - user finished editing");
         _cancellationTokenSource?.Cancel();
         await (_autoSaveTask ?? Task.CompletedTask);
 
@@ -49,7 +52,7 @@ public class PersistenceService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Saves all notes with unsaved changes to disk.
+    /// Saves all notes with unsaved changes to disk immediately.
     /// </summary>
     public async Task SaveAllDirtyNotesAsync()
     {
@@ -62,10 +65,8 @@ public class PersistenceService : IAsyncDisposable
     public bool HasPendingChanges => _repository.HasPendingChanges;
 
     /// <summary>
-    /// Background task that periodically saves dirty notes.
-    /// Design: Timer runs continuously but only saves if HasPendingChanges is true.
-    /// This is more efficient than starting/stopping timer on demand since timer overhead is minimal
-    /// (PeriodicTimer every 3s just checks a boolean flag). Avoids complexity of change notifications.
+    /// Background task that periodically saves dirty notes while user is editing.
+    /// Only runs when StartAutoSave() is called; stops when StopAutoSaveAsync() is called.
     /// </summary>
     private async Task RunAutoSaveLoopAsync(CancellationToken cancellationToken)
     {
@@ -85,7 +86,6 @@ public class PersistenceService : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            // Log error but don't crash; auto-save will retry on next interval
             System.Diagnostics.Debug.WriteLine($"Auto-save error: {ex}");
         }
     }
