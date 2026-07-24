@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Configuration;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
@@ -65,50 +65,7 @@ public partial class App : Application
 
     private void ConfigureServices()
     {
-        var services = new ServiceCollection();
-
-        // Initialize file-based repository
-        System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
-        var fileBasedRepository = new FileBasedRepository();
-        fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
-        System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
-
-        // Register repositories using interface-based pattern
-        services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);
-        services.AddSingleton<IStickyNoteTaskRepository>(fileBasedRepository);
-        services.AddSingleton(fileBasedRepository);
-
-        // Register persistence service
-        services.AddSingleton(new PersistenceService(fileBasedRepository));
-
-        // Register dialog and window services first (used by other services)
-        services.AddSingleton<IDialogService, DialogService>();
-        services.AddSingleton<IWindowService, WindowService>();
-
-        // Register core services
-        services.AddSingleton<StickyNoteService>();
-        services.AddSingleton<WindowManager>();
-
-        // Register with factory to support Lazy<T> and break circular dependency
-        services.AddSingleton<IStickyNoteWindowService>(sp =>
-            new StickyNoteWindowService(
-                sp.GetRequiredService<StickyNoteService>(),
-                sp.GetRequiredService<WindowManager>(),
-                sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<IWindowService>(),
-                new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
-                sp.GetRequiredService<PersistenceService>()));
-
-        services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
-
-        // Register view models
-        services.AddSingleton<NotesListViewModel>();
-        services.AddSingleton<MainWindowViewModel>();
-
-        // Register MainWindow with service provider
-        services.AddSingleton<MainWindow>();
-
-        _serviceProvider = services.BuildServiceProvider();
+        _serviceProvider = ServiceConfiguration.ConfigureServices();
     }
 
     private void InitializeMainWindow()
