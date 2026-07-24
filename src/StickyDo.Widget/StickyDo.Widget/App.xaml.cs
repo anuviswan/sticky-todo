@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
-using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Configuration;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
@@ -26,8 +26,7 @@ public partial class App : Application
         {
             if (!AcquireSingleInstanceLock())
             {
-                var dialogService = new DialogService();
-                _ = dialogService.ShowMessageAsync("Application Running", "Sticky TODO is already running.", MessageBoxImage.Information);
+                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
                 Shutdown(1);
                 return;
             }
@@ -37,14 +36,15 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            var dialogService = new DialogService();
-            _ = dialogService.ShowMessageAsync("Startup Error", $"Failed to start application: {ex.Message}", MessageBoxImage.Error);
+            System.Diagnostics.Debug.WriteLine($"Startup Error: {ex}");
+            MessageBox.Show($"Failed to start application: {ex.Message}\n\n{ex.StackTrace}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        StopAutoSaveAndSaveAllAsync();
         _serviceProvider?.Dispose();
         ReleaseSingleInstanceLock();
         base.OnExit(e);
@@ -65,33 +65,7 @@ public partial class App : Application
 
     private void ConfigureServices()
     {
-        var services = new ServiceCollection();
-
-        // Register repositories - InMemoryRepository implements both interfaces
-        var inMemoryRepository = new InMemoryRepository();
-        services.AddSingleton<IStickyNoteRepository>(inMemoryRepository);
-        services.AddSingleton<IStickyNoteTaskRepository>(inMemoryRepository);
-
-        // Register dialog and window services first (used by other services)
-        services.AddSingleton<IDialogService, DialogService>();
-        services.AddSingleton<IWindowService, WindowService>();
-
-        // Register core services
-        services.AddSingleton<StickyNoteService>();
-        services.AddSingleton<WindowManager>();
-
-        // Register with factory to support Lazy<T> and break circular dependency
-        services.AddSingleton<IStickyNoteWindowService>(sp =>
-            new StickyNoteWindowService(
-                sp.GetRequiredService<StickyNoteService>(),
-                sp.GetRequiredService<WindowManager>(),
-                sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<IWindowService>(),
-                new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>())));
-
-        services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
-
-        _serviceProvider = services.BuildServiceProvider();
+        _serviceProvider = ServiceConfiguration.ConfigureServices();
     }
 
     private void InitializeMainWindow()
@@ -99,7 +73,7 @@ public partial class App : Application
         if (_serviceProvider == null)
             throw new InvalidOperationException("Services not configured");
 
-        var mainWindow = new MainWindow();
+        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
         windowManager.SetMainWindow(mainWindow);
 
@@ -109,18 +83,34 @@ public partial class App : Application
             windowService.SetMainWindow(mainWindow);
         }
 
-        var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
-        var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
-        var dialogService = _serviceProvider.GetRequiredService<IDialogService>();
-        var mainWindowService = _serviceProvider.GetRequiredService<IWindowService>();
-
-        var notesListViewModel = new NotesListViewModel(stickyNoteService, noteWindowService, dialogService);
-        var viewModel = new MainWindowViewModel(mainWindowService, notesListViewModel);
-
-        mainWindow.SetViewModel(viewModel);
         MainWindow = mainWindow;
         mainWindow.Show();
 
-        _ = viewModel.LoadNotesAsync();
+        // Load notes - DataContext is set in MainWindow constructor
+        if (mainWindow.DataContext is MainWindowViewModel viewModel)
+        {
+            _ = viewModel.LoadNotesAsync();
+        }
+    }
+
+    private void StopAutoSaveAndSaveAllAsync()
+    {
+        if (_serviceProvider == null)
+            return;
+
+        try
+        {
+            var persistenceService = _serviceProvider.GetService<PersistenceService>();
+            if (persistenceService != null)
+            {
+                persistenceService.StopAutoSaveAsync().Wait(TimeSpan.FromSeconds(5));
+                persistenceService.SaveAllDirtyNotesAsync().Wait(TimeSpan.FromSeconds(5));
+                System.Diagnostics.Debug.WriteLine("All pending changes saved before exit.");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error during shutdown persistence: {ex}");
+        }
     }
 }

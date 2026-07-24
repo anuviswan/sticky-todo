@@ -20,8 +20,11 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private readonly IDialogService _dialogService;
     private readonly IWindowService _windowService;
     private readonly IStickyNoteCreationService _creationService;
+    private readonly PersistenceService _persistenceService;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
+    private CancellationTokenSource? _idleTimerCts;
+    private const int IdleTimeoutMs = 5000;
 
     [ObservableProperty]
     private Guid noteId;
@@ -65,6 +68,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         {
             _currentNote.Title = value;
             _hasUnsavedChanges = true;
+            OnEditingStarted();
         }
     }
 
@@ -72,16 +76,19 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         StickyNoteService stickyNoteService,
         IDialogService dialogService,
         IWindowService windowService,
-        IStickyNoteCreationService creationService)
+        IStickyNoteCreationService creationService,
+        PersistenceService persistenceService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
+        ArgumentNullException.ThrowIfNull(persistenceService);
         _stickyNoteService = stickyNoteService;
         _dialogService = dialogService;
         _windowService = windowService;
         _creationService = creationService;
+        _persistenceService = persistenceService;
     }
 
     /// <summary>
@@ -201,6 +208,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
                 _hasUnsavedChanges = true;
                 NewTaskTitle = string.Empty;
+                OnEditingStarted();
             }
         }
         catch (Exception ex)
@@ -222,6 +230,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         {
             await _stickyNoteService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
             _hasUnsavedChanges = true;
+            OnEditingStarted();
         }
         catch (Exception ex)
         {
@@ -247,6 +256,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             {
                 Tasks.Remove(taskVm);
                 _hasUnsavedChanges = true;
+                OnEditingStarted();
             }
         }
         catch (Exception ex)
@@ -282,21 +292,13 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Checks if there are unsaved changes and prompts the user if needed.
+    /// Auto-saves any unsaved changes without prompting the user.
     /// </summary>
     public async Task<bool> CanCloseWindowAsync()
     {
-        if (!_hasUnsavedChanges)
-            return true;
-
-        var result = await _dialogService.ShowConfirmationAsync(
-            "Unsaved Changes",
-            "You have unsaved changes. Do you want to save before closing?");
-
-        if (result)
+        if (_hasUnsavedChanges)
         {
             await SaveAsync();
-            return true;
         }
 
         return true;
@@ -352,6 +354,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 color);
 
             IsColorPickerOpen = false;
+            OnEditingStarted();
         }
         catch (Exception ex)
         {
@@ -370,6 +373,42 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         if (canClose)
         {
             _windowService.RequestClose();
+        }
+    }
+
+    /// <summary>
+    /// Called whenever user starts editing. Starts auto-save timer and resets idle timeout.
+    /// </summary>
+    private void OnEditingStarted()
+    {
+        _persistenceService.StartAutoSave();
+        ResetIdleTimer();
+    }
+
+    /// <summary>
+    /// Resets the idle timer. If user stops editing for IdleTimeoutMs, auto-save stops.
+    /// </summary>
+    private void ResetIdleTimer()
+    {
+        _idleTimerCts?.Cancel();
+        _idleTimerCts = new CancellationTokenSource();
+        _ = StopAutoSaveAfterIdleAsync(_idleTimerCts.Token);
+    }
+
+    /// <summary>
+    /// Stops auto-save after idle timeout with no new edits.
+    /// </summary>
+    private async Task StopAutoSaveAfterIdleAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(IdleTimeoutMs, cancellationToken);
+            await _persistenceService.StopAutoSaveAsync();
+            System.Diagnostics.Debug.WriteLine("Auto-save stopped due to inactivity");
+        }
+        catch (OperationCanceledException)
+        {
+            // Timer was reset due to new edit - this is expected
         }
     }
 
