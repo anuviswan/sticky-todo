@@ -356,6 +356,37 @@ public class FileBasedRepositoryTests
     }
 
     [TestMethod]
+    public async Task UpdateAsync_PersistsWindowBounds()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+
+        var note = new StickyNote { Id = Guid.NewGuid(), Title = "Positioned" };
+        await repository.CreateAsync(note);
+
+        var updatedNote = new StickyNote
+        {
+            Id = note.Id,
+            Title = "Positioned",
+            WindowLeft = 100,
+            WindowTop = 200,
+            WindowWidth = 300,
+            WindowHeight = 400
+        };
+
+        // Act
+        await repository.UpdateAsync(updatedNote);
+
+        // Assert
+        var retrieved = await repository.GetByIdAsync(note.Id);
+        Assert.AreEqual(100, retrieved!.WindowLeft);
+        Assert.AreEqual(200, retrieved.WindowTop);
+        Assert.AreEqual(300, retrieved.WindowWidth);
+        Assert.AreEqual(400, retrieved.WindowHeight);
+    }
+
+    [TestMethod]
     public async Task GetByIdAsync_ReturnsNullForNonExistentNote()
     {
         // Arrange

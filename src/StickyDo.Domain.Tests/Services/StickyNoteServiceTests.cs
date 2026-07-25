@@ -127,4 +127,34 @@ public class StickyNoteServiceTests
         // Act
         await service.SetNotePinnedAsync(Guid.NewGuid(), true);
     }
+
+    [TestMethod]
+    public async Task UpdateNoteWindowBoundsAsync_PersistsPositionAndSize()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Act
+        await service.UpdateNoteWindowBoundsAsync(noteId, 120, 240, 320, 400);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(120, note!.WindowLeft);
+        Assert.AreEqual(240, note.WindowTop);
+        Assert.AreEqual(320, note.WindowWidth);
+        Assert.AreEqual(400, note.WindowHeight);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public async Task UpdateNoteWindowBoundsAsync_ThrowsOnEmptyId()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        await service.UpdateNoteWindowBoundsAsync(Guid.Empty, 0, 0, 300, 400);
+    }
 }

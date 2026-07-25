@@ -201,6 +201,10 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             existing.Tasks = note.Tasks;
             existing.IsOpened = note.IsOpened;
             existing.IsPinned = note.IsPinned;
+            existing.WindowLeft = note.WindowLeft;
+            existing.WindowTop = note.WindowTop;
+            existing.WindowWidth = note.WindowWidth;
+            existing.WindowHeight = note.WindowHeight;
 
             _dirtyTracker.MarkAsDirty(note.Id);
         }
