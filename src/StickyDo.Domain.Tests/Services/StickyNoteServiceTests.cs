@@ -157,4 +157,43 @@ public class StickyNoteServiceTests
         // Act
         await service.UpdateNoteWindowBoundsAsync(Guid.Empty, 0, 0, 300, 400);
     }
+
+    [TestMethod]
+    public async Task DeleteNoteAsync_RemovesNote()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Act
+        await service.DeleteNoteAsync(noteId);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.IsNull(note);
+    }
+
+    [TestMethod]
+    public async Task DeleteNoteAsync_DoesNotThrowWhenNoteNotFound()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act & Assert (no exception expected - deleting a non-existent note is a no-op)
+        await service.DeleteNoteAsync(Guid.NewGuid());
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public async Task DeleteNoteAsync_ThrowsOnEmptyId()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        await service.DeleteNoteAsync(Guid.Empty);
+    }
 }

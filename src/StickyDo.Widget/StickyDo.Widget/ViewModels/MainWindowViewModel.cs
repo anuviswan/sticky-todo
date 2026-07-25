@@ -1,9 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Widget.Interfaces;
-using StickyDo.Widget.Resources;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
+using AppResources = StickyDo.Widget.Resources.Resources;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -32,13 +32,13 @@ public partial class MainWindowViewModel : ObservableObject
     private NavigationView selectedNavView = NavigationView.AllNotes;
 
     [ObservableProperty]
-    private string syncStatus = AppStrings.SyncedStatus;
+    private string syncStatus = AppResources.SyncedStatus;
 
     [ObservableProperty]
-    private string noteCountDisplay = AppStrings.ZeroNotes;
+    private string noteCountDisplay = AppResources.ZeroNotes;
 
     [ObservableProperty]
-    private string lastSyncDisplay = AppStrings.JustNow;
+    private string lastSyncDisplay = AppResources.JustNow;
 
     public MainWindowViewModel(
         IWindowService mainWindowService,
@@ -58,14 +58,14 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            SyncStatus = AppStrings.SyncingStatus;
+            SyncStatus = AppResources.SyncingStatus;
             await NotesListViewModel.LoadNotesAsync();
-            SyncStatus = AppStrings.SyncedStatus;
-            LastSyncDisplay = AppStrings.JustNow;
+            SyncStatus = AppResources.SyncedStatus;
+            LastSyncDisplay = AppResources.JustNow;
         }
         catch (Exception ex)
         {
-            SyncStatus = AppStrings.ErrorStatus;
+            SyncStatus = AppResources.ErrorStatus;
             LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
         }
     }

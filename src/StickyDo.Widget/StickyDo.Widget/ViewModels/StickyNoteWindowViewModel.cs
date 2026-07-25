@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -9,6 +10,7 @@ using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
+using AppResources = StickyDo.Widget.Resources.Resources;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -68,6 +70,12 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool isPinned;
 
+    [ObservableProperty]
+    private bool isMoreOptionsOpen = false;
+
+    [ObservableProperty]
+    private MoreOptionsPopupViewModel moreOptionsPopupViewModel = new();
+
     partial void OnTitleChanged(string value)
     {
         if (_currentNote != null)
@@ -98,6 +106,8 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         _creationService = creationService;
         _persistenceService = persistenceService;
         _messenger = messenger;
+
+        MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync);
     }
 
     /// <summary>
@@ -404,6 +414,64 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(TogglePinAsync));
             await _dialogService.ShowMessageAsync("Pin Error", $"Error updating pin state: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Opens the "more options" menu (Notes List / Delete Note).
+    /// </summary>
+    [RelayCommand]
+    public void OpenMoreOptions()
+    {
+        IsMoreOptionsOpen = true;
+    }
+
+    /// <summary>
+    /// Closes the "more options" menu without taking any action.
+    /// </summary>
+    [RelayCommand]
+    public void CloseMoreOptions()
+    {
+        IsMoreOptionsOpen = false;
+    }
+
+    /// <summary>
+    /// Prompts for confirmation, then permanently deletes the current note: removes it from
+    /// storage, notifies other view models (e.g. the notes list) via the messenger, and closes
+    /// this window. Bypasses the pinned/unsaved-changes close path since a deleted note must
+    /// never be re-saved to disk.
+    /// </summary>
+    [RelayCommand]
+    public async Task DeleteNoteAsync()
+    {
+        if (_currentNote is null)
+            return;
+
+        IsMoreOptionsOpen = false;
+
+        // Let the "more options" Popup finish closing before showing a modal dialog. Popup
+        // (StaysOpen="False") races its own dismissal against a synchronous MessageBox.Show
+        // triggered from a button inside it, and the dialog can end up created but never
+        // actually visible/interactive if shown before the popup teardown is done.
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
+
+        var confirmed = await _dialogService.ShowConfirmationAsync(
+            AppResources.DeleteNote_ConfirmTitle,
+            AppResources.DeleteNote_ConfirmMessage);
+
+        if (!confirmed)
+            return;
+
+        try
+        {
+            await _stickyNoteService.DeleteNoteAsync(_currentNote.Id);
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Deleted));
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(DeleteNoteAsync));
+            await _dialogService.ShowMessageAsync("Delete Error", $"Error deleting note: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 

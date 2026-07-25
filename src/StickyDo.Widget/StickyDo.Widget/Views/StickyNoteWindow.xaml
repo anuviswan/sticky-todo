@@ -1,9 +1,9 @@
-<Window x:Class="StickyDo.Widget.StickyNoteWindow"
+<Window x:Class="StickyDo.Widget.Views.StickyNoteWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:StickyDo.Widget"
+        xmlns:local="clr-namespace:StickyDo.Widget.Views"
         xmlns:controls="clr-namespace:StickyDo.Widget;assembly=StickyDo.Widget.Controls"
         xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
@@ -13,7 +13,8 @@
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip"
         ShowInTaskbar="False"
-        Topmost="False">
+        Topmost="False"
+        behaviors:WindowBehavior.IsEnabled="True">
 
     <Border Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="1">
         <Border.Style>
@@ -285,30 +286,54 @@
                     </Button>
 
                     <!-- Menu Icon -->
-                    <Button Grid.Column="3"
+                    <Button x:Name="MenuButton"
+                            Grid.Column="3"
                             Width="20"
                             Height="20"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
                             VerticalAlignment="Center"
-                            ToolTip="More options">
+                            ToolTip="More options"
+                            Command="{Binding OpenMoreOptionsCommand}">
                         <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#000000"/>
                     </Button>
                 </Grid>
             </Border>
 
             <!-- Color Picker Popup -->
+            <!-- StaysOpen="True": dismissal is handled entirely by PopupDismissBehavior below.
+                 WPF's own StaysOpen="False" auto-dismiss can swallow the first real mouse click
+                 on the popup's own content (a well-known WPF quirk: it treats that click-down as
+                 "outside" and closes the popup before the child button's Click, which fires on
+                 mouse-up, ever runs), so it must stay disabled here. -->
             <Popup x:Name="ColorPickerPopup"
                    IsOpen="{Binding IsColorPickerOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=PaletteButton}"
                    Placement="Bottom"
                    AllowsTransparency="True"
                    PopupAnimation="Fade"
-                   StaysOpen="False"
+                   StaysOpen="True"
                    HorizontalOffset="-80"
-                   VerticalOffset="8">
+                   VerticalOffset="8"
+                   behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseColorPickerCommand}"
+                   behaviors:PopupDismissBehavior.ToggleButton="{Binding ElementName=PaletteButton}">
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
+            </Popup>
+
+            <!-- More Options Popup (see StaysOpen note above) -->
+            <Popup x:Name="MoreOptionsFlyout"
+                   IsOpen="{Binding IsMoreOptionsOpen, Mode=TwoWay}"
+                   PlacementTarget="{Binding ElementName=MenuButton}"
+                   Placement="Top"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade"
+                   StaysOpen="True"
+                   HorizontalOffset="-130"
+                   VerticalOffset="-8"
+                   behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseMoreOptionsCommand}"
+                   behaviors:PopupDismissBehavior.ToggleButton="{Binding ElementName=MenuButton}">
+                <local:MoreOptionsPopup DataContext="{Binding MoreOptionsPopupViewModel}"/>
             </Popup>
         </Grid>
     </Border>

@@ -4,6 +4,7 @@ using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Utilities;
 using StickyDo.Widget.ViewModels;
+using StickyDo.Widget.Views;
 
 namespace StickyDo.Widget.Services;
 
@@ -122,9 +123,15 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
                     try
                     {
-                        await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
-                        await _stickyNoteService.UpdateNoteWindowBoundsAsync(noteId, window.Left, window.Top, window.Width, window.Height);
-                        await _persistenceService.SaveAllDirtyNotesAsync();
+                        // The note may have just been permanently deleted (e.g. via the Delete Note
+                        // menu action), in which case it no longer exists to update - skip re-persisting it.
+                        var noteStillExists = await _stickyNoteService.GetNoteByIdAsync(noteId) is not null;
+                        if (noteStillExists)
+                        {
+                            await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
+                            await _stickyNoteService.UpdateNoteWindowBoundsAsync(noteId, window.Left, window.Top, window.Width, window.Height);
+                            await _persistenceService.SaveAllDirtyNotesAsync();
+                        }
                     }
                     catch (Exception ex)
                     {
