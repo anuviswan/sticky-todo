@@ -94,9 +94,13 @@ public partial class NotesListViewModel : ObservableObject
             var noteNumber = await _stickyNoteService.GetNextNoteNumberAsync();
             var noteTitle = $"Note {noteNumber}";
             var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle);
-            _messenger.Send(new StickyNoteChangedMessage(noteId, StickyNoteChangeType.Created));
 
+            // Open the window first - it adds the default "First Task" during load. Notifying
+            // the list only after that completes ensures its card reflects that task, instead
+            // of caching a stale zero-task snapshot that nothing ever refreshes afterward.
             await _windowService.OpenNoteWindowAsync(noteId);
+
+            _messenger.Send(new StickyNoteChangedMessage(noteId, StickyNoteChangeType.Created));
         }
         catch (Exception ex)
         {
