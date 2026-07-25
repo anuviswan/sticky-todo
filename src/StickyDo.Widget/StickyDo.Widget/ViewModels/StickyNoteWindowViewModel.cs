@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -447,6 +448,12 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             return;
 
         IsMoreOptionsOpen = false;
+
+        // Let the "more options" Popup finish closing before showing a modal dialog. Popup
+        // (StaysOpen="False") races its own dismissal against a synchronous MessageBox.Show
+        // triggered from a button inside it, and the dialog can end up created but never
+        // actually visible/interactive if shown before the popup teardown is done.
+        await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
         var confirmed = await _dialogService.ShowConfirmationAsync(
             AppResources.DeleteNote_ConfirmTitle,

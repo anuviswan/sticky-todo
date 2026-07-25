@@ -302,13 +302,18 @@
             </Border>
 
             <!-- Color Picker Popup -->
+            <!-- StaysOpen="True": dismissal is handled entirely by PopupDismissBehavior below.
+                 WPF's own StaysOpen="False" auto-dismiss can swallow the first real mouse click
+                 on the popup's own content (a well-known WPF quirk: it treats that click-down as
+                 "outside" and closes the popup before the child button's Click, which fires on
+                 mouse-up, ever runs), so it must stay disabled here. -->
             <Popup x:Name="ColorPickerPopup"
                    IsOpen="{Binding IsColorPickerOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=PaletteButton}"
                    Placement="Bottom"
                    AllowsTransparency="True"
                    PopupAnimation="Fade"
-                   StaysOpen="False"
+                   StaysOpen="True"
                    HorizontalOffset="-80"
                    VerticalOffset="8"
                    behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseColorPickerCommand}"
@@ -316,14 +321,14 @@
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
             </Popup>
 
-            <!-- More Options Popup -->
+            <!-- More Options Popup (see StaysOpen note above) -->
             <Popup x:Name="MoreOptionsFlyout"
                    IsOpen="{Binding IsMoreOptionsOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=MenuButton}"
                    Placement="Top"
                    AllowsTransparency="True"
                    PopupAnimation="Fade"
-                   StaysOpen="False"
+                   StaysOpen="True"
                    HorizontalOffset="-130"
                    VerticalOffset="-8"
                    behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseMoreOptionsCommand}"
