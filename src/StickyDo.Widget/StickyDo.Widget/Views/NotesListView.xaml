@@ -15,34 +15,55 @@
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#F5F5F5"
                       x:Name="NotesScrollViewer"
                       Visibility="{Binding Columns, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}}">
-            <ItemsControl x:Name="ColumnsItemsControl"
-                          ItemsSource="{Binding Columns, Mode=OneWay}"
-                          Padding="24,16,24,16">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Width="300" Margin="0,0,20,0">
-                            <ItemsControl ItemsSource="{Binding Notes, Mode=OneWay}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <local:StickyNoteListItem
-                                            Title="{Binding Title, Mode=OneWay}"
-                                            NoteContent="{Binding Content, Mode=OneWay}"
-                                            Status="{Binding Status, Mode=OneWay}"
-                                            LastModified="{Binding LastModified, Mode=OneWay}"
-                                            ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
-                                            Margin="0,0,0,12"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel Orientation="Horizontal" Margin="24,16,24,16">
+                <ItemsControl x:Name="ColumnsItemsControl"
+                              ItemsSource="{Binding Columns, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Width="220" Margin="0,0,20,0">
+                                <ItemsControl ItemsSource="{Binding Notes, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:StickyNoteListItem
+                                                Title="{Binding Title, Mode=OneWay}"
+                                                HasTasks="{Binding HasTasks, Mode=OneWay}"
+                                                FirstTaskTitle="{Binding FirstTaskTitle, Mode=OneWay}"
+                                                FirstTaskCompleted="{Binding FirstTaskCompleted, Mode=OneWay}"
+                                                RemainingTaskCount="{Binding RemainingTaskCount, Mode=OneWay}"
+                                                ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
+                                                Margin="0,0,0,12"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Create New Note tile -->
+                <Button Command="{Binding CreateNoteCommand}" Cursor="Hand"
+                        Width="220" Height="90" VerticalAlignment="Top"
+                        Background="Transparent" BorderThickness="0" Padding="0">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Rectangle Stroke="#B0B0B0" StrokeThickness="1.5" StrokeDashArray="4 3"
+                                           RadiusX="10" RadiusY="10" Fill="Transparent"/>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="&#128221;" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                        <TextBlock Text="Create New Note" FontSize="12" Foreground="#666666" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
         </ScrollViewer>
 
         <!-- Empty State -->

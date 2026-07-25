@@ -138,14 +138,23 @@ public partial class NotesListViewModel : ObservableObject
         }
     }
 
-    private static StickyNoteItemViewModel ToItemViewModel(StickyNote note) => new()
+    private static StickyNoteItemViewModel ToItemViewModel(StickyNote note)
     {
-        Id = note.Id,
-        Title = note.Title,
-        Status = note.Status.ToString(),
-        LastModified = note.UpdatedAt,
-        ColorArgb = note.ColorArgb ?? ColorPalette.GetDefaultColor()
-    };
+        var orderedTasks = note.Tasks.OrderBy(t => t.Order).ToList();
+        var firstTask = orderedTasks.FirstOrDefault();
+
+        return new StickyNoteItemViewModel
+        {
+            Id = note.Id,
+            Title = note.Title,
+            LastModified = note.UpdatedAt,
+            ColorArgb = note.ColorArgb ?? ColorPalette.GetDefaultColor(),
+            HasTasks = firstTask is not null,
+            FirstTaskTitle = firstTask?.Title ?? string.Empty,
+            FirstTaskCompleted = firstTask?.IsCompleted ?? false,
+            RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1)
+        };
+    }
 
     /// <summary>
     /// Applies the search filter and regroups the results into color-based columns,

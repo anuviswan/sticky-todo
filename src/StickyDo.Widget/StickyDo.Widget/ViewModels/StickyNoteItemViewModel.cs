@@ -14,11 +14,20 @@ public partial class StickyNoteItemViewModel : ObservableObject
     private string title = string.Empty;
 
     [ObservableProperty]
-    private string status = "Active";
-
-    [ObservableProperty]
     private DateTime lastModified = DateTime.UtcNow;
 
     [ObservableProperty]
     private uint colorArgb = 0xFFFFCC07;
+
+    [ObservableProperty]
+    private bool hasTasks;
+
+    [ObservableProperty]
+    private string firstTaskTitle = string.Empty;
+
+    [ObservableProperty]
+    private bool firstTaskCompleted;
+
+    [ObservableProperty]
+    private int remainingTaskCount;
 }
