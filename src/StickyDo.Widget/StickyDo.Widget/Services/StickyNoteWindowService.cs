@@ -89,7 +89,8 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                 // Close the window itself (not the shared main window) when the user requests it
                 viewModel.CloseRequested += (s, e) => window.Close();
 
-                // Restore window state if available
+                // Restore window state: prefer the in-memory state from this session, then fall
+                // back to the position persisted on disk from the last time this note was closed.
                 var savedState = _windowManager.GetSavedNoteWindowState(noteId);
                 if (savedState != null)
                 {
@@ -100,7 +101,18 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                 }
                 else
                 {
-                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    var note = await _stickyNoteService.GetNoteByIdAsync(noteId);
+                    if (note?.WindowLeft is { } left && note.WindowTop is { } top)
+                    {
+                        window.Left = left;
+                        window.Top = top;
+                        window.Width = note.WindowWidth ?? window.Width;
+                        window.Height = note.WindowHeight ?? window.Height;
+                    }
+                    else
+                    {
+                        window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                    }
                 }
 
                 window.Closed += async (s, e) =>
@@ -111,6 +123,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                     try
                     {
                         await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
+                        await _stickyNoteService.UpdateNoteWindowBoundsAsync(noteId, window.Left, window.Top, window.Width, window.Height);
                         await _persistenceService.SaveAllDirtyNotesAsync();
                     }
                     catch (Exception ex)

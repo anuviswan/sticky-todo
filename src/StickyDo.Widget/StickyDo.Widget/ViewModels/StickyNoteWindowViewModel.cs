@@ -65,6 +65,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<uint> availableColors = new(ColorPalette.Colors);
 
+    [ObservableProperty]
+    private bool isPinned;
+
     partial void OnTitleChanged(string value)
     {
         if (_currentNote != null)
@@ -141,6 +144,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             NoteId = _currentNote.Id;
             Title = _currentNote.Title;
             CurrentColor = _currentNote.ColorArgb ?? ColorPalette.GetDefaultColor();
+            IsPinned = _currentNote.IsPinned;
 
             Tasks.Clear();
 
@@ -379,11 +383,66 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Closes the window after checking for unsaved changes.
+    /// Toggles the pinned state of the note and persists it. A pinned note cannot be
+    /// moved by dragging or closed until it is unpinned.
+    /// </summary>
+    [RelayCommand]
+    public async Task TogglePinAsync()
+    {
+        if (_currentNote is null)
+            return;
+
+        try
+        {
+            IsPinned = !IsPinned;
+            _currentNote.IsPinned = IsPinned;
+
+            await _stickyNoteService.SetNotePinnedAsync(_currentNote.Id, IsPinned);
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(TogglePinAsync));
+            await _dialogService.ShowMessageAsync("Pin Error", $"Error updating pin state: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Records the floating window's current position/size and schedules a debounced save via
+    /// the existing auto-save timer, the same way title/task edits are persisted. Called by the
+    /// hosting window whenever it's moved or resized, so the note reopens in the same spot even
+    /// if the application is later terminated abruptly (no clean shutdown required).
+    /// </summary>
+    public async Task UpdateWindowBoundsAsync(double left, double top, double width, double height)
+    {
+        if (_currentNote is null)
+            return;
+
+        try
+        {
+            _currentNote.WindowLeft = left;
+            _currentNote.WindowTop = top;
+            _currentNote.WindowWidth = width;
+            _currentNote.WindowHeight = height;
+
+            await _stickyNoteService.UpdateNoteWindowBoundsAsync(_currentNote.Id, left, top, width, height);
+            OnEditingStarted();
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(UpdateWindowBoundsAsync));
+        }
+    }
+
+    /// <summary>
+    /// Closes the window after checking for unsaved changes. Pinned notes cannot be closed.
     /// </summary>
     [RelayCommand]
     public async Task CloseWindowAsync()
     {
+        if (IsPinned)
+            return;
+
         var canClose = await CanCloseWindowAsync();
         if (canClose)
         {

@@ -101,6 +101,44 @@ public class StickyNoteService
     }
 
     /// <summary>
+    /// Sets whether a note is pinned, preventing it from being moved or closed.
+    /// </summary>
+    public async Task SetNotePinnedAsync(Guid id, bool isPinned)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Note ID cannot be empty.", nameof(id));
+
+        var note = await _noteRepository.GetByIdAsync(id);
+        if (note is null)
+            throw new InvalidOperationException($"Note with ID {id} not found.");
+
+        note.IsPinned = isPinned;
+
+        await _noteRepository.UpdateAsync(note);
+    }
+
+    /// <summary>
+    /// Persists the floating window's current screen position and size for a note, so it can be
+    /// restored to the same spot the next time it's opened, including after an application restart.
+    /// </summary>
+    public async Task UpdateNoteWindowBoundsAsync(Guid id, double left, double top, double width, double height)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Note ID cannot be empty.", nameof(id));
+
+        var note = await _noteRepository.GetByIdAsync(id);
+        if (note is null)
+            throw new InvalidOperationException($"Note with ID {id} not found.");
+
+        note.WindowLeft = left;
+        note.WindowTop = top;
+        note.WindowWidth = width;
+        note.WindowHeight = height;
+
+        await _noteRepository.UpdateAsync(note);
+    }
+
+    /// <summary>
     /// Deletes a sticky note by ID.
     /// </summary>
     public async Task DeleteNoteAsync(Guid id)

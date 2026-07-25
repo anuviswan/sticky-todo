@@ -31,4 +31,19 @@ public class StickyNote
 
     /// <summary>Whether the note is currently open as a floating sticky note window.</summary>
     public bool IsOpened { get; set; }
+
+    /// <summary>Whether the note is pinned, preventing it from being moved or closed.</summary>
+    public bool IsPinned { get; set; }
+
+    /// <summary>Persisted screen position (left) of the floating note window, from the last time it was closed.</summary>
+    public double? WindowLeft { get; set; }
+
+    /// <summary>Persisted screen position (top) of the floating note window, from the last time it was closed.</summary>
+    public double? WindowTop { get; set; }
+
+    /// <summary>Persisted width of the floating note window, from the last time it was closed.</summary>
+    public double? WindowWidth { get; set; }
+
+    /// <summary>Persisted height of the floating note window, from the last time it was closed.</summary>
+    public double? WindowHeight { get; set; }
 }
