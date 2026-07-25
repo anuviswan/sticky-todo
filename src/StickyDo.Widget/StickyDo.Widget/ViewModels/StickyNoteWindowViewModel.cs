@@ -19,6 +19,7 @@ namespace StickyDo.Widget.ViewModels;
 public partial class StickyNoteWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
+    private readonly StickyNoteTaskService _stickyNoteTaskService;
     private readonly IDialogService _dialogService;
     private readonly IStickyNoteCreationService _creationService;
     private readonly PersistenceService _persistenceService;
@@ -76,17 +77,20 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
     public StickyNoteWindowViewModel(
         StickyNoteService stickyNoteService,
+        StickyNoteTaskService stickyNoteTaskService,
         IDialogService dialogService,
         IStickyNoteCreationService creationService,
         PersistenceService persistenceService,
         IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
+        ArgumentNullException.ThrowIfNull(stickyNoteTaskService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
         ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
+        _stickyNoteTaskService = stickyNoteTaskService;
         _dialogService = dialogService;
         _creationService = creationService;
         _persistenceService = persistenceService;
@@ -143,7 +147,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             // If no tasks exist, add a sample task for demonstration
             if (!_currentNote.Tasks.Any())
             {
-                var sampleTaskId = await _stickyNoteService.CreateTaskAsync(_currentNote.Id, "First Task");
+                var sampleTaskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, "First Task");
                 var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
                 if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
                 {
@@ -199,7 +203,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
-            var taskId = await _stickyNoteService.CreateTaskAsync(_currentNote.Id, NewTaskTitle);
+            var taskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, NewTaskTitle);
             var task = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
             if (task?.Tasks.FirstOrDefault(t => t.Id == taskId) is { } newTask)
             {
@@ -237,7 +241,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
-            await _stickyNoteService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
+            await _stickyNoteTaskService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
             _hasUnsavedChanges = true;
             OnEditingStarted();
         }
@@ -259,7 +263,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
-            await _stickyNoteService.DeleteTaskAsync(_currentNote.Id, taskId);
+            await _stickyNoteTaskService.DeleteTaskAsync(_currentNote.Id, taskId);
             var taskVm = Tasks.FirstOrDefault(t => t.Id == taskId);
             if (taskVm != null)
             {

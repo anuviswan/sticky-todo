@@ -15,6 +15,7 @@ namespace StickyDo.Widget.Services;
 public class StickyNoteWindowService : IStickyNoteWindowService
 {
     private readonly StickyNoteService _stickyNoteService;
+    private readonly StickyNoteTaskService _stickyNoteTaskService;
     private readonly WindowManager _windowManager;
     private readonly IDialogService _dialogService;
     private readonly Lazy<IStickyNoteCreationService> _creationService;
@@ -23,6 +24,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
+        StickyNoteTaskService stickyNoteTaskService,
         WindowManager windowManager,
         IDialogService dialogService,
         Lazy<IStickyNoteCreationService> creationService,
@@ -30,12 +32,14 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
+        ArgumentNullException.ThrowIfNull(stickyNoteTaskService);
         ArgumentNullException.ThrowIfNull(windowManager);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
         ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
+        _stickyNoteTaskService = stickyNoteTaskService;
         _windowManager = windowManager;
         _dialogService = dialogService;
         _creationService = creationService;
@@ -72,6 +76,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
             {
                 var viewModel = new StickyNoteWindowViewModel(
                     _stickyNoteService,
+                    _stickyNoteTaskService,
                     _dialogService,
                     _creationService.Value,
                     _persistenceService,

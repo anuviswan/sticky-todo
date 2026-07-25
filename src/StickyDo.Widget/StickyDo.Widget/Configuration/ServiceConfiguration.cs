@@ -74,6 +74,7 @@ public static class ServiceConfiguration
     private static void ConfigureCore(IServiceCollection services)
     {
         services.AddSingleton<StickyNoteService>();
+        services.AddSingleton<StickyNoteTaskService>();
         services.AddSingleton<WindowManager>();
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
     }
@@ -95,6 +96,7 @@ public static class ServiceConfiguration
         services.AddSingleton<IStickyNoteWindowService>(sp =>
             new StickyNoteWindowService(
                 sp.GetRequiredService<StickyNoteService>(),
+                sp.GetRequiredService<StickyNoteTaskService>(),
                 sp.GetRequiredService<WindowManager>(),
                 sp.GetRequiredService<IDialogService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
