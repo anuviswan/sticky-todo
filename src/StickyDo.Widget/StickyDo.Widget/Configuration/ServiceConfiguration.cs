@@ -38,7 +38,11 @@ public static class ServiceConfiguration
     {
         System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
         var fileBasedRepository = new FileBasedRepository();
-        fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
+
+        // Run on a thread-pool thread (no captured WPF DispatcherSynchronizationContext) to avoid
+        // a sync-over-async deadlock: blocking the UI thread here while InitializeAsync's internal
+        // awaits try to resume back on that same (blocked) UI thread would hang until timeout.
+        Task.Run(() => fileBasedRepository.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
         System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
 
         services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);

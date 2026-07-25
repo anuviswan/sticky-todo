@@ -45,9 +45,29 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         StopAutoSaveAndSaveAllAsync();
-        _serviceProvider?.Dispose();
+        DisposeServiceProvider();
         ReleaseSingleInstanceLock();
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// Disposes the service provider asynchronously. Required because at least one
+    /// registered singleton (PersistenceService) only implements IAsyncDisposable;
+    /// the synchronous ServiceProvider.Dispose() throws for such services.
+    /// </summary>
+    private void DisposeServiceProvider()
+    {
+        if (_serviceProvider == null)
+            return;
+
+        try
+        {
+            ((IAsyncDisposable)_serviceProvider).DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(5));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error disposing service provider: {ex}");
+        }
     }
 
     private static bool AcquireSingleInstanceLock()
