@@ -408,6 +408,33 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Records the floating window's current position/size and schedules a debounced save via
+    /// the existing auto-save timer, the same way title/task edits are persisted. Called by the
+    /// hosting window whenever it's moved or resized, so the note reopens in the same spot even
+    /// if the application is later terminated abruptly (no clean shutdown required).
+    /// </summary>
+    public async Task UpdateWindowBoundsAsync(double left, double top, double width, double height)
+    {
+        if (_currentNote is null)
+            return;
+
+        try
+        {
+            _currentNote.WindowLeft = left;
+            _currentNote.WindowTop = top;
+            _currentNote.WindowWidth = width;
+            _currentNote.WindowHeight = height;
+
+            await _stickyNoteService.UpdateNoteWindowBoundsAsync(_currentNote.Id, left, top, width, height);
+            OnEditingStarted();
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(UpdateWindowBoundsAsync));
+        }
+    }
+
+    /// <summary>
     /// Closes the window after checking for unsaved changes. Pinned notes cannot be closed.
     /// </summary>
     [RelayCommand]
