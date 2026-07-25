@@ -336,6 +336,26 @@ public class FileBasedRepositoryTests
     }
 
     [TestMethod]
+    public async Task UpdateAsync_PersistsIsPinnedFlag()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+
+        var note = new StickyNote { Id = Guid.NewGuid(), Title = "Pinnable" };
+        await repository.CreateAsync(note);
+
+        var updatedNote = new StickyNote { Id = note.Id, Title = "Pinnable", IsPinned = true };
+
+        // Act
+        await repository.UpdateAsync(updatedNote);
+
+        // Assert
+        var retrieved = await repository.GetByIdAsync(note.Id);
+        Assert.IsTrue(retrieved!.IsPinned);
+    }
+
+    [TestMethod]
     public async Task GetByIdAsync_ReturnsNullForNonExistentNote()
     {
         // Arrange

@@ -65,6 +65,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<uint> availableColors = new(ColorPalette.Colors);
 
+    [ObservableProperty]
+    private bool isPinned;
+
     partial void OnTitleChanged(string value)
     {
         if (_currentNote != null)
@@ -141,6 +144,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             NoteId = _currentNote.Id;
             Title = _currentNote.Title;
             CurrentColor = _currentNote.ColorArgb ?? ColorPalette.GetDefaultColor();
+            IsPinned = _currentNote.IsPinned;
 
             Tasks.Clear();
 
@@ -379,11 +383,39 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Closes the window after checking for unsaved changes.
+    /// Toggles the pinned state of the note and persists it. A pinned note cannot be
+    /// moved by dragging or closed until it is unpinned.
+    /// </summary>
+    [RelayCommand]
+    public async Task TogglePinAsync()
+    {
+        if (_currentNote is null)
+            return;
+
+        try
+        {
+            IsPinned = !IsPinned;
+            _currentNote.IsPinned = IsPinned;
+
+            await _stickyNoteService.SetNotePinnedAsync(_currentNote.Id, IsPinned);
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(TogglePinAsync));
+            await _dialogService.ShowMessageAsync("Pin Error", $"Error updating pin state: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Closes the window after checking for unsaved changes. Pinned notes cannot be closed.
     /// </summary>
     [RelayCommand]
     public async Task CloseWindowAsync()
     {
+        if (IsPinned)
+            return;
+
         var canClose = await CanCloseWindowAsync();
         if (canClose)
         {

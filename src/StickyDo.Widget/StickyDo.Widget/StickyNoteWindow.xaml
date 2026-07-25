@@ -31,7 +31,7 @@
 
             <!-- Title Bar -->
             <Border x:Name="TitleBarBorder" Grid.Row="0" Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
-                    behaviors:DragWindowBehavior.CanDrag="True">
+                    behaviors:DragWindowBehavior.CanDrag="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -65,7 +65,7 @@
                              Padding="0"
                              VerticalAlignment="Center"/>
 
-                    <!-- Pin Icon -->
+                    <!-- Pin / Unpin Icon -->
                     <Button Grid.Column="2"
                             Width="24"
                             Height="24"
@@ -74,8 +74,50 @@
                             Cursor="Hand"
                             Margin="12,0,8,0"
                             VerticalAlignment="Center"
-                            ToolTip="Pin">
-                        <TextBlock Text="📌" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            Command="{Binding TogglePinCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="ToolTip" Value="Pin"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                        <Setter Property="ToolTip" Value="Unpin"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <Grid Width="20" Height="20">
+                            <!-- Pinned indicator badge -->
+                            <Border CornerRadius="10" Background="#FFD966">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                            </Border>
+                            <TextBlock Text="📌" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="-40"/>
+                                </TextBlock.RenderTransform>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                                <Setter Property="RenderTransform">
+                                                    <Setter.Value>
+                                                        <RotateTransform Angle="0"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
                     </Button>
 
                     <!-- Close Button -->
@@ -86,8 +128,19 @@
                             BorderThickness="0"
                             Cursor="Hand"
                             Command="{Binding CloseWindowCommand}"
+                            IsEnabled="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"
                             VerticalAlignment="Center"
                             ToolTip="Close">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Opacity" Value="0.35"/>
+                                        <Setter Property="Cursor" Value="Arrow"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                         <TextBlock Text="×" FontSize="18" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#666666" FontWeight="Bold"/>
                     </Button>
                 </Grid>

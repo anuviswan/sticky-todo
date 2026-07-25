@@ -200,6 +200,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             existing.DisplayOrder = note.DisplayOrder;
             existing.Tasks = note.Tasks;
             existing.IsOpened = note.IsOpened;
+            existing.IsPinned = note.IsPinned;
 
             _dirtyTracker.MarkAsDirty(note.Id);
         }
