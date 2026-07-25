@@ -8,7 +8,7 @@
         xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
         Title="Sticky Note" Height="400" Width="320" MinHeight="200" MinWidth="250"
-        Background="#FFF9E6"
+        Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip"
@@ -16,7 +16,7 @@
         Topmost="False"
         behaviors:WindowBehavior.IsEnabled="True">
 
-    <Border Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="1">
+    <Border Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="1" CornerRadius="8">
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="Background" Value="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}"/>
@@ -32,6 +32,8 @@
 
             <!-- Title Bar -->
             <Border x:Name="TitleBarBorder" Grid.Row="0" Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,0,0,1" Padding="12,8,12,8"
+                    CornerRadius="8,8,0,0"
+                    Cursor="SizeAll"
                     behaviors:DragWindowBehavior.CanDrag="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -56,6 +58,9 @@
                     </Button>
 
                     <!-- Note Title (Editable) -->
+                    <!-- Sized to content and left-aligned (not stretched) so the surrounding header
+                         space stays part of the TitleBarBorder drag zone; only clicks on the
+                         text itself land on the TextBox and enter edit mode. -->
                     <TextBox Grid.Column="1"
                              Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                              FontSize="14"
@@ -63,8 +68,10 @@
                              Foreground="#333333"
                              Background="Transparent"
                              BorderThickness="0"
-                             Padding="0"
-                             VerticalAlignment="Center"/>
+                             Padding="6,2"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center"
+                             Cursor="IBeam"/>
 
                     <!-- Pin / Unpin Icon -->
                     <Button Grid.Column="2"
@@ -246,7 +253,8 @@
             </ScrollViewer>
 
             <!-- Status Bar -->
-            <Border Grid.Row="2" Background="{Binding CurrentColor, Converter={StaticResource ColorToFooterColorConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6">
+            <Border Grid.Row="2" Background="{Binding CurrentColor, Converter={StaticResource ColorToFooterColorConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6"
+                    CornerRadius="0,0,8,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
