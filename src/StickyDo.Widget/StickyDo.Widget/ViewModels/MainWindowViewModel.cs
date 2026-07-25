@@ -110,7 +110,8 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Closes the application window.
+    /// Requests that the notes list window close. The app intercepts this and hides the
+    /// window to the system tray instead of exiting; only the tray icon's "Exit" command quits.
     /// </summary>
     [RelayCommand]
     public void CloseWindow()

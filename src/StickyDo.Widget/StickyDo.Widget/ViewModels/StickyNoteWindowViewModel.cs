@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 
@@ -17,10 +19,11 @@ namespace StickyDo.Widget.ViewModels;
 public partial class StickyNoteWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
+    private readonly StickyNoteTaskService _stickyNoteTaskService;
     private readonly IDialogService _dialogService;
-    private readonly IWindowService _windowService;
     private readonly IStickyNoteCreationService _creationService;
     private readonly PersistenceService _persistenceService;
+    private readonly IMessenger _messenger;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
     private CancellationTokenSource? _idleTimerCts;
@@ -74,22 +77,32 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
     public StickyNoteWindowViewModel(
         StickyNoteService stickyNoteService,
+        StickyNoteTaskService stickyNoteTaskService,
         IDialogService dialogService,
-        IWindowService windowService,
         IStickyNoteCreationService creationService,
-        PersistenceService persistenceService)
+        PersistenceService persistenceService,
+        IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
+        ArgumentNullException.ThrowIfNull(stickyNoteTaskService);
         ArgumentNullException.ThrowIfNull(dialogService);
-        ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
+        ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
+        _stickyNoteTaskService = stickyNoteTaskService;
         _dialogService = dialogService;
-        _windowService = windowService;
         _creationService = creationService;
         _persistenceService = persistenceService;
+        _messenger = messenger;
     }
+
+    /// <summary>
+    /// Raised when the user requests the window to close (e.g. via the close button),
+    /// after any unsaved changes have been saved. The hosting service closes the actual
+    /// Window instance, keeping this ViewModel view-agnostic.
+    /// </summary>
+    public event EventHandler? CloseRequested;
 
     /// <summary>
     /// Creates a new note window via the creation service.
@@ -134,7 +147,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             // If no tasks exist, add a sample task for demonstration
             if (!_currentNote.Tasks.Any())
             {
-                var sampleTaskId = await _stickyNoteService.CreateTaskAsync(_currentNote.Id, "First Task");
+                var sampleTaskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, "First Task");
                 var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
                 if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
                 {
@@ -147,7 +160,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                         CreatedAt = newTask.CreatedAt,
                         UpdatedAt = newTask.UpdatedAt
                     };
-                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId));
+                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
                     Tasks.Add(taskVm);
                 }
             }
@@ -164,7 +177,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                         CreatedAt = task.CreatedAt,
                         UpdatedAt = task.UpdatedAt
                     };
-                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId));
+                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
                     Tasks.Add(taskVm);
                 }
             }
@@ -190,7 +203,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
-            var taskId = await _stickyNoteService.CreateTaskAsync(_currentNote.Id, NewTaskTitle);
+            var taskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, NewTaskTitle);
             var task = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
             if (task?.Tasks.FirstOrDefault(t => t.Id == taskId) is { } newTask)
             {
@@ -203,7 +216,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                     CreatedAt = newTask.CreatedAt,
                     UpdatedAt = newTask.UpdatedAt
                 };
-                taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId));
+                taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
                 Tasks.Add(taskVm);
 
                 _hasUnsavedChanges = true;
@@ -228,7 +241,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
-            await _stickyNoteService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
+            await _stickyNoteTaskService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
             _hasUnsavedChanges = true;
             OnEditingStarted();
         }
@@ -250,7 +263,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
-            await _stickyNoteService.DeleteTaskAsync(_currentNote.Id, taskId);
+            await _stickyNoteTaskService.DeleteTaskAsync(_currentNote.Id, taskId);
             var taskVm = Tasks.FirstOrDefault(t => t.Id == taskId);
             if (taskVm != null)
             {
@@ -283,6 +296,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 _currentNote.Status);
 
             _hasUnsavedChanges = false;
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)
         {
@@ -355,6 +369,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
             IsColorPickerOpen = false;
             OnEditingStarted();
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)
         {
@@ -372,7 +387,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         var canClose = await CanCloseWindowAsync();
         if (canClose)
         {
-            _windowService.RequestClose();
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 

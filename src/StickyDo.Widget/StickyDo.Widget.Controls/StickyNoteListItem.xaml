@@ -5,53 +5,51 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:StickyDo.Widget.Controls"
              mc:Ignorable="d"
-             d:DesignHeight="80" d:DesignWidth="400"
-             Background="Transparent">
-    <Grid Margin="0,4,0,4">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
+             d:DesignHeight="100" d:DesignWidth="220"
+             Background="Transparent"
+             x:Name="Root">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    </UserControl.Resources>
 
-        <!-- Color indicator bar -->
-        <Rectangle Grid.Column="0" Width="4" Fill="{Binding ColorBrush, Mode=OneWay}"
-                   RadiusX="2" RadiusY="2" Margin="0,2,0,2"/>
+    <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="10"
+            BorderBrush="#14000000" BorderThickness="1" Padding="14,12,14,10">
+        <StackPanel>
+            <!-- Title -->
+            <TextBlock Text="{Binding Title, Mode=OneWay, ElementName=Root}"
+                       FontWeight="700" FontSize="14" Foreground="#1F1F1F"
+                       TextTrimming="CharacterEllipsis" Margin="0,0,0,10"/>
 
-        <!-- Main content area -->
-        <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="0.5"
-                Margin="8,0,8,0" Padding="12" CornerRadius="6">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <!-- First task (checkbox + text), shown only when the note has tasks -->
+            <StackPanel Orientation="Horizontal"
+                        Visibility="{Binding HasTasks, Mode=OneWay, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <CheckBox IsChecked="{Binding FirstTaskCompleted, Mode=OneWay, ElementName=Root}"
+                          IsHitTestVisible="False" VerticalAlignment="Top" Margin="0,1,8,0"/>
+                <TextBlock Text="{Binding FirstTaskTitle, Mode=OneWay, ElementName=Root}"
+                           FontSize="12" Foreground="#333333"
+                           TextWrapping="Wrap" VerticalAlignment="Top">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding FirstTaskCompleted, ElementName=Root}" Value="True">
+                                    <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                    <Setter Property="Foreground" Value="#777777"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
 
-                <!-- Title -->
-                <TextBlock Grid.Row="0" Text="{Binding Title, Mode=OneWay}"
-                           FontWeight="500" FontSize="14" Foreground="#1F1F1F"
-                           TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
+            <!-- "+N more" indicator when the note has additional tasks -->
+            <TextBlock Text="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, StringFormat=+{0} more}"
+                       FontSize="11" Foreground="#5C5C5C" Margin="24,4,0,0"
+                       Visibility="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, Converter={StaticResource CountToVisibilityConverter}}"/>
 
-                <!-- Content preview -->
-                <TextBlock Grid.Row="1" Text="{Binding ContentPreview, Mode=OneWay}"
-                           FontSize="12" Foreground="#666666"
-                           TextTrimming="CharacterEllipsis" MaxHeight="32"
-                           TextWrapping="Wrap" Margin="0,0,0,6"/>
-
-                <!-- Footer with date -->
-                <TextBlock Grid.Row="2" Text="{Binding LastModifiedDisplay, Mode=OneWay}"
-                           FontSize="11" Foreground="#999999"/>
-            </Grid>
-        </Border>
-
-        <!-- Status badge -->
-        <Border Grid.Column="2" Padding="8,4,8,4" CornerRadius="4"
-                Background="{Binding StatusBackground, Mode=OneWay}"
-                Margin="0,0,8,0">
-            <TextBlock Text="{Binding Status, Mode=OneWay}"
-                       FontSize="11" FontWeight="500" Foreground="White"
-                       TextAlignment="Center"/>
-        </Border>
-    </Grid>
+            <!-- Static affordance glyph (no behavior wired up) -->
+            <TextBlock Text="&#9662;" FontSize="12" Foreground="#66000000"
+                       HorizontalAlignment="Center" Margin="0,10,0,0"/>
+        </StackPanel>
+    </Border>
 </UserControl>

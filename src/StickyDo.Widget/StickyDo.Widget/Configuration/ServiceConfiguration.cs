@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
@@ -37,7 +38,11 @@ public static class ServiceConfiguration
     {
         System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
         var fileBasedRepository = new FileBasedRepository();
-        fileBasedRepository.InitializeAsync().Wait(TimeSpan.FromSeconds(10));
+
+        // Run on a thread-pool thread (no captured WPF DispatcherSynchronizationContext) to avoid
+        // a sync-over-async deadlock: blocking the UI thread here while InitializeAsync's internal
+        // awaits try to resume back on that same (blocked) UI thread would hang until timeout.
+        Task.Run(() => fileBasedRepository.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
         System.Diagnostics.Debug.WriteLine("Repository initialized successfully.");
 
         services.AddSingleton<IStickyNoteRepository>(fileBasedRepository);
@@ -60,6 +65,7 @@ public static class ServiceConfiguration
     {
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IWindowService, WindowService>();
+        services.AddSingleton<ITrayIconService, TrayIconService>();
     }
 
     /// <summary>
@@ -68,7 +74,9 @@ public static class ServiceConfiguration
     private static void ConfigureCore(IServiceCollection services)
     {
         services.AddSingleton<StickyNoteService>();
+        services.AddSingleton<StickyNoteTaskService>();
         services.AddSingleton<WindowManager>();
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
     }
 
     /// <summary>
@@ -88,11 +96,12 @@ public static class ServiceConfiguration
         services.AddSingleton<IStickyNoteWindowService>(sp =>
             new StickyNoteWindowService(
                 sp.GetRequiredService<StickyNoteService>(),
+                sp.GetRequiredService<StickyNoteTaskService>(),
                 sp.GetRequiredService<WindowManager>(),
                 sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<IWindowService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
-                sp.GetRequiredService<PersistenceService>()));
+                sp.GetRequiredService<PersistenceService>(),
+                sp.GetRequiredService<IMessenger>()));
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
         services.AddSingleton<MainWindow>();

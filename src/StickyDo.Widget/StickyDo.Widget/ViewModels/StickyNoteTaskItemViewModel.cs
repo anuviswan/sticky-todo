@@ -10,6 +10,7 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
 {
     private Func<Guid, string, bool, Task>? _onUpdateTask;
     private Func<Guid, Task>? _onDeleteTask;
+    private Action? _onSubmit;
 
     [ObservableProperty]
     private Guid id;
@@ -29,10 +30,21 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
     [ObservableProperty]
     private DateTime updatedAt = DateTime.UtcNow;
 
-    public void SetCallbacks(Func<Guid, string, bool, Task> onUpdateTask, Func<Guid, Task> onDeleteTask)
+    public void SetCallbacks(Func<Guid, string, bool, Task> onUpdateTask, Func<Guid, Task> onDeleteTask, Action onSubmit)
     {
         _onUpdateTask = onUpdateTask;
         _onDeleteTask = onDeleteTask;
+        _onSubmit = onSubmit;
+    }
+
+    /// <summary>
+    /// Commits the in-progress edit (by moving focus away, which flushes the Title binding)
+    /// and hands off to the parent note to focus the "Add a task..." input for the next line.
+    /// </summary>
+    [RelayCommand]
+    public void SubmitEdit()
+    {
+        _onSubmit?.Invoke();
     }
 
     partial void OnIsCompletedChanged(bool value)

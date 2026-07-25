@@ -1,4 +1,5 @@
 using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Utilities;
@@ -14,32 +15,36 @@ namespace StickyDo.Widget.Services;
 public class StickyNoteWindowService : IStickyNoteWindowService
 {
     private readonly StickyNoteService _stickyNoteService;
+    private readonly StickyNoteTaskService _stickyNoteTaskService;
     private readonly WindowManager _windowManager;
     private readonly IDialogService _dialogService;
-    private readonly IWindowService _windowService;
     private readonly Lazy<IStickyNoteCreationService> _creationService;
     private readonly PersistenceService _persistenceService;
+    private readonly IMessenger _messenger;
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
+        StickyNoteTaskService stickyNoteTaskService,
         WindowManager windowManager,
         IDialogService dialogService,
-        IWindowService windowService,
         Lazy<IStickyNoteCreationService> creationService,
-        PersistenceService persistenceService)
+        PersistenceService persistenceService,
+        IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
+        ArgumentNullException.ThrowIfNull(stickyNoteTaskService);
         ArgumentNullException.ThrowIfNull(windowManager);
         ArgumentNullException.ThrowIfNull(dialogService);
-        ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
+        ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
+        _stickyNoteTaskService = stickyNoteTaskService;
         _windowManager = windowManager;
         _dialogService = dialogService;
-        _windowService = windowService;
         _creationService = creationService;
         _persistenceService = persistenceService;
+        _messenger = messenger;
     }
 
     /// <summary>
@@ -49,11 +54,11 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     {
         try
         {
-            // Check if window is already open
+            // Check if window is already open (or being opened by a concurrent call for the same note)
             if (_windowManager.IsNoteWindowOpen(noteId))
             {
                 var existingWindow = _windowManager.GetNoteWindow(noteId);
-                if (existingWindow != null)
+                if (existingWindow != null && existingWindow.IsVisible)
                 {
                     existingWindow.Activate();
                     existingWindow.Focus();
@@ -61,41 +66,71 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                 return;
             }
 
-            // Create new window
+            // Register the window before the first await below, so a concurrent call for the
+            // same note (e.g. a double double-click) sees it as already open instead of racing
+            // past the check above and creating a second window for the same note.
             var window = new StickyNoteWindow();
-            var viewModel = new StickyNoteWindowViewModel(
-                _stickyNoteService,
-                _dialogService,
-                _windowService,
-                _creationService.Value,
-                _persistenceService);
-
-            await viewModel.LoadNoteAsync(noteId);
-
-            window.DataContext = viewModel;
             _windowManager.RegisterNoteWindow(noteId, window);
 
-            // Restore window state if available
-            var savedState = _windowManager.GetSavedNoteWindowState(noteId);
-            if (savedState != null)
+            try
             {
-                window.Left = savedState.Left;
-                window.Top = savedState.Top;
-                window.Width = savedState.Width;
-                window.Height = savedState.Height;
-            }
-            else
-            {
-                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            }
+                var viewModel = new StickyNoteWindowViewModel(
+                    _stickyNoteService,
+                    _stickyNoteTaskService,
+                    _dialogService,
+                    _creationService.Value,
+                    _persistenceService,
+                    _messenger);
 
-            window.Closed += (s, e) =>
+                await viewModel.LoadNoteAsync(noteId);
+
+                window.DataContext = viewModel;
+
+                // Close the window itself (not the shared main window) when the user requests it
+                viewModel.CloseRequested += (s, e) => window.Close();
+
+                // Restore window state if available
+                var savedState = _windowManager.GetSavedNoteWindowState(noteId);
+                if (savedState != null)
+                {
+                    window.Left = savedState.Left;
+                    window.Top = savedState.Top;
+                    window.Width = savedState.Width;
+                    window.Height = savedState.Height;
+                }
+                else
+                {
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                }
+
+                window.Closed += async (s, e) =>
+                {
+                    _windowManager.SaveNoteWindowState(noteId, window.Left, window.Top, window.Width, window.Height);
+                    _windowManager.UnregisterNoteWindow(noteId);
+
+                    try
+                    {
+                        await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
+                        await _persistenceService.SaveAllDirtyNotesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        LoggerHelper.LogException(ex, nameof(OpenNoteWindowAsync));
+                    }
+                };
+
+                await _stickyNoteService.SetNoteOpenStateAsync(noteId, true);
+                await _persistenceService.SaveAllDirtyNotesAsync();
+
+                window.Show();
+            }
+            catch
             {
-                _windowManager.SaveNoteWindowState(noteId, window.Left, window.Top, window.Width, window.Height);
+                // Loading/showing failed before the window's own Closed handler could take over
+                // cleanup - unregister here so the note isn't stuck looking "open" forever.
                 _windowManager.UnregisterNoteWindow(noteId);
-            };
-
-            window.Show();
+                throw;
+            }
         }
         catch (Exception ex)
         {

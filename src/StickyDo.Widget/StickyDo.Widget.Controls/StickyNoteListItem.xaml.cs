@@ -9,10 +9,6 @@ namespace StickyDo.Widget.Controls;
 /// </summary>
 public partial class StickyNoteListItem : UserControl
 {
-    private static readonly ContentPreviewConverter _previewConverter = new();
-    private static readonly StatusToBrushConverter _statusConverter = new();
-    private static readonly LastModifiedConverter _lastModifiedConverter = new();
-
     public StickyNoteListItem()
     {
         InitializeComponent();
@@ -29,72 +25,6 @@ public partial class StickyNoteListItem : UserControl
         DependencyProperty.Register("Title", typeof(string), typeof(StickyNoteListItem),
             new PropertyMetadata(string.Empty));
 
-    /// <summary>Gets or sets the full content of the note.</summary>
-    public string NoteContent
-    {
-        get => (string)GetValue(NoteContentProperty);
-        set => SetValue(NoteContentProperty, value);
-    }
-
-    public static readonly DependencyProperty NoteContentProperty =
-        DependencyProperty.Register("NoteContent", typeof(string), typeof(StickyNoteListItem),
-            new PropertyMetadata(string.Empty, OnNoteContentChanged));
-
-    /// <summary>Gets the preview text (first 60 characters) of the content.</summary>
-    public string ContentPreview
-    {
-        get => (string)GetValue(ContentPreviewProperty);
-        private set => SetValue(ContentPreviewProperty, value);
-    }
-
-    public static readonly DependencyProperty ContentPreviewProperty =
-        DependencyProperty.Register("ContentPreview", typeof(string), typeof(StickyNoteListItem),
-            new PropertyMetadata(string.Empty));
-
-    /// <summary>Gets or sets the status of the note.</summary>
-    public string Status
-    {
-        get => (string)GetValue(StatusProperty);
-        set => SetValue(StatusProperty, value);
-    }
-
-    public static readonly DependencyProperty StatusProperty =
-        DependencyProperty.Register("Status", typeof(string), typeof(StickyNoteListItem),
-            new PropertyMetadata("Active", OnStatusChanged));
-
-    /// <summary>Gets the background color for the status badge.</summary>
-    public Brush StatusBackground
-    {
-        get => (Brush)GetValue(StatusBackgroundProperty);
-        private set => SetValue(StatusBackgroundProperty, value);
-    }
-
-    public static readonly DependencyProperty StatusBackgroundProperty =
-        DependencyProperty.Register("StatusBackground", typeof(Brush), typeof(StickyNoteListItem),
-            new PropertyMetadata(new SolidColorBrush(Color.FromRgb(0, 179, 111))));
-
-    /// <summary>Gets or sets the last modified date/time.</summary>
-    public DateTime LastModified
-    {
-        get => (DateTime)GetValue(LastModifiedProperty);
-        set => SetValue(LastModifiedProperty, value);
-    }
-
-    public static readonly DependencyProperty LastModifiedProperty =
-        DependencyProperty.Register("LastModified", typeof(DateTime), typeof(StickyNoteListItem),
-            new PropertyMetadata(DateTime.UtcNow, OnLastModifiedChanged));
-
-    /// <summary>Gets the display text for last modified time.</summary>
-    public string LastModifiedDisplay
-    {
-        get => (string)GetValue(LastModifiedDisplayProperty);
-        private set => SetValue(LastModifiedDisplayProperty, value);
-    }
-
-    public static readonly DependencyProperty LastModifiedDisplayProperty =
-        DependencyProperty.Register("LastModifiedDisplay", typeof(string), typeof(StickyNoteListItem),
-            new PropertyMetadata("Just now"));
-
     /// <summary>Gets or sets the color brush for the note.</summary>
     public Brush ColorBrush
     {
@@ -106,31 +36,47 @@ public partial class StickyNoteListItem : UserControl
         DependencyProperty.Register("ColorBrush", typeof(Brush), typeof(StickyNoteListItem),
             new PropertyMetadata(new SolidColorBrush(Color.FromRgb(255, 193, 7))));
 
-    private static void OnNoteContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    /// <summary>Gets or sets whether the note has at least one task.</summary>
+    public bool HasTasks
     {
-        if (d is StickyNoteListItem control)
-        {
-            var content = (string)e.NewValue ?? string.Empty;
-            control.ContentPreview = (string)_previewConverter.Convert(content, typeof(string), null, null);
-        }
+        get => (bool)GetValue(HasTasksProperty);
+        set => SetValue(HasTasksProperty, value);
     }
 
-    private static void OnStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    public static readonly DependencyProperty HasTasksProperty =
+        DependencyProperty.Register("HasTasks", typeof(bool), typeof(StickyNoteListItem),
+            new PropertyMetadata(false));
+
+    /// <summary>Gets or sets the title of the note's first task.</summary>
+    public string FirstTaskTitle
     {
-        if (d is StickyNoteListItem control)
-        {
-            var status = (string)e.NewValue ?? "Active";
-            control.StatusBackground = (Brush)_statusConverter.Convert(status, typeof(Brush), null, null);
-        }
+        get => (string)GetValue(FirstTaskTitleProperty);
+        set => SetValue(FirstTaskTitleProperty, value);
     }
 
-    private static void OnLastModifiedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    public static readonly DependencyProperty FirstTaskTitleProperty =
+        DependencyProperty.Register("FirstTaskTitle", typeof(string), typeof(StickyNoteListItem),
+            new PropertyMetadata(string.Empty));
+
+    /// <summary>Gets or sets whether the note's first task is completed.</summary>
+    public bool FirstTaskCompleted
     {
-        if (d is StickyNoteListItem control)
-        {
-            var dateTime = (DateTime)e.NewValue;
-            control.LastModifiedDisplay = (string)_lastModifiedConverter.Convert(dateTime, typeof(string), null, null);
-        }
+        get => (bool)GetValue(FirstTaskCompletedProperty);
+        set => SetValue(FirstTaskCompletedProperty, value);
     }
 
+    public static readonly DependencyProperty FirstTaskCompletedProperty =
+        DependencyProperty.Register("FirstTaskCompleted", typeof(bool), typeof(StickyNoteListItem),
+            new PropertyMetadata(false));
+
+    /// <summary>Gets or sets the number of additional tasks beyond the first.</summary>
+    public int RemainingTaskCount
+    {
+        get => (int)GetValue(RemainingTaskCountProperty);
+        set => SetValue(RemainingTaskCountProperty, value);
+    }
+
+    public static readonly DependencyProperty RemainingTaskCountProperty =
+        DependencyProperty.Register("RemainingTaskCount", typeof(int), typeof(StickyNoteListItem),
+            new PropertyMetadata(0));
 }
