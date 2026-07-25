@@ -9,6 +9,7 @@ using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
+using AppResources = StickyDo.Widget.Resources.Resources;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -71,6 +72,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool isMoreOptionsOpen = false;
 
+    [ObservableProperty]
+    private MoreOptionsPopupViewModel moreOptionsPopupViewModel = new();
+
     partial void OnTitleChanged(string value)
     {
         if (_currentNote != null)
@@ -101,6 +105,8 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         _creationService = creationService;
         _persistenceService = persistenceService;
         _messenger = messenger;
+
+        MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync);
     }
 
     /// <summary>
@@ -443,8 +449,8 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         IsMoreOptionsOpen = false;
 
         var confirmed = await _dialogService.ShowConfirmationAsync(
-            "Delete Note",
-            "This note will be permanently deleted. This action cannot be undone.");
+            AppResources.DeleteNote_ConfirmTitle,
+            AppResources.DeleteNote_ConfirmMessage);
 
         if (!confirmed)
             return;

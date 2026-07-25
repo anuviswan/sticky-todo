@@ -4,6 +4,7 @@ using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Utilities;
 using StickyDo.Widget.ViewModels;
+using StickyDo.Widget.Views;
 
 namespace StickyDo.Widget.Services;
 

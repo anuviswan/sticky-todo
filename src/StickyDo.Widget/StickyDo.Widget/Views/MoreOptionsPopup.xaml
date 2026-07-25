@@ -1,8 +1,9 @@
-<UserControl x:Class="StickyDo.Widget.MoreOptionsPopup"
+<UserControl x:Class="StickyDo.Widget.Views.MoreOptionsPopup"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:res="clr-namespace:StickyDo.Widget.Resources"
              mc:Ignorable="d"
              d:DesignHeight="100"
              d:DesignWidth="180"
@@ -21,7 +22,7 @@
                         Padding="10,8"
                         Background="Transparent"
                         BorderThickness="0"
-                        ToolTip="Notes List">
+                        ToolTip="{x:Static res:Resources.MoreOptionsPopup_NotesList}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border Background="{TemplateBinding Background}" CornerRadius="6">
@@ -36,7 +37,7 @@
                     </Button.Template>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#9638;" FontSize="14" Foreground="#333333" Width="20" TextAlignment="Center" VerticalAlignment="Center"/>
-                        <TextBlock Text="Notes List" FontSize="13" Foreground="#333333" Margin="10,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{x:Static res:Resources.MoreOptionsPopup_NotesList}" FontSize="13" Foreground="#333333" Margin="10,0,4,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
 
@@ -46,7 +47,7 @@
                         Padding="10,8"
                         Background="Transparent"
                         BorderThickness="0"
-                        ToolTip="Delete Note"
+                        ToolTip="{x:Static res:Resources.MoreOptionsPopup_DeleteNote}"
                         Command="{Binding DeleteNoteCommand}">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -62,7 +63,7 @@
                     </Button.Template>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#128465;" FontSize="14" Foreground="#333333" Width="20" TextAlignment="Center" VerticalAlignment="Center"/>
-                        <TextBlock Text="Delete Note" FontSize="13" Foreground="#333333" Margin="10,0,4,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="{x:Static res:Resources.MoreOptionsPopup_DeleteNote}" FontSize="13" Foreground="#333333" Margin="10,0,4,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Button>
             </StackPanel>

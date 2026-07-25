@@ -7,9 +7,9 @@ using StickyDo.Domain.Models;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
-using StickyDo.Widget.Resources;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
+using AppResources = StickyDo.Widget.Resources.Resources;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -77,8 +77,8 @@ public partial class NotesListViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
             await _dialogService.ShowMessageAsync(
-                AppStrings.LoadErrorTitle,
-                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
+                AppResources.LoadErrorTitle,
+                string.Format(AppResources.ErrorLoadingNotes, ex.Message),
                 System.Windows.MessageBoxImage.Error);
         }
     }
@@ -106,8 +106,8 @@ public partial class NotesListViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(CreateNoteAsync));
             await _dialogService.ShowMessageAsync(
-                AppStrings.LoadErrorTitle,
-                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
+                AppResources.LoadErrorTitle,
+                string.Format(AppResources.ErrorLoadingNotes, ex.Message),
                 System.Windows.MessageBoxImage.Error);
         }
     }
@@ -125,8 +125,8 @@ public partial class NotesListViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(OpenNoteAsync));
             await _dialogService.ShowMessageAsync(
-                AppStrings.LoadErrorTitle,
-                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
+                AppResources.LoadErrorTitle,
+                string.Format(AppResources.ErrorLoadingNotes, ex.Message),
                 System.Windows.MessageBoxImage.Error);
         }
     }

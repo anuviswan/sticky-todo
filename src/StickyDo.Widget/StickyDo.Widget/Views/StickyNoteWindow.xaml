@@ -1,9 +1,9 @@
-<Window x:Class="StickyDo.Widget.StickyNoteWindow"
+<Window x:Class="StickyDo.Widget.Views.StickyNoteWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:StickyDo.Widget"
+        xmlns:local="clr-namespace:StickyDo.Widget.Views"
         xmlns:controls="clr-namespace:StickyDo.Widget;assembly=StickyDo.Widget.Controls"
         xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
         mc:Ignorable="d"
@@ -13,7 +13,8 @@
         AllowsTransparency="True"
         ResizeMode="CanResizeWithGrip"
         ShowInTaskbar="False"
-        Topmost="False">
+        Topmost="False"
+        behaviors:WindowBehavior.IsEnabled="True">
 
     <Border Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="1">
         <Border.Style>
@@ -309,7 +310,9 @@
                    PopupAnimation="Fade"
                    StaysOpen="False"
                    HorizontalOffset="-80"
-                   VerticalOffset="8">
+                   VerticalOffset="8"
+                   behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseColorPickerCommand}"
+                   behaviors:PopupDismissBehavior.ToggleButton="{Binding ElementName=PaletteButton}">
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
             </Popup>
 
@@ -322,8 +325,10 @@
                    PopupAnimation="Fade"
                    StaysOpen="False"
                    HorizontalOffset="-130"
-                   VerticalOffset="-8">
-                <controls:MoreOptionsPopup DataContext="{Binding}"/>
+                   VerticalOffset="-8"
+                   behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseMoreOptionsCommand}"
+                   behaviors:PopupDismissBehavior.ToggleButton="{Binding ElementName=MenuButton}">
+                <local:MoreOptionsPopup DataContext="{Binding MoreOptionsPopupViewModel}"/>
             </Popup>
         </Grid>
     </Border>
