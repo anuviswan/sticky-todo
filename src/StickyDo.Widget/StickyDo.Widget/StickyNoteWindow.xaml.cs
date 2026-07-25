@@ -35,12 +35,20 @@ public partial class StickyNoteWindow : Window
                 viewModel.CloseColorPickerCommand.Execute(null);
                 e.Handled = true;
             }
+            else if (viewModel.IsMoreOptionsOpen)
+            {
+                viewModel.CloseMoreOptionsCommand.Execute(null);
+                e.Handled = true;
+            }
         }
     }
 
     private void StickyNoteWindow_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (DataContext is StickyNoteWindowViewModel viewModel && viewModel.IsColorPickerOpen)
+        if (DataContext is not StickyNoteWindowViewModel viewModel)
+            return;
+
+        if (viewModel.IsColorPickerOpen)
         {
             var hitTest = VisualTreeHelper.HitTest(this, Mouse.GetPosition(this));
             if (hitTest?.VisualHit is not null)
@@ -51,6 +59,20 @@ public partial class StickyNoteWindow : Window
                 if (!isColorPopup && !isPaletteButton)
                 {
                     viewModel.CloseColorPickerCommand.Execute(null);
+                }
+            }
+        }
+        else if (viewModel.IsMoreOptionsOpen)
+        {
+            var hitTest = VisualTreeHelper.HitTest(this, Mouse.GetPosition(this));
+            if (hitTest?.VisualHit is not null)
+            {
+                var isMoreOptionsPopup = IsDescendantOf(hitTest.VisualHit, MoreOptionsFlyout.Child);
+                var isMenuButton = IsDescendantOf(hitTest.VisualHit, (Visual)this.FindName("MenuButton"));
+
+                if (!isMoreOptionsPopup && !isMenuButton)
+                {
+                    viewModel.CloseMoreOptionsCommand.Execute(null);
                 }
             }
         }

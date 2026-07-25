@@ -68,6 +68,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     [ObservableProperty]
     private bool isPinned;
 
+    [ObservableProperty]
+    private bool isMoreOptionsOpen = false;
+
     partial void OnTitleChanged(string value)
     {
         if (_currentNote != null)
@@ -404,6 +407,58 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(TogglePinAsync));
             await _dialogService.ShowMessageAsync("Pin Error", $"Error updating pin state: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Opens the "more options" menu (Notes List / Delete Note).
+    /// </summary>
+    [RelayCommand]
+    public void OpenMoreOptions()
+    {
+        IsMoreOptionsOpen = true;
+    }
+
+    /// <summary>
+    /// Closes the "more options" menu without taking any action.
+    /// </summary>
+    [RelayCommand]
+    public void CloseMoreOptions()
+    {
+        IsMoreOptionsOpen = false;
+    }
+
+    /// <summary>
+    /// Prompts for confirmation, then permanently deletes the current note: removes it from
+    /// storage, notifies other view models (e.g. the notes list) via the messenger, and closes
+    /// this window. Bypasses the pinned/unsaved-changes close path since a deleted note must
+    /// never be re-saved to disk.
+    /// </summary>
+    [RelayCommand]
+    public async Task DeleteNoteAsync()
+    {
+        if (_currentNote is null)
+            return;
+
+        IsMoreOptionsOpen = false;
+
+        var confirmed = await _dialogService.ShowConfirmationAsync(
+            "Delete Note",
+            "This note will be permanently deleted. This action cannot be undone.");
+
+        if (!confirmed)
+            return;
+
+        try
+        {
+            await _stickyNoteService.DeleteNoteAsync(_currentNote.Id);
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Deleted));
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(DeleteNoteAsync));
+            await _dialogService.ShowMessageAsync("Delete Error", $"Error deleting note: {ex.Message}", System.Windows.MessageBoxImage.Error);
         }
     }
 

@@ -285,14 +285,16 @@
                     </Button>
 
                     <!-- Menu Icon -->
-                    <Button Grid.Column="3"
+                    <Button x:Name="MenuButton"
+                            Grid.Column="3"
                             Width="20"
                             Height="20"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
                             VerticalAlignment="Center"
-                            ToolTip="More options">
+                            ToolTip="More options"
+                            Command="{Binding OpenMoreOptionsCommand}">
                         <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#000000"/>
                     </Button>
                 </Grid>
@@ -309,6 +311,19 @@
                    HorizontalOffset="-80"
                    VerticalOffset="8">
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
+            </Popup>
+
+            <!-- More Options Popup -->
+            <Popup x:Name="MoreOptionsFlyout"
+                   IsOpen="{Binding IsMoreOptionsOpen, Mode=TwoWay}"
+                   PlacementTarget="{Binding ElementName=MenuButton}"
+                   Placement="Top"
+                   AllowsTransparency="True"
+                   PopupAnimation="Fade"
+                   StaysOpen="False"
+                   HorizontalOffset="-130"
+                   VerticalOffset="-8">
+                <controls:MoreOptionsPopup DataContext="{Binding}"/>
             </Popup>
         </Grid>
     </Border>
