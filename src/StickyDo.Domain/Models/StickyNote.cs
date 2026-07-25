@@ -28,4 +28,7 @@ public class StickyNote
 
     /// <summary>Display order for sorting in the list.</summary>
     public int DisplayOrder { get; set; }
+
+    /// <summary>Whether the note is currently open as a floating sticky note window.</summary>
+    public bool IsOpened { get; set; }
 }

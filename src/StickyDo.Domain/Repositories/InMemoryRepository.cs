@@ -48,6 +48,7 @@ public class InMemoryRepository : IStickyNoteRepository, IStickyNoteTaskReposito
             existing.UpdatedAt = DateTime.UtcNow;
             existing.ColorArgb = note.ColorArgb;
             existing.DisplayOrder = note.DisplayOrder;
+            existing.IsOpened = note.IsOpened;
         }
 
         return Task.CompletedTask;

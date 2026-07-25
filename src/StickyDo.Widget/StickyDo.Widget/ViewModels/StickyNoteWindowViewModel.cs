@@ -20,7 +20,6 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 {
     private readonly StickyNoteService _stickyNoteService;
     private readonly IDialogService _dialogService;
-    private readonly IWindowService _windowService;
     private readonly IStickyNoteCreationService _creationService;
     private readonly PersistenceService _persistenceService;
     private readonly IMessenger _messenger;
@@ -78,24 +77,28 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     public StickyNoteWindowViewModel(
         StickyNoteService stickyNoteService,
         IDialogService dialogService,
-        IWindowService windowService,
         IStickyNoteCreationService creationService,
         PersistenceService persistenceService,
         IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(dialogService);
-        ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
         ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
         _dialogService = dialogService;
-        _windowService = windowService;
         _creationService = creationService;
         _persistenceService = persistenceService;
         _messenger = messenger;
     }
+
+    /// <summary>
+    /// Raised when the user requests the window to close (e.g. via the close button),
+    /// after any unsaved changes have been saved. The hosting service closes the actual
+    /// Window instance, keeping this ViewModel view-agnostic.
+    /// </summary>
+    public event EventHandler? CloseRequested;
 
     /// <summary>
     /// Creates a new note window via the creation service.
@@ -380,7 +383,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         var canClose = await CanCloseWindowAsync();
         if (canClose)
         {
-            _windowService.RequestClose();
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 

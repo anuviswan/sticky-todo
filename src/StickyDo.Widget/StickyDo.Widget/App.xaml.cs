@@ -15,6 +15,7 @@ namespace StickyDo.Widget;
 public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
+    private ITrayIconService? _trayIconService;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
 
@@ -45,6 +46,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         StopAutoSaveAndSaveAllAsync();
+        _trayIconService?.Dispose();
         DisposeServiceProvider();
         ReleaseSingleInstanceLock();
         base.OnExit(e);
@@ -104,12 +106,70 @@ public partial class App : Application
         }
 
         MainWindow = mainWindow;
-        mainWindow.Show();
+
+        _trayIconService = _serviceProvider.GetRequiredService<ITrayIconService>();
+        _trayIconService.Initialize(
+            onOpenRequested: () => ShowMainWindow(mainWindow),
+            onExitRequested: Shutdown);
 
         // Load notes - DataContext is set in MainWindow constructor
         if (mainWindow.DataContext is MainWindowViewModel viewModel)
         {
             _ = viewModel.LoadNotesAsync();
+        }
+
+        _ = RestoreOpenNotesOrShowListAsync(mainWindow);
+    }
+
+    /// <summary>
+    /// Brings the main (notes list) window to the foreground, restoring it from a
+    /// minimized or hidden (tray-only) state if necessary.
+    /// </summary>
+    private static void ShowMainWindow(Window mainWindow)
+    {
+        if (mainWindow.WindowState == System.Windows.WindowState.Minimized)
+            mainWindow.WindowState = System.Windows.WindowState.Normal;
+
+        if (!mainWindow.IsVisible)
+            mainWindow.Show();
+
+        mainWindow.Activate();
+    }
+
+    /// <summary>
+    /// On startup, reopens any sticky notes left open from the previous session as
+    /// floating windows instead of showing the main notes list. If no notes were left
+    /// open, the notes list is shown as usual.
+    /// </summary>
+    private async Task RestoreOpenNotesOrShowListAsync(MainWindow mainWindow)
+    {
+        if (_serviceProvider == null)
+            return;
+
+        try
+        {
+            var stickyNoteService = _serviceProvider.GetRequiredService<StickyNoteService>();
+            var openNoteIds = (await stickyNoteService.GetAllNotesAsync())
+                .Where(n => n.IsOpened)
+                .Select(n => n.Id)
+                .ToList();
+
+            if (openNoteIds.Count == 0)
+            {
+                mainWindow.Show();
+                return;
+            }
+
+            var noteWindowService = _serviceProvider.GetRequiredService<IStickyNoteWindowService>();
+            foreach (var noteId in openNoteIds)
+            {
+                await noteWindowService.OpenNoteWindowAsync(noteId);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error restoring open notes: {ex}");
+            mainWindow.Show();
         }
     }
 

@@ -86,6 +86,23 @@ public class StickyNoteService
     }
 
     /// <summary>
+    /// Sets whether a note is currently open as a floating sticky note window.
+    /// </summary>
+    public async Task SetNoteOpenStateAsync(Guid id, bool isOpened)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Note ID cannot be empty.", nameof(id));
+
+        var note = await _noteRepository.GetByIdAsync(id);
+        if (note is null)
+            throw new InvalidOperationException($"Note with ID {id} not found.");
+
+        note.IsOpened = isOpened;
+
+        await _noteRepository.UpdateAsync(note);
+    }
+
+    /// <summary>
     /// Deletes a sticky note by ID.
     /// </summary>
     public async Task DeleteNoteAsync(Guid id)

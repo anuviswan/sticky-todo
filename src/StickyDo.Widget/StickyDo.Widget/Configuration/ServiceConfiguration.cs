@@ -65,6 +65,7 @@ public static class ServiceConfiguration
     {
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IWindowService, WindowService>();
+        services.AddSingleton<ITrayIconService, TrayIconService>();
     }
 
     /// <summary>
@@ -96,7 +97,6 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<StickyNoteService>(),
                 sp.GetRequiredService<WindowManager>(),
                 sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<IWindowService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
                 sp.GetRequiredService<PersistenceService>(),
                 sp.GetRequiredService<IMessenger>()));

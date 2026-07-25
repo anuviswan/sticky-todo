@@ -199,6 +199,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             existing.ColorArgb = note.ColorArgb;
             existing.DisplayOrder = note.DisplayOrder;
             existing.Tasks = note.Tasks;
+            existing.IsOpened = note.IsOpened;
 
             _dirtyTracker.MarkAsDirty(note.Id);
         }

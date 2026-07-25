@@ -17,7 +17,6 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     private readonly StickyNoteService _stickyNoteService;
     private readonly WindowManager _windowManager;
     private readonly IDialogService _dialogService;
-    private readonly IWindowService _windowService;
     private readonly Lazy<IStickyNoteCreationService> _creationService;
     private readonly PersistenceService _persistenceService;
     private readonly IMessenger _messenger;
@@ -26,7 +25,6 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         StickyNoteService stickyNoteService,
         WindowManager windowManager,
         IDialogService dialogService,
-        IWindowService windowService,
         Lazy<IStickyNoteCreationService> creationService,
         PersistenceService persistenceService,
         IMessenger messenger)
@@ -34,14 +32,12 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowManager);
         ArgumentNullException.ThrowIfNull(dialogService);
-        ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
         ArgumentNullException.ThrowIfNull(messenger);
         _stickyNoteService = stickyNoteService;
         _windowManager = windowManager;
         _dialogService = dialogService;
-        _windowService = windowService;
         _creationService = creationService;
         _persistenceService = persistenceService;
         _messenger = messenger;
@@ -71,7 +67,6 @@ public class StickyNoteWindowService : IStickyNoteWindowService
             var viewModel = new StickyNoteWindowViewModel(
                 _stickyNoteService,
                 _dialogService,
-                _windowService,
                 _creationService.Value,
                 _persistenceService,
                 _messenger);
@@ -80,6 +75,9 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
             window.DataContext = viewModel;
             _windowManager.RegisterNoteWindow(noteId, window);
+
+            // Close the window itself (not the shared main window) when the user requests it
+            viewModel.CloseRequested += (s, e) => window.Close();
 
             // Restore window state if available
             var savedState = _windowManager.GetSavedNoteWindowState(noteId);
@@ -95,11 +93,24 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                 window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
 
-            window.Closed += (s, e) =>
+            window.Closed += async (s, e) =>
             {
                 _windowManager.SaveNoteWindowState(noteId, window.Left, window.Top, window.Width, window.Height);
                 _windowManager.UnregisterNoteWindow(noteId);
+
+                try
+                {
+                    await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
+                    await _persistenceService.SaveAllDirtyNotesAsync();
+                }
+                catch (Exception ex)
+                {
+                    LoggerHelper.LogException(ex, nameof(OpenNoteWindowAsync));
+                }
             };
+
+            await _stickyNoteService.SetNoteOpenStateAsync(noteId, true);
+            await _persistenceService.SaveAllDirtyNotesAsync();
 
             window.Show();
         }

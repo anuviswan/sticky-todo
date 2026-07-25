@@ -36,6 +36,8 @@
                                                 FirstTaskCompleted="{Binding FirstTaskCompleted, Mode=OneWay}"
                                                 RemainingTaskCount="{Binding RemainingTaskCount, Mode=OneWay}"
                                                 ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
+                                                Cursor="Hand"
+                                                MouseLeftButtonDown="StickyNoteListItem_MouseLeftButtonDown"
                                                 Margin="0,0,0,12"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

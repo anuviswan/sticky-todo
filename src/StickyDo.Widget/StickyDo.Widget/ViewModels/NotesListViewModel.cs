@@ -109,6 +109,25 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Opens a note as a floating sticky note window, e.g. when double-clicked in the list.
+    /// </summary>
+    public async Task OpenNoteAsync(Guid noteId)
+    {
+        try
+        {
+            await _windowService.OpenNoteWindowAsync(noteId);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(OpenNoteAsync));
+            await _dialogService.ShowMessageAsync(
+                AppStrings.LoadErrorTitle,
+                string.Format(AppStrings.ErrorLoadingNotes, ex.Message),
+                System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
     /// Handles a note being created, updated, or deleted elsewhere in the app,
     /// keeping the notes list current without requiring an app restart.
     /// </summary>
