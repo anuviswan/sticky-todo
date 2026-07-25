@@ -119,7 +119,7 @@ public class StickyNoteService
 
     /// <summary>
     /// Persists the floating window's current screen position and size for a note, so it can be
-    /// restored to the same spot (e.g. after pinning, or on the next application restart).
+    /// restored to the same spot the next time it's opened, including after an application restart.
     /// </summary>
     public async Task UpdateNoteWindowBoundsAsync(Guid id, double left, double top, double width, double height)
     {

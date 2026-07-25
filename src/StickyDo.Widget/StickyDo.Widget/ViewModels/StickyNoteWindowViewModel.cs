@@ -108,12 +108,6 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     public event EventHandler? CloseRequested;
 
     /// <summary>
-    /// Raised right after the note is pinned, so the hosting service can capture the window's
-    /// current screen position/size and persist it, keeping this ViewModel view-agnostic.
-    /// </summary>
-    public event EventHandler? NotePinned;
-
-    /// <summary>
     /// Creates a new note window via the creation service.
     /// </summary>
     [RelayCommand]
@@ -405,11 +399,6 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
             await _stickyNoteService.SetNotePinnedAsync(_currentNote.Id, IsPinned);
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
-
-            if (IsPinned)
-            {
-                NotePinned?.Invoke(this, EventArgs.Empty);
-            }
         }
         catch (Exception ex)
         {
