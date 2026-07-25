@@ -156,7 +156,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                         CreatedAt = newTask.CreatedAt,
                         UpdatedAt = newTask.UpdatedAt
                     };
-                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId));
+                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
                     Tasks.Add(taskVm);
                 }
             }
@@ -173,7 +173,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                         CreatedAt = task.CreatedAt,
                         UpdatedAt = task.UpdatedAt
                     };
-                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId));
+                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
                     Tasks.Add(taskVm);
                 }
             }
@@ -212,7 +212,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                     CreatedAt = newTask.CreatedAt,
                     UpdatedAt = newTask.UpdatedAt
                 };
-                taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId));
+                taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
                 Tasks.Add(taskVm);
 
                 _hasUnsavedChanges = true;

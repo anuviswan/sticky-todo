@@ -30,6 +30,9 @@
                  Padding="0"
                  VerticalAlignment="Top"
                  TextWrapping="Wrap">
+            <TextBox.InputBindings>
+                <KeyBinding Key="Return" Command="{Binding SubmitEditCommand}"/>
+            </TextBox.InputBindings>
             <TextBox.Style>
                 <Style TargetType="TextBox">
                     <Style.Triggers>
