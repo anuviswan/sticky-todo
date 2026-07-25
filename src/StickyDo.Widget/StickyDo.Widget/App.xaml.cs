@@ -16,6 +16,7 @@ public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
     private ITrayIconService? _trayIconService;
+    private bool _isExitRequested;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
 
@@ -107,10 +108,18 @@ public partial class App : Application
 
         MainWindow = mainWindow;
 
+        // Closing the notes list (via its close button or Alt+F4) should only hide it to the
+        // tray, not quit the app. Only the tray icon's "Exit" command truly shuts down.
+        mainWindow.Closing += MainWindow_Closing;
+
         _trayIconService = _serviceProvider.GetRequiredService<ITrayIconService>();
         _trayIconService.Initialize(
             onOpenRequested: () => ShowMainWindow(mainWindow),
-            onExitRequested: Shutdown);
+            onExitRequested: () =>
+            {
+                _isExitRequested = true;
+                Shutdown();
+            });
 
         // Load notes - DataContext is set in MainWindow constructor
         if (mainWindow.DataContext is MainWindowViewModel viewModel)
@@ -119,6 +128,19 @@ public partial class App : Application
         }
 
         _ = RestoreOpenNotesOrShowListAsync(mainWindow);
+    }
+
+    /// <summary>
+    /// Hides the notes list to the tray instead of letting it close, unless the user
+    /// chose "Exit" from the tray icon.
+    /// </summary>
+    private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (_isExitRequested)
+            return;
+
+        e.Cancel = true;
+        ((Window)sender!).Hide();
     }
 
     /// <summary>
