@@ -59,8 +59,7 @@ public static class ServiceConfiguration
     /// </summary>
     private static void ConfigurePersistence(IServiceCollection services)
     {
-        services.AddSingleton(sp =>
-            new PersistenceService(sp.GetRequiredService<FileBasedRepository>()));
+        services.AddSingleton<PersistenceService>();
 
         services.AddSingleton<IPersistenceService>(sp =>
             new MessengerBridgedPersistenceService(
