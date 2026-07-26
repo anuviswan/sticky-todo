@@ -196,6 +196,7 @@
                             </TextBlock.InputBindings>
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding NewTaskTitle}" Value="">
                                             <Setter Property="Visibility" Value="Visible"/>
