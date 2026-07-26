@@ -41,6 +41,12 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
             </Border.Effect>
+            <!-- Forces the rounded corner to rasterize before the effect is applied; without
+                 this, DropShadowEffect's shifted shadow box peeks out past the rounded bottom
+                 corners instead of following the clipped shape. -->
+            <Border.CacheMode>
+                <BitmapCache/>
+            </Border.CacheMode>
             <StackPanel Orientation="Vertical">
                 <!-- Notes List -->
                 <Button Style="{StaticResource MenuItemButtonStyle}"
