@@ -318,12 +318,12 @@
             <Popup x:Name="ColorPickerPopup"
                    IsOpen="{Binding IsColorPickerOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=PaletteButton}"
-                   Placement="Bottom"
+                   Placement="Top"
                    AllowsTransparency="True"
                    PopupAnimation="Fade"
                    StaysOpen="True"
-                   HorizontalOffset="-80"
-                   VerticalOffset="8"
+                   HorizontalOffset="-174"
+                   VerticalOffset="-6"
                    behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseColorPickerCommand}"
                    behaviors:PopupDismissBehavior.ToggleButton="{Binding ElementName=PaletteButton}">
                 <controls:ColorPalettePopup DataContext="{Binding}"/>

@@ -4,34 +4,44 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="160"
-             d:DesignWidth="340"
+             d:DesignHeight="126"
+             d:DesignWidth="218"
              Background="Transparent"
              x:Name="root">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Right" Margin="0,0,20,0">
-        <!-- White Palette Container with Drop Shadow -->
-        <Grid>
-            <!-- Drop Shadow Border -->
-            <Border Background="White" CornerRadius="8">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
-                </Border.Effect>
-            </Border>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- White Palette Card with Drop Shadow -->
+        <Border Grid.Row="0" Background="White" CornerRadius="14" Padding="14">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="3" Opacity="0.18" Direction="270"/>
+            </Border.Effect>
+            <!-- Forces the rounded corner to rasterize before the effect is applied; without
+                 this, DropShadowEffect's shifted shadow box peeks out past the rounded corners
+                 instead of following the clipped shape (see MoreOptionsPopup). -->
+            <Border.CacheMode>
+                <BitmapCache/>
+            </Border.CacheMode>
 
             <!-- Color Grid: 5 columns x 2 rows for 10 colors -->
-            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}" Margin="10,10,10,8">
+            <ItemsControl x:Name="ColorItemsControl" ItemsSource="{Binding AvailableColors}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <UniformGrid Columns="5" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                        <UniformGrid Columns="5"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <!-- Circular Color Button with Selection Indicator -->
-                        <Grid Width="44" Height="44" Margin="5" HorizontalAlignment="Center">
+                        <Grid Width="38" Height="38">
                             <!-- Color Button (Circular) -->
                             <Button x:Name="ColorButton"
+                                    Width="30"
+                                    Height="30"
                                     Cursor="Hand"
                                     Command="{Binding DataContext.SelectColorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding .}"
@@ -40,8 +50,8 @@
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Background" Value="{Binding ., Converter={StaticResource ColorArgbToBrushConverter}}"/>
-                                        <Setter Property="BorderThickness" Value="2"/>
-                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="1"/>
+                                        <Setter Property="BorderBrush" Value="#14000000"/>
                                         <Setter Property="Padding" Value="0"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
@@ -49,7 +59,7 @@
                                                     <Border Background="{TemplateBinding Background}"
                                                             BorderBrush="{TemplateBinding BorderBrush}"
                                                             BorderThickness="{TemplateBinding BorderThickness}"
-                                                            CornerRadius="22">
+                                                            CornerRadius="15">
                                                         <ContentPresenter/>
                                                     </Border>
                                                 </ControlTemplate>
@@ -68,15 +78,20 @@
                             <Border x:Name="SelectionIndicator"
                                     BorderBrush="#2563EB"
                                     BorderThickness="2"
-                                    CornerRadius="22"
+                                    CornerRadius="17"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Width="44"
-                                    Height="44"
-                                    Visibility="Collapsed">
+                                    Width="34"
+                                    Height="34">
+                                <Border.Visibility>
+                                    <MultiBinding Converter="{StaticResource ColorEqualityToVisibilityConverter}">
+                                        <Binding Path="."/>
+                                        <Binding Path="DataContext.CurrentColor" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    </MultiBinding>
+                                </Border.Visibility>
                                 <TextBlock x:Name="Checkmark"
                                            Text="✓"
-                                           FontSize="22"
+                                           FontSize="14"
                                            FontWeight="Bold"
                                            Foreground="White"
                                            HorizontalAlignment="Center"
@@ -87,6 +102,17 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </Grid>
-    </StackPanel>
+        </Border>
+
+        <!-- Pointer anchoring the card to the Palette button below it -->
+        <Polygon Grid.Row="1"
+                  Points="0,0 16,0 8,8"
+                  Fill="White"
+                  HorizontalAlignment="Right"
+                  Margin="0,-1,26,0">
+            <Polygon.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" Opacity="0.1" Direction="270"/>
+            </Polygon.Effect>
+        </Polygon>
+    </Grid>
 </UserControl>
