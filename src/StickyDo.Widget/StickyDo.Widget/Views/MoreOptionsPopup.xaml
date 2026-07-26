@@ -37,7 +37,7 @@
 
     <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
         <!-- White Menu Container with Drop Shadow -->
-        <Border Background="White" CornerRadius="10" Padding="6" MinWidth="176">
+        <Border Background="White" CornerRadius="4" Padding="6" MinWidth="176">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
             </Border.Effect>
