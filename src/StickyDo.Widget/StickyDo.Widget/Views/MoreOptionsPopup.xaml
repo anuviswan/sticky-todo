@@ -55,7 +55,8 @@
             <StackPanel Orientation="Vertical">
                 <!-- Notes List -->
                 <Button Style="{StaticResource MenuItemButtonStyle}"
-                        ToolTip="{x:Static res:Resources.MoreOptionsPopup_NotesList}">
+                        ToolTip="{x:Static res:Resources.MoreOptionsPopup_NotesList}"
+                        Command="{Binding ShowNotesListCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Viewbox Width="16" Height="16" VerticalAlignment="Center">
                             <Canvas Width="16" Height="16">

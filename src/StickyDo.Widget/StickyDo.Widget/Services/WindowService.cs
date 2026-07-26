@@ -26,4 +26,18 @@ public class WindowService : IWindowService
     {
         _mainWindow?.Close();
     }
+
+    public void RequestShow()
+    {
+        if (_mainWindow == null)
+            return;
+
+        if (_mainWindow.WindowState == System.Windows.WindowState.Minimized)
+            _mainWindow.WindowState = System.Windows.WindowState.Normal;
+
+        if (!_mainWindow.IsVisible)
+            _mainWindow.Show();
+
+        _mainWindow.Activate();
+    }
 }
