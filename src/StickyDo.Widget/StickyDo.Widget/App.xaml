@@ -14,6 +14,11 @@
             <converters:ColorToFooterColorConverter x:Key="ColorToFooterColorConverter"/>
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
             <converters:ColorEqualityToVisibilityConverter x:Key="ColorEqualityToVisibilityConverter"/>
+            <converters:NoteSaveStateToIconConverter x:Key="NoteSaveStateToIconConverter"/>
+            <converters:NoteSaveStateToTooltipConverter x:Key="NoteSaveStateToTooltipConverter"/>
+            <converters:NoteSyncStateToIconConverter x:Key="NoteSyncStateToIconConverter"/>
+            <converters:NoteSyncStateToTooltipConverter x:Key="NoteSyncStateToTooltipConverter"/>
+            <converters:NoteSyncStateToPendingVisibilityConverter x:Key="NoteSyncStateToPendingVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -260,29 +260,53 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Sync Status Icon -->
+                    <!-- Save Status Icon: reflects whether the latest edits have been persisted.
+                         Non-interactive (plain TextBlock, no Command) - informational only. -->
                     <TextBlock Grid.Column="0"
-                               Text="☁"
+                               Text="{Binding SaveStatus, Converter={StaticResource NoteSaveStateToIconConverter}}"
+                               ToolTip="{Binding SaveStatus, Converter={StaticResource NoteSaveStateToTooltipConverter}}"
                                FontSize="12"
                                Foreground="#999999"
-                               Margin="0,0,4,0"
+                               Margin="0,0,10,0"
                                VerticalAlignment="Center"/>
 
-                    <!-- Sync Status Text -->
-                    <TextBlock Grid.Column="1"
-                               Text="Synced"
-                               FontSize="11"
-                               Foreground="#000000"
-                               VerticalAlignment="Center"/>
+                    <!-- Sync Status Icon: Phase 1 placeholder, always "Not Synced" until the sync
+                         engine ships. A plain cloud glyph alone reads as "synced" (the common
+                         OneDrive/Google Drive convention), so a small clock badge is overlaid
+                         whenever the state is NotSynced, signaling "pending" rather than "done".
+                         Bound through SyncStatus/the same converter pattern as Save Status so a
+                         future release can swap in real sync state - including hiding the badge
+                         once "Synced" exists - without touching this layout. Non-interactive -
+                         informational only. -->
+                    <Grid Grid.Column="1"
+                          Width="20" Height="17"
+                          ToolTip="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToTooltipConverter}}">
+                        <TextBlock Text="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToIconConverter}}"
+                                   FontSize="13"
+                                   Foreground="#999999"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"/>
+                        <Grid Width="11" Height="11"
+                              HorizontalAlignment="Right"
+                              VerticalAlignment="Bottom"
+                              Visibility="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToPendingVisibilityConverter}}">
+                            <Ellipse Stroke="#999999"
+                                     StrokeThickness="1"
+                                     Fill="{Binding CurrentColor, Converter={StaticResource ColorToFooterColorConverter}}"/>
+                            <Line X1="5.5" Y1="5.5" X2="5.5" Y2="2.5" Stroke="#999999" StrokeThickness="1" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Line X1="5.5" Y1="5.5" X2="7.5" Y2="5.5" Stroke="#999999" StrokeThickness="1" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Grid>
+                    </Grid>
 
                     <!-- Color Palette Icon -->
                     <Button x:Name="PaletteButton"
-                            Grid.Column="2"
+                            Grid.Column="3"
                             Width="20"
                             Height="20"
                             Background="Transparent"
@@ -297,7 +321,7 @@
 
                     <!-- Menu Icon -->
                     <Button x:Name="MenuButton"
-                            Grid.Column="3"
+                            Grid.Column="4"
                             Width="20"
                             Height="20"
                             Background="Transparent"

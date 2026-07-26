@@ -15,6 +15,16 @@ using AppResources = StickyDo.Widget.Resources.Resources;
 namespace StickyDo.Widget.ViewModels;
 
 /// <summary>
+/// Represents the sync status of a note. Phase 1 has no sync engine, so this is always
+/// <see cref="NotSynced"/>; a future release can compute a real value without changing
+/// the footer's binding or layout.
+/// </summary>
+public enum NoteSyncState
+{
+    NotSynced
+}
+
+/// <summary>
 /// ViewModel for a floating sticky note window with task management.
 /// Pure MVVM - communicates via services and observable properties, not callbacks.
 /// </summary>
@@ -77,6 +87,12 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     [ObservableProperty]
     private MoreOptionsPopupViewModel moreOptionsPopupViewModel = new();
 
+    [ObservableProperty]
+    private NoteSaveState saveStatus = NoteSaveState.Saved;
+
+    [ObservableProperty]
+    private NoteSyncState syncStatus = NoteSyncState.NotSynced;
+
     partial void OnTitleChanged(string value)
     {
         if (_currentNote != null)
@@ -112,6 +128,15 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         _windowService = windowService;
 
         MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync, ShowNotesListAsync);
+
+        // WeakReferenceMessenger holds this registration weakly, so it doesn't keep this
+        // (transient, per-window) view model alive after its window closes.
+        _messenger.Register<NoteSaveStateChangedMessage>(this, (recipient, message) =>
+        {
+            var viewModel = (StickyNoteWindowViewModel)recipient;
+            if (message.NoteId == viewModel.NoteId)
+                viewModel.SaveStatus = message.State;
+        });
     }
 
     /// <summary>
@@ -201,6 +226,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             }
 
             _hasUnsavedChanges = false;
+            SaveStatus = NoteSaveState.Saved;
             NewTaskTitle = string.Empty;
         }
         catch (Exception ex)
@@ -412,6 +438,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             _currentNote.IsPinned = IsPinned;
 
             await _stickyNoteService.SetNotePinnedAsync(_currentNote.Id, IsPinned);
+            OnEditingStarted();
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)
@@ -537,6 +564,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     /// </summary>
     private void OnEditingStarted()
     {
+        SaveStatus = NoteSaveState.NotSaved;
         _persistenceService.StartAutoSave();
         ResetIdleTimer();
     }

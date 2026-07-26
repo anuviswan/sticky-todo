@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
 
@@ -51,11 +52,25 @@ public static class ServiceConfiguration
     }
 
     /// <summary>
-    /// Registers persistence and auto-save services.
+    /// Registers persistence and auto-save services. Bridges the domain-level
+    /// <see cref="PersistenceService.NoteSaveStateChanged"/> event onto the UI-facing
+    /// messenger, so note windows can subscribe without the Domain project taking a
+    /// dependency on CommunityToolkit.Mvvm. This subscription lives for the app's
+    /// lifetime (singleton-to-singleton), so it never needs to be unsubscribed.
     /// </summary>
     private static void ConfigurePersistence(IServiceCollection services)
     {
-        services.AddSingleton<PersistenceService>();
+        services.AddSingleton(sp =>
+        {
+            var repository = sp.GetRequiredService<FileBasedRepository>();
+            var persistenceService = new PersistenceService(repository);
+            var messenger = sp.GetRequiredService<IMessenger>();
+
+            persistenceService.NoteSaveStateChanged += (_, e) =>
+                messenger.Send(new NoteSaveStateChangedMessage(e.NoteId, e.State));
+
+            return persistenceService;
+        });
     }
 
     /// <summary>
