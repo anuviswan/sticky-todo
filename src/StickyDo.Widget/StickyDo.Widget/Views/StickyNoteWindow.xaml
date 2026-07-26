@@ -213,6 +213,7 @@
                                  x:Name="AddTaskInput"
                                  Text="{Binding NewTaskTitle, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  behaviors:FocusBehavior.IsFocused="{Binding ShouldFocusAddTaskInput, Mode=OneWay}"
+                                 behaviors:CommitOnLostFocusBehavior.Command="{Binding AddTaskCommand}"
                                  FontSize="13"
                                  Foreground="#333333"
                                  Background="Transparent"
