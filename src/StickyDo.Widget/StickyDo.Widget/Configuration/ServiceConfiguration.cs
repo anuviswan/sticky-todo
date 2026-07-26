@@ -101,7 +101,8 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<IDialogService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
                 sp.GetRequiredService<PersistenceService>(),
-                sp.GetRequiredService<IMessenger>()));
+                sp.GetRequiredService<IMessenger>(),
+                sp.GetRequiredService<IWindowService>()));
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
         services.AddSingleton<MainWindow>();

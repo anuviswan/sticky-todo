@@ -114,7 +114,7 @@ public partial class App : Application
 
         _trayIconService = _serviceProvider.GetRequiredService<ITrayIconService>();
         _trayIconService.Initialize(
-            onOpenRequested: () => ShowMainWindow(mainWindow),
+            onOpenRequested: () => windowServiceImpl.RequestShow(),
             onExitRequested: () =>
             {
                 _isExitRequested = true;
@@ -141,21 +141,6 @@ public partial class App : Application
 
         e.Cancel = true;
         ((Window)sender!).Hide();
-    }
-
-    /// <summary>
-    /// Brings the main (notes list) window to the foreground, restoring it from a
-    /// minimized or hidden (tray-only) state if necessary.
-    /// </summary>
-    private static void ShowMainWindow(Window mainWindow)
-    {
-        if (mainWindow.WindowState == System.Windows.WindowState.Minimized)
-            mainWindow.WindowState = System.Windows.WindowState.Normal;
-
-        if (!mainWindow.IsVisible)
-            mainWindow.Show();
-
-        mainWindow.Activate();
     }
 
     /// <summary>

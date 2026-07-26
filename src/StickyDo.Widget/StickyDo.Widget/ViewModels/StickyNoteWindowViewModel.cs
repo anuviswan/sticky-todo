@@ -26,6 +26,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private readonly IStickyNoteCreationService _creationService;
     private readonly PersistenceService _persistenceService;
     private readonly IMessenger _messenger;
+    private readonly IWindowService _windowService;
     private StickyNote? _currentNote;
     private bool _hasUnsavedChanges;
     private CancellationTokenSource? _idleTimerCts;
@@ -92,7 +93,8 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         IDialogService dialogService,
         IStickyNoteCreationService creationService,
         PersistenceService persistenceService,
-        IMessenger messenger)
+        IMessenger messenger,
+        IWindowService windowService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(stickyNoteTaskService);
@@ -100,14 +102,16 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(creationService);
         ArgumentNullException.ThrowIfNull(persistenceService);
         ArgumentNullException.ThrowIfNull(messenger);
+        ArgumentNullException.ThrowIfNull(windowService);
         _stickyNoteService = stickyNoteService;
         _stickyNoteTaskService = stickyNoteTaskService;
         _dialogService = dialogService;
         _creationService = creationService;
         _persistenceService = persistenceService;
         _messenger = messenger;
+        _windowService = windowService;
 
-        MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync);
+        MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync, ShowNotesListAsync);
     }
 
     /// <summary>
@@ -433,6 +437,16 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     public void CloseMoreOptions()
     {
         IsMoreOptionsOpen = false;
+    }
+
+    /// <summary>
+    /// Shows the notes list window, bringing it to focus if it's already open.
+    /// </summary>
+    public Task ShowNotesListAsync()
+    {
+        IsMoreOptionsOpen = false;
+        _windowService.RequestShow();
+        return Task.CompletedTask;
     }
 
     /// <summary>
