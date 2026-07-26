@@ -14,7 +14,6 @@
             <converters:ColorToFooterColorConverter x:Key="ColorToFooterColorConverter"/>
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
             <converters:ColorEqualityToVisibilityConverter x:Key="ColorEqualityToVisibilityConverter"/>
-            <DropShadowEffect x:Key="CheckmarkShadow" BlurRadius="2" ShadowDepth="1" Opacity="0.6"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

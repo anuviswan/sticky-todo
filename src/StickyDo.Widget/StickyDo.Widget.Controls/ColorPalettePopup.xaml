@@ -74,7 +74,7 @@
                                 </Button.Style>
                             </Button>
 
-                            <!-- Selection Indicator: Blue Border + Checkmark -->
+                            <!-- Selection Indicator: Blue Border -->
                             <Border x:Name="SelectionIndicator"
                                     BorderBrush="#2563EB"
                                     BorderThickness="2"
@@ -89,14 +89,6 @@
                                         <Binding Path="DataContext.CurrentColor" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
                                     </MultiBinding>
                                 </Border.Visibility>
-                                <TextBlock x:Name="Checkmark"
-                                           Text="✓"
-                                           FontSize="14"
-                                           FontWeight="Bold"
-                                           Foreground="White"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Effect="{StaticResource CheckmarkShadow}"/>
                             </Border>
                         </Grid>
                     </DataTemplate>
