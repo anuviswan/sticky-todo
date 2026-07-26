@@ -337,8 +337,8 @@
                    AllowsTransparency="True"
                    PopupAnimation="Fade"
                    StaysOpen="True"
-                   HorizontalOffset="-130"
-                   VerticalOffset="-8"
+                   HorizontalOffset="-156"
+                   VerticalOffset="-20"
                    behaviors:PopupDismissBehavior.DismissCommand="{Binding CloseMoreOptionsCommand}"
                    behaviors:PopupDismissBehavior.ToggleButton="{Binding ElementName=MenuButton}">
                 <local:MoreOptionsPopup DataContext="{Binding MoreOptionsPopupViewModel}"/>

@@ -6,8 +6,10 @@ using System.Windows.Media;
 namespace StickyDo.Widget.Behaviors;
 
 /// <summary>
-/// Attached behavior that dismisses a Popup - via a bound command - when Escape is pressed or
-/// the user clicks outside both the popup and its toggle button while the popup is open.
+/// Attached behavior that dismisses a Popup - via a bound command - when Escape is pressed, the
+/// user clicks outside both the popup and its toggle button while the popup is open, or the
+/// popup's owning window is deactivated (e.g. the user clicks another window or elsewhere on the
+/// desktop; WPF popups are non-activating, so clicks inside the popup itself never trigger this).
 /// Set on the Popup element itself; DismissCommand and ToggleButton are resolved once the
 /// popup's placement target has loaded into its owning window.
 /// </summary>
@@ -84,6 +86,17 @@ public static class PopupDismissBehavior
             var onToggleButton = toggleButton is not null && IsDescendantOf(hit.VisualHit, toggleButton);
 
             if (!insidePopup && !onToggleButton)
+            {
+                GetDismissCommand(popup)?.Execute(null);
+            }
+        };
+
+        // PreviewMouseDown only sees clicks that land inside this window, so clicking another
+        // window or the desktop otherwise leaves the popup open forever. Deactivated covers that
+        // gap; it doesn't fire for clicks inside the popup since popups are non-activating.
+        window.Deactivated += (s, args) =>
+        {
+            if (popup.IsOpen)
             {
                 GetDismissCommand(popup)?.Execute(null);
             }
