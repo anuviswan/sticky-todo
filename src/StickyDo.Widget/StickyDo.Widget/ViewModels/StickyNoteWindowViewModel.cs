@@ -34,7 +34,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private readonly StickyNoteTaskService _stickyNoteTaskService;
     private readonly IDialogService _dialogService;
     private readonly IStickyNoteCreationService _creationService;
-    private readonly PersistenceService _persistenceService;
+    private readonly IPersistenceService _persistenceService;
     private readonly IMessenger _messenger;
     private readonly IWindowService _windowService;
     private StickyNote? _currentNote;
@@ -108,7 +108,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         StickyNoteTaskService stickyNoteTaskService,
         IDialogService dialogService,
         IStickyNoteCreationService creationService,
-        PersistenceService persistenceService,
+        IPersistenceService persistenceService,
         IMessenger messenger,
         IWindowService windowService)
     {

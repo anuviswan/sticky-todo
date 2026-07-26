@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using StickyDo.Widget.ViewModels;
+using AppResources = StickyDo.Widget.Resources.Resources;
 
 namespace StickyDo.Widget.Converters;
 
@@ -15,7 +16,7 @@ public class NoteSyncStateToTooltipConverter : IValueConverter
         {
             return state switch
             {
-                NoteSyncState.NotSynced => "Not Synced",
+                NoteSyncState.NotSynced => AppResources.SyncStatus_NotSynced,
                 _ => string.Empty
             };
         }

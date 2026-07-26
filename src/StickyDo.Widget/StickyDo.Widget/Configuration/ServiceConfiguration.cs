@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
-using StickyDo.Widget.Messages;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
 
@@ -52,25 +51,21 @@ public static class ServiceConfiguration
     }
 
     /// <summary>
-    /// Registers persistence and auto-save services. Bridges the domain-level
-    /// <see cref="PersistenceService.NoteSaveStateChanged"/> event onto the UI-facing
-    /// messenger, so note windows can subscribe without the Domain project taking a
-    /// dependency on CommunityToolkit.Mvvm. This subscription lives for the app's
-    /// lifetime (singleton-to-singleton), so it never needs to be unsubscribed.
+    /// Registers persistence and auto-save services. The concrete <see cref="PersistenceService"/>
+    /// stays Domain-pure (no dependency on CommunityToolkit.Mvvm); <see cref="IPersistenceService"/>
+    /// resolves to a <see cref="MessengerBridgedPersistenceService"/> decorator that forwards its
+    /// <see cref="PersistenceService.NoteSaveStateChanged"/> event onto the UI-facing messenger, so
+    /// note windows can subscribe without the Domain project taking on that dependency.
     /// </summary>
     private static void ConfigurePersistence(IServiceCollection services)
     {
         services.AddSingleton(sp =>
-        {
-            var repository = sp.GetRequiredService<FileBasedRepository>();
-            var persistenceService = new PersistenceService(repository);
-            var messenger = sp.GetRequiredService<IMessenger>();
+            new PersistenceService(sp.GetRequiredService<FileBasedRepository>()));
 
-            persistenceService.NoteSaveStateChanged += (_, e) =>
-                messenger.Send(new NoteSaveStateChangedMessage(e.NoteId, e.State));
-
-            return persistenceService;
-        });
+        services.AddSingleton<IPersistenceService>(sp =>
+            new MessengerBridgedPersistenceService(
+                sp.GetRequiredService<PersistenceService>(),
+                sp.GetRequiredService<IMessenger>()));
     }
 
     /// <summary>
@@ -115,7 +110,7 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<WindowManager>(),
                 sp.GetRequiredService<IDialogService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
-                sp.GetRequiredService<PersistenceService>(),
+                sp.GetRequiredService<IPersistenceService>(),
                 sp.GetRequiredService<IMessenger>(),
                 sp.GetRequiredService<IWindowService>()));
 

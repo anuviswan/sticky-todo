@@ -20,7 +20,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     private readonly WindowManager _windowManager;
     private readonly IDialogService _dialogService;
     private readonly Lazy<IStickyNoteCreationService> _creationService;
-    private readonly PersistenceService _persistenceService;
+    private readonly IPersistenceService _persistenceService;
     private readonly IMessenger _messenger;
     private readonly IWindowService _windowService;
 
@@ -30,7 +30,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         WindowManager windowManager,
         IDialogService dialogService,
         Lazy<IStickyNoteCreationService> creationService,
-        PersistenceService persistenceService,
+        IPersistenceService persistenceService,
         IMessenger messenger,
         IWindowService windowService)
     {

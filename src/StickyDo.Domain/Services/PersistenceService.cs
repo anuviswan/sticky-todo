@@ -7,7 +7,7 @@ namespace StickyDo.Domain.Services;
 /// Orchestrates automatic persistence of sticky notes.
 /// Auto-save timer only runs when the user is actively editing.
 /// </summary>
-public class PersistenceService : IAsyncDisposable
+public class PersistenceService : IPersistenceService, IAsyncDisposable
 {
     private readonly FileBasedRepository _repository;
     private PeriodicTimer? _autoSaveTimer;

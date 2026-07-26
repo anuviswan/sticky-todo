@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using StickyDo.Domain.Models;
+using AppResources = StickyDo.Widget.Resources.Resources;
 
 namespace StickyDo.Widget.Converters;
 
@@ -15,9 +16,9 @@ public class NoteSaveStateToTooltipConverter : IValueConverter
         {
             return state switch
             {
-                NoteSaveState.Saved => "Saved",
-                NoteSaveState.Saving => "Saving...",
-                NoteSaveState.NotSaved => "Not Saved",
+                NoteSaveState.Saved => AppResources.SaveStatus_Saved,
+                NoteSaveState.Saving => AppResources.SaveStatus_Saving,
+                NoteSaveState.NotSaved => AppResources.SaveStatus_NotSaved,
                 _ => string.Empty
             };
         }
