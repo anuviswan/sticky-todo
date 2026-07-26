@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <!-- White Palette Card with Drop Shadow -->
-        <Border Grid.Row="0" Background="White" CornerRadius="14" Padding="14">
+        <Border Grid.Row="0" Background="White" CornerRadius="4" Padding="14">
             <Border.Effect>
                 <DropShadowEffect Color="Black" BlurRadius="12" ShadowDepth="3" Opacity="0.18" Direction="270"/>
             </Border.Effect>
