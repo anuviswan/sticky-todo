@@ -35,9 +35,14 @@
         </Style>
     </UserControl.Resources>
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <!-- White Menu Container with Drop Shadow -->
-        <Border Background="White" CornerRadius="4" Padding="6" MinWidth="176">
+        <Border Grid.Row="0" Background="White" CornerRadius="4" Padding="6" MinWidth="176">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
             </Border.Effect>
@@ -85,5 +90,16 @@
                 </Button>
             </StackPanel>
         </Border>
-    </StackPanel>
+
+        <!-- Pointer anchoring the menu to the More Options button above it -->
+        <Polygon Grid.Row="1"
+                  Points="0,0 16,0 8,8"
+                  Fill="White"
+                  HorizontalAlignment="Right"
+                  Margin="0,-1,14,0">
+            <Polygon.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="1" Opacity="0.1" Direction="270"/>
+            </Polygon.Effect>
+        </Polygon>
+    </Grid>
 </UserControl>
