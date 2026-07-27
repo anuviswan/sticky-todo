@@ -28,13 +28,13 @@ public class StickyNoteCreationService : IStickyNoteCreationService
         _messenger = messenger;
     }
 
-    public async Task CreateNewNoteAsync()
+    public async Task CreateNewNoteAsync(uint? colorArgb = null)
     {
         try
         {
             var noteNumber = await _stickyNoteService.GetNextNoteNumberAsync();
             var noteTitle = $"Note {noteNumber}";
-            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle);
+            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, colorArgb);
 
             // Open the window first - it adds the default "First Task" during load. Notifying
             // the list only after that completes ensures its card reflects that task, instead
