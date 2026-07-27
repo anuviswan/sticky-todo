@@ -58,6 +58,33 @@ public class StickyNoteServiceTests
     }
 
     [TestMethod]
+    public async Task CreateNoteAsync_WithColor_SetsColorArgb()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        var noteId = await service.CreateNoteAsync("Test Note", 0xFFAABBCC);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual((uint)0xFFAABBCC, note!.ColorArgb);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_WithoutColor_LeavesColorArgbNull()
+    {
+        // Arrange & Act
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.IsNull(note!.ColorArgb);
+    }
+
+    [TestMethod]
     public async Task SetNotePinnedAsync_PinsNote()
     {
         // Arrange

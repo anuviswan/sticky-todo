@@ -38,9 +38,9 @@ public class StickyNoteService
     }
 
     /// <summary>
-    /// Creates a new sticky note with the provided title.
+    /// Creates a new sticky note with the provided title and optional color.
     /// </summary>
-    public async Task<Guid> CreateNoteAsync(string title)
+    public async Task<Guid> CreateNoteAsync(string title, uint? colorArgb = null)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Note title cannot be empty.", nameof(title));
@@ -52,7 +52,8 @@ public class StickyNoteService
             Status = StickyNoteStatus.Active,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
-            DisplayOrder = 0
+            DisplayOrder = 0,
+            ColorArgb = colorArgb
         };
 
         return await _noteRepository.CreateAsync(note);

@@ -7,7 +7,8 @@ namespace StickyDo.Widget.Interfaces;
 public interface IStickyNoteCreationService
 {
     /// <summary>
-    /// Creates a new sticky note and opens it in a window.
+    /// Creates a new sticky note and opens it in a window, optionally inheriting a color
+    /// (e.g. from the note it was created from).
     /// </summary>
-    Task CreateNewNoteAsync();
+    Task CreateNewNoteAsync(uint? colorArgb = null);
 }
