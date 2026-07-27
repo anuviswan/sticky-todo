@@ -30,4 +30,30 @@
         </Setter>
     </Style>
 
+    <!-- Shared task checkbox: same look in the floating note editor and the Note List preview -
+         a slightly rounded outline (no accent-color fill) with a plain checkmark when checked,
+         matching the platform default's resting appearance but with softened corners. -->
+    <Style x:Key="TaskCheckBoxStyle" TargetType="CheckBox">
+        <Setter Property="Width" Value="14"/>
+        <Setter Property="Height" Value="14"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="Box" Width="14" Height="14" CornerRadius="2"
+                            BorderThickness="1.3" BorderBrush="#707070" Background="White">
+                        <Path x:Name="CheckMark" Data="M 2,7 L 5,10 L 11,3"
+                              Stroke="#333333" StrokeThickness="1.6"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                              Visibility="Collapsed"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

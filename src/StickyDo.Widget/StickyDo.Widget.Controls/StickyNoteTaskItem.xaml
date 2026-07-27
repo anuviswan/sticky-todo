@@ -14,8 +14,9 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Checkbox -->
+        <!-- Checkbox (shared style with the Note List preview, see Resources/Styles.xaml) -->
         <CheckBox Grid.Column="0"
+                  Style="{StaticResource TaskCheckBoxStyle}"
                   IsChecked="{Binding IsCompleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                   VerticalAlignment="Top"
                   Margin="0,2,12,0"/>
