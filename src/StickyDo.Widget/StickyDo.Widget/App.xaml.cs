@@ -187,7 +187,7 @@ public partial class App : Application
 
         try
         {
-            var persistenceService = _serviceProvider.GetService<PersistenceService>();
+            var persistenceService = _serviceProvider.GetService<IPersistenceService>();
             if (persistenceService != null)
             {
                 persistenceService.StopAutoSaveAsync().Wait(TimeSpan.FromSeconds(5));

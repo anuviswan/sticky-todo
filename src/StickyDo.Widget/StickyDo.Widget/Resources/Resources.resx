@@ -91,4 +91,16 @@
   <data name="LoadErrorTitle" xml:space="preserve">
     <value>Load Error</value>
   </data>
+  <data name="SaveStatus_Saved" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="SaveStatus_Saving" xml:space="preserve">
+    <value>Saving...</value>
+  </data>
+  <data name="SaveStatus_NotSaved" xml:space="preserve">
+    <value>Not Saved</value>
+  </data>
+  <data name="SyncStatus_NotSynced" xml:space="preserve">
+    <value>Not Synced</value>
+  </data>
 </root>

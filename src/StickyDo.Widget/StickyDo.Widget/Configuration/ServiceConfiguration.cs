@@ -51,11 +51,20 @@ public static class ServiceConfiguration
     }
 
     /// <summary>
-    /// Registers persistence and auto-save services.
+    /// Registers persistence and auto-save services. The concrete <see cref="PersistenceService"/>
+    /// stays Domain-pure (no dependency on CommunityToolkit.Mvvm); <see cref="IPersistenceService"/>
+    /// resolves to a <see cref="MessengerBridgedPersistenceService"/> decorator that forwards its
+    /// <see cref="PersistenceService.NoteSaveStateChanged"/> event onto the UI-facing messenger, so
+    /// note windows can subscribe without the Domain project taking on that dependency.
     /// </summary>
     private static void ConfigurePersistence(IServiceCollection services)
     {
         services.AddSingleton<PersistenceService>();
+
+        services.AddSingleton<IPersistenceService>(sp =>
+            new MessengerBridgedPersistenceService(
+                sp.GetRequiredService<PersistenceService>(),
+                sp.GetRequiredService<IMessenger>()));
     }
 
     /// <summary>
@@ -100,7 +109,7 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<WindowManager>(),
                 sp.GetRequiredService<IDialogService>(),
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
-                sp.GetRequiredService<PersistenceService>(),
+                sp.GetRequiredService<IPersistenceService>(),
                 sp.GetRequiredService<IMessenger>(),
                 sp.GetRequiredService<IWindowService>()));
 

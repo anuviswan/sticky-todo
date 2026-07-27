@@ -1,3 +1,4 @@
+using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
 
 namespace StickyDo.Domain.Services;
@@ -6,7 +7,7 @@ namespace StickyDo.Domain.Services;
 /// Orchestrates automatic persistence of sticky notes.
 /// Auto-save timer only runs when the user is actively editing.
 /// </summary>
-public class PersistenceService : IAsyncDisposable
+public class PersistenceService : IPersistenceService, IAsyncDisposable
 {
     private readonly FileBasedRepository _repository;
     private PeriodicTimer? _autoSaveTimer;
@@ -19,6 +20,12 @@ public class PersistenceService : IAsyncDisposable
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _debounceMs = debounceMs;
     }
+
+    /// <summary>
+    /// Raised whenever a specific note transitions between Saving/Saved/NotSaved, so that
+    /// open note windows can reflect their live save status without polling.
+    /// </summary>
+    public event EventHandler<NoteSaveStateChangedEventArgs>? NoteSaveStateChanged;
 
     /// <summary>
     /// Starts the auto-save background task when user begins editing.
@@ -52,11 +59,29 @@ public class PersistenceService : IAsyncDisposable
     }
 
     /// <summary>
-    /// Saves all notes with unsaved changes to disk immediately.
+    /// Saves all notes with unsaved changes to disk immediately, raising
+    /// <see cref="NoteSaveStateChanged"/> for each one so subscribers see live progress.
+    /// A note that fails to save is left dirty (retried on the next tick) and does not
+    /// prevent the remaining dirty notes from being saved.
     /// </summary>
     public async Task SaveAllDirtyNotesAsync()
     {
-        await _repository.SaveAllDirtyNotesAsync();
+        var dirtyNoteIds = _repository.GetDirtyNotes().ToList();
+        foreach (var noteId in dirtyNoteIds)
+        {
+            NoteSaveStateChanged?.Invoke(this, new NoteSaveStateChangedEventArgs(noteId, NoteSaveState.Saving));
+
+            try
+            {
+                await _repository.SaveNoteAsync(noteId);
+                NoteSaveStateChanged?.Invoke(this, new NoteSaveStateChangedEventArgs(noteId, NoteSaveState.Saved));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Auto-save error for note {noteId}: {ex}");
+                NoteSaveStateChanged?.Invoke(this, new NoteSaveStateChangedEventArgs(noteId, NoteSaveState.NotSaved));
+            }
+        }
     }
 
     /// <summary>
@@ -76,7 +101,7 @@ public class PersistenceService : IAsyncDisposable
             {
                 if (_repository.HasPendingChanges)
                 {
-                    await _repository.SaveAllDirtyNotesAsync();
+                    await SaveAllDirtyNotesAsync();
                 }
             }
         }

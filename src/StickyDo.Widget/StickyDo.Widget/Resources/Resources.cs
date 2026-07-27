@@ -24,6 +24,10 @@ public static class Resources
     public static string ZeroNotes => Get(nameof(ZeroNotes));
     public static string ErrorLoadingNotes => Get(nameof(ErrorLoadingNotes));
     public static string LoadErrorTitle => Get(nameof(LoadErrorTitle));
+    public static string SaveStatus_Saved => Get(nameof(SaveStatus_Saved));
+    public static string SaveStatus_Saving => Get(nameof(SaveStatus_Saving));
+    public static string SaveStatus_NotSaved => Get(nameof(SaveStatus_NotSaved));
+    public static string SyncStatus_NotSynced => Get(nameof(SyncStatus_NotSynced));
 
     private static string Get(string name) => ResourceManager.GetString(name) ?? name;
 }
