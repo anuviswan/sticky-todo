@@ -17,11 +17,13 @@
             <Setter Property="Width" Value="18"/>
             <Setter Property="Height" Value="18"/>
             <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="4"
-                                BorderThickness="2" BorderBrush="#0078D4" Background="White">
+                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="3"
+                                BorderThickness="1.5" BorderBrush="#0078D4" Background="White">
                             <Path x:Name="CheckMark" Data="M 3,9 L 7,13 L 15,4"
                                   Stroke="White" StrokeThickness="2"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
@@ -39,7 +41,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="4"
+    <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="8"
             BorderBrush="#14000000" BorderThickness="1" Padding="14,12,14,12">
         <StackPanel>
             <!-- Title -->
@@ -70,15 +72,25 @@
             </StackPanel>
 
             <!-- Expand indicator: always shown for a consistent card footer; the "+N more"
-                 label only appears when the note has additional tasks beyond the first. -->
-            <Border Width="72" Height="22" CornerRadius="11" Background="#14000000"
-                    HorizontalAlignment="Center" Margin="0,14,0,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, StringFormat=+{0} more}"
-                               FontSize="11" Foreground="#5C5C5C" Margin="0,0,4,0"
+                 label only appears when the note has additional tasks beyond the first. The
+                 "*" column absorbs any spare width from MinWidth, so the chevron in the Auto
+                 column stays pinned to the trailing edge whether or not the label is present. -->
+            <Border MinWidth="64" MinHeight="22" CornerRadius="11" Background="#14000000"
+                    Padding="14,4,10,4" HorizontalAlignment="Center" Margin="0,14,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, StringFormat=+{0} more}"
+                               FontSize="11" Foreground="#5C5C5C" Margin="0,0,6,0"
+                               HorizontalAlignment="Left" VerticalAlignment="Center"
                                Visibility="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, Converter={StaticResource CountToVisibilityConverter}}"/>
-                    <TextBlock Text="&#9662;" FontSize="13" Foreground="#5C5C5C"/>
-                </StackPanel>
+                    <Path Grid.Column="1" Data="M 0,0 L 5,5 L 10,0" Stroke="#5C5C5C" StrokeThickness="1.6"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                          Width="10" Height="6" Stretch="Uniform" VerticalAlignment="Center"/>
+                </Grid>
             </Border>
         </StackPanel>
     </Border>
