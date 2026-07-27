@@ -11,30 +11,57 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+
+        <!-- Flat, read-only checkbox matching the note card task preview (checked = filled accent + white check) -->
+        <Style x:Key="TaskPreviewCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="Box" Width="18" Height="18" CornerRadius="4"
+                                BorderThickness="2" BorderBrush="#0078D4" Background="White">
+                            <Path x:Name="CheckMark" Data="M 3,9 L 7,13 L 15,4"
+                                  Stroke="White" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                  Visibility="Collapsed"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="#0078D4"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
-    <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="10"
-            BorderBrush="#14000000" BorderThickness="1" Padding="14,12,14,10">
+    <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="4"
+            BorderBrush="#14000000" BorderThickness="1" Padding="14,12,14,12">
         <StackPanel>
             <!-- Title -->
             <TextBlock Text="{Binding Title, Mode=OneWay, ElementName=Root}"
-                       FontWeight="700" FontSize="14" Foreground="#1F1F1F"
-                       TextTrimming="CharacterEllipsis" Margin="0,0,0,10"/>
+                       FontWeight="700" FontSize="14" Foreground="#3A4550"
+                       TextTrimming="CharacterEllipsis" Margin="0,0,0,14"/>
 
             <!-- First task (checkbox + text), shown only when the note has tasks -->
             <StackPanel Orientation="Horizontal"
                         Visibility="{Binding HasTasks, Mode=OneWay, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">
-                <CheckBox IsChecked="{Binding FirstTaskCompleted, Mode=OneWay, ElementName=Root}"
-                          IsHitTestVisible="False" VerticalAlignment="Top" Margin="0,1,8,0"/>
+                <CheckBox Style="{StaticResource TaskPreviewCheckBoxStyle}"
+                          IsChecked="{Binding FirstTaskCompleted, Mode=OneWay, ElementName=Root}"
+                          VerticalAlignment="Top" Margin="0,1,10,0"/>
                 <TextBlock Text="{Binding FirstTaskTitle, Mode=OneWay, ElementName=Root}"
-                           FontSize="12" Foreground="#333333"
+                           FontSize="14" Foreground="#333333"
                            TextWrapping="Wrap" VerticalAlignment="Top">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding FirstTaskCompleted, ElementName=Root}" Value="True">
                                     <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                    <Setter Property="Foreground" Value="#777777"/>
+                                    <Setter Property="Foreground" Value="#8A8A8A"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -42,14 +69,17 @@
                 </TextBlock>
             </StackPanel>
 
-            <!-- "+N more" indicator when the note has additional tasks -->
-            <TextBlock Text="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, StringFormat=+{0} more}"
-                       FontSize="11" Foreground="#5C5C5C" Margin="24,4,0,0"
-                       Visibility="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, Converter={StaticResource CountToVisibilityConverter}}"/>
-
-            <!-- Static affordance glyph (no behavior wired up) -->
-            <TextBlock Text="&#9662;" FontSize="12" Foreground="#66000000"
-                       HorizontalAlignment="Center" Margin="0,10,0,0"/>
+            <!-- Expand indicator: always shown for a consistent card footer; the "+N more"
+                 label only appears when the note has additional tasks beyond the first. -->
+            <Border Width="72" Height="22" CornerRadius="11" Background="#14000000"
+                    HorizontalAlignment="Center" Margin="0,14,0,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, StringFormat=+{0} more}"
+                               FontSize="11" Foreground="#5C5C5C" Margin="0,0,4,0"
+                               Visibility="{Binding RemainingTaskCount, Mode=OneWay, ElementName=Root, Converter={StaticResource CountToVisibilityConverter}}"/>
+                    <TextBlock Text="&#9662;" FontSize="13" Foreground="#5C5C5C"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </Border>
 </UserControl>
