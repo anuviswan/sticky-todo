@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget.Behaviors;
@@ -44,5 +45,20 @@ public static class MainWindowBehavior
                 viewModel.LoadNotesCommand.Execute(null);
             }
         };
+
+        // Border.CornerRadius only rounds the border's own background/outline, not its
+        // children, so the root content is clipped explicitly to match the rounded window.
+        var rootBorder = window.FindName("RootBorder") as Border;
+        if (rootBorder != null)
+        {
+            void UpdateClip()
+            {
+                rootBorder.Clip = new RectangleGeometry(
+                    new Rect(0, 0, rootBorder.ActualWidth, rootBorder.ActualHeight), 4, 4);
+            }
+
+            rootBorder.SizeChanged += (s, e) => UpdateClip();
+            UpdateClip();
+        }
     }
 }

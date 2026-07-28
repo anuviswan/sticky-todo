@@ -9,14 +9,14 @@
         xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
         mc:Ignorable="d"
         Title="StickyDo" Height="700" Width="1200"
-        Background="White" ResizeMode="CanResizeWithGrip"
+        Background="Transparent" ResizeMode="CanResizeWithGrip"
         WindowStyle="None" AllowsTransparency="True"
         WindowStartupLocation="CenterScreen" ShowInTaskbar="True">
 
-    <Border Background="White" BorderBrush="#D0D0D0" BorderThickness="1">
+    <Border x:Name="RootBorder" Background="White" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="64"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -32,7 +32,6 @@
                 <Grid Margin="24,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
@@ -77,20 +76,14 @@
                         </Grid>
                     </Border>
 
-                    <!-- Settings Button -->
-                    <Button Grid.Column="1" Width="32" Height="32" Background="Transparent" BorderThickness="0"
-                            Cursor="Hand" ToolTip="Settings" Margin="0,0,12,0">
-                        <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Button>
-
                     <!-- Info Button -->
-                    <Button Grid.Column="2" Width="32" Height="32" Background="Transparent" BorderThickness="0"
+                    <Button Grid.Column="1" Width="32" Height="32" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Help" Margin="0,0,12,0">
                         <TextBlock Text="ℹ️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
 
                     <!-- New Note Button -->
-                    <Button Grid.Column="3" Content="+ New Note" Padding="8,4,8,4"
+                    <Button Grid.Column="2" Content="+ New Note" Padding="8,4,8,4"
                             FontSize="12" FontWeight="500"
                             Background="#0066CC" Foreground="White"
                             BorderThickness="0" Cursor="Hand"
@@ -98,7 +91,7 @@
                             Height="32" VerticalAlignment="Center"/>
 
                     <!-- Minimize Button -->
-                    <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
+                    <Button Grid.Column="3" Width="40" Height="40" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Minimize"
                             Command="{Binding MinimizeWindowCommand}">
                         <TextBlock Text="−" FontSize="18" FontWeight="300" Foreground="#666666"
@@ -106,7 +99,7 @@
                     </Button>
 
                     <!-- Close Button -->
-                    <Button Grid.Column="5" Width="40" Height="40" Background="Transparent" BorderThickness="0"
+                    <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Close"
                             Command="{Binding CloseWindowCommand}">
                         <TextBlock Text="✕" FontSize="16" FontWeight="400" Foreground="#666666"
