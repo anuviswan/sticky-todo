@@ -9,14 +9,14 @@
         xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
         mc:Ignorable="d"
         Title="StickyDo" Height="700" Width="1200"
-        Background="White" ResizeMode="CanResizeWithGrip"
+        Background="Transparent" ResizeMode="CanResizeWithGrip"
         WindowStyle="None" AllowsTransparency="True"
         WindowStartupLocation="CenterScreen" ShowInTaskbar="True">
 
-    <Border Background="White" BorderBrush="#D0D0D0" BorderThickness="1">
+    <Border x:Name="RootBorder" Background="White" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="64"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -28,19 +28,16 @@
             <controls:SidebarNavigation Grid.Column="0" Grid.Row="0" Grid.RowSpan="2"/>
 
             <!-- Header Bar -->
-            <Border x:Name="TitleBarBorder" Grid.Column="1" Grid.Row="0" Background="#FFFFFF" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1">
+            <Border x:Name="TitleBarBorder" Grid.Column="1" Grid.Row="0" Background="#F9F9F9" BorderBrush="#E8E8E8" BorderThickness="0,0,0,1">
                 <Grid Margin="24,0,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Search Bar -->
-                    <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#D8D8D8" BorderThickness="1"
+                    <Border Grid.Column="0" Background="#F3F3F3" BorderBrush="#D8D8D8" BorderThickness="1"
                             Padding="12,8,12,8" VerticalAlignment="Center" Margin="0,0,16,0" MaxWidth="400" CornerRadius="4">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -77,28 +74,8 @@
                         </Grid>
                     </Border>
 
-                    <!-- Settings Button -->
-                    <Button Grid.Column="1" Width="32" Height="32" Background="Transparent" BorderThickness="0"
-                            Cursor="Hand" ToolTip="Settings" Margin="0,0,12,0">
-                        <TextBlock Text="⚙️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Button>
-
-                    <!-- Info Button -->
-                    <Button Grid.Column="2" Width="32" Height="32" Background="Transparent" BorderThickness="0"
-                            Cursor="Hand" ToolTip="Help" Margin="0,0,12,0">
-                        <TextBlock Text="ℹ️" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                    </Button>
-
-                    <!-- New Note Button -->
-                    <Button Grid.Column="3" Content="+ New Note" Padding="8,4,8,4"
-                            FontSize="12" FontWeight="500"
-                            Background="#0066CC" Foreground="White"
-                            BorderThickness="0" Cursor="Hand"
-                            Command="{Binding NotesListViewModel.CreateNoteCommand}" Margin="0,0,12,0"
-                            Height="32" VerticalAlignment="Center"/>
-
                     <!-- Minimize Button -->
-                    <Button Grid.Column="4" Width="40" Height="40" Background="Transparent" BorderThickness="0"
+                    <Button Grid.Column="1" Width="40" Height="40" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Minimize"
                             Command="{Binding MinimizeWindowCommand}">
                         <TextBlock Text="−" FontSize="18" FontWeight="300" Foreground="#666666"
@@ -106,7 +83,7 @@
                     </Button>
 
                     <!-- Close Button -->
-                    <Button Grid.Column="5" Width="40" Height="40" Background="Transparent" BorderThickness="0"
+                    <Button Grid.Column="2" Width="40" Height="40" Background="Transparent" BorderThickness="0"
                             Cursor="Hand" ToolTip="Close"
                             Command="{Binding CloseWindowCommand}">
                         <TextBlock Text="✕" FontSize="16" FontWeight="400" Foreground="#666666"
@@ -116,7 +93,7 @@
             </Border>
 
             <!-- Notes Content Area -->
-            <Border Grid.Column="1" Grid.Row="1" Background="#F5F5F5">
+            <Border Grid.Column="1" Grid.Row="1" Background="#F9F9F9">
                 <views:NotesListView DataContext="{Binding NotesListViewModel}"/>
             </Border>
         </Grid>
