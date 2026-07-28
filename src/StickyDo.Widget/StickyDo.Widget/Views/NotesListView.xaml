@@ -38,6 +38,8 @@
                                                 ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
                                                 Cursor="Hand"
                                                 MouseLeftButtonDown="StickyNoteListItem_MouseLeftButtonDown"
+                                                PreviewMouseLeftButtonDown="StickyNoteListItem_PreviewMouseLeftButtonDown"
+                                                PreviewMouseMove="StickyNoteListItem_PreviewMouseMove"
                                                 Margin="0,0,0,12"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

@@ -13,8 +13,7 @@ namespace StickyDo.Widget.ViewModels;
 public enum NavigationView
 {
     AllNotes,
-    Favorites,
-    Trash
+    Favorites
 }
 
 /// <summary>
@@ -87,16 +86,6 @@ public partial class MainWindowViewModel : ObservableObject
     public void ShowFavorites()
     {
         SelectedNavView = NavigationView.Favorites;
-        NotesListViewModel.SearchQuery = string.Empty;
-    }
-
-    /// <summary>
-    /// Shows trash notes (placeholder for Phase 2).
-    /// </summary>
-    [RelayCommand]
-    public void ShowTrash()
-    {
-        SelectedNavView = NavigationView.Trash;
         NotesListViewModel.SearchQuery = string.Empty;
     }
 

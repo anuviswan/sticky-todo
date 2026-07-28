@@ -2,6 +2,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.Utilities;
 using StickyDo.Widget.ViewModels;
 using StickyDo.Widget.Views;
@@ -50,6 +51,32 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         _persistenceService = persistenceService;
         _messenger = messenger;
         _windowService = windowService;
+
+        _messenger.Register<StickyNoteChangedMessage>(this, (recipient, message) =>
+            ((StickyNoteWindowService)recipient).OnNoteChanged(message));
+    }
+
+    /// <summary>
+    /// Closes a note's floating window if it's open and the note was just permanently deleted
+    /// elsewhere (e.g. dragged onto the Trash icon from the Notes List) - otherwise the window
+    /// would keep showing a note that no longer exists in storage.
+    /// </summary>
+    private void OnNoteChanged(StickyNoteChangedMessage message)
+    {
+        if (message.ChangeType != StickyNoteChangeType.Deleted)
+            return;
+
+        if (_windowManager.GetNoteWindow(message.NoteId) is not { } window)
+            return;
+
+        try
+        {
+            window.Close();
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(OnNoteChanged));
+        }
     }
 
     /// <summary>
@@ -92,8 +119,15 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
                 window.DataContext = viewModel;
 
-                // Close the window itself (not the shared main window) when the user requests it
-                viewModel.CloseRequested += (s, e) => window.Close();
+                // Close the window itself (not the shared main window) when the user requests it.
+                // Guarded because DeleteNoteAsync both broadcasts a Deleted message (which
+                // OnNoteChanged above reacts to by closing this same window) and raises
+                // CloseRequested - without the guard this would call Close() a second time.
+                viewModel.CloseRequested += (s, e) =>
+                {
+                    if (_windowManager.IsNoteWindowOpen(noteId))
+                        window.Close();
+                };
 
                 // Restore window state: prefer the in-memory state from this session, then fall
                 // back to the position persisted on disk from the last time this note was closed.

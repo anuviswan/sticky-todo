@@ -70,6 +70,18 @@
   <data name="DeleteNote_ConfirmMessage" xml:space="preserve">
     <value>Cette note sera définitivement supprimée. Cette action est irréversible.</value>
   </data>
+  <data name="DragDeleteNote_ConfirmTitle" xml:space="preserve">
+    <value>Supprimer la note</value>
+  </data>
+  <data name="DragDeleteNote_ConfirmMessage" xml:space="preserve">
+    <value>Supprimer définitivement '{0}' ? Cette action est irréversible.</value>
+  </data>
+  <data name="DragDeleteNote_ErrorTitle" xml:space="preserve">
+    <value>Erreur de suppression</value>
+  </data>
+  <data name="DragDeleteNote_ErrorMessage" xml:space="preserve">
+    <value>Erreur lors de la suppression de la note : {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>Synchronisation...</value>
   </data>
