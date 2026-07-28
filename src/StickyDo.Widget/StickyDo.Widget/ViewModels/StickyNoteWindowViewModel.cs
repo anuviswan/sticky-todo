@@ -266,6 +266,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 _hasUnsavedChanges = true;
                 NewTaskTitle = string.Empty;
                 OnEditingStarted();
+                _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
             }
         }
         catch (Exception ex)
@@ -288,6 +289,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             await _stickyNoteTaskService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
             _hasUnsavedChanges = true;
             OnEditingStarted();
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)
         {
@@ -314,6 +316,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 Tasks.Remove(taskVm);
                 _hasUnsavedChanges = true;
                 OnEditingStarted();
+                _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
             }
         }
         catch (Exception ex)
