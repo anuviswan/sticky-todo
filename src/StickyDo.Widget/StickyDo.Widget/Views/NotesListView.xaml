@@ -6,13 +6,13 @@
              xmlns:local="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
              xmlns:conv="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
              mc:Ignorable="d"
-             Background="#F5F5F5">
+             Background="#F9F9F9">
     <UserControl.Resources>
         <conv:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid x:Name="ContentGrid">
         <!-- Notes Board: notes grouped into color-based columns -->
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#F5F5F5"
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#F9F9F9"
                       x:Name="NotesScrollViewer"
                       Visibility="{Binding Columns, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Margin="24,16,24,16">
@@ -71,7 +71,7 @@
         <!-- Empty State -->
         <StackPanel x:Name="EmptyStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Visibility="{Binding Columns, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}, ConverterParameter=inverted}"
-                    Background="#F5F5F5">
+                    Background="#F9F9F9">
             <TextBlock Text="📋" FontSize="64" Foreground="#D0D0D0"
                        HorizontalAlignment="Center" Margin="0,0,0,16"/>
             <TextBlock Text="No notes yet" FontSize="18" FontWeight="500" Foreground="#666666"

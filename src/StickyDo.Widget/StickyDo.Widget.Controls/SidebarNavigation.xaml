@@ -6,7 +6,7 @@
              xmlns:converters="clr-namespace:StickyDo.Widget.Controls.Converters"
              mc:Ignorable="d"
              Width="64"
-             Background="#F5F5F5"
+             Background="#F3F3F3"
              BorderBrush="#E8E8E8"
              BorderThickness="0,0,1,0">
     <UserControl.Resources>
