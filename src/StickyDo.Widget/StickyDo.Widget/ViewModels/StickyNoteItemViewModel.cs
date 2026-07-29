@@ -23,6 +23,9 @@ public partial class StickyNoteItemViewModel : ObservableObject
     private bool hasTasks;
 
     [ObservableProperty]
+    private bool isFavorite;
+
+    [ObservableProperty]
     private string firstTaskTitle = string.Empty;
 
     [ObservableProperty]

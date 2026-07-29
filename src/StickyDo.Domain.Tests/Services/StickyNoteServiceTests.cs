@@ -156,6 +156,77 @@ public class StickyNoteServiceTests
     }
 
     [TestMethod]
+    public async Task SetNoteFavoriteAsync_MarksNoteAsFavorite()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Act
+        await service.SetNoteFavoriteAsync(noteId, true);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.IsTrue(note!.IsFavorite);
+    }
+
+    [TestMethod]
+    public async Task SetNoteFavoriteAsync_UnmarksNoteAsFavorite()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.SetNoteFavoriteAsync(noteId, true);
+
+        // Act
+        await service.SetNoteFavoriteAsync(noteId, false);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.IsFalse(note!.IsFavorite);
+    }
+
+    [TestMethod]
+    public async Task SetNoteFavoriteAsync_DoesNotChangeTitleOrColor()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.UpdateNoteAsync(noteId, "Test Note", StickyNoteStatus.Active, 0xFFAABBCC);
+
+        // Act
+        await service.SetNoteFavoriteAsync(noteId, true);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual("Test Note", note!.Title);
+        Assert.AreEqual((uint)0xFFAABBCC, note.ColorArgb);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public async Task SetNoteFavoriteAsync_ThrowsOnEmptyId()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        await service.SetNoteFavoriteAsync(Guid.Empty, true);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public async Task SetNoteFavoriteAsync_ThrowsWhenNoteNotFound()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        await service.SetNoteFavoriteAsync(Guid.NewGuid(), true);
+    }
+
+    [TestMethod]
     public async Task UpdateNoteWindowBoundsAsync_PersistsPositionAndSize()
     {
         // Arrange

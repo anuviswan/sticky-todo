@@ -82,6 +82,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private bool isPinned;
 
     [ObservableProperty]
+    private bool isFavorite;
+
+    [ObservableProperty]
     private bool isMoreOptionsOpen = false;
 
     [ObservableProperty]
@@ -184,6 +187,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             Title = _currentNote.Title;
             CurrentColor = _currentNote.ColorArgb ?? ColorPalette.GetDefaultColor();
             IsPinned = _currentNote.IsPinned;
+            IsFavorite = _currentNote.IsFavorite;
 
             Tasks.Clear();
 
@@ -448,6 +452,39 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(TogglePinAsync));
             await _dialogService.ShowMessageAsync("Pin Error", $"Error updating pin state: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Toggles the favourite state of the note and persists it. Reverts the icon back to its
+    /// previous state if persisting fails, so the UI never shows a favourite status that wasn't
+    /// actually saved.
+    /// </summary>
+    [RelayCommand]
+    public async Task ToggleFavoriteAsync()
+    {
+        if (_currentNote is null)
+            return;
+
+        var previousValue = IsFavorite;
+        IsFavorite = !previousValue;
+        _currentNote.IsFavorite = IsFavorite;
+
+        try
+        {
+            await _stickyNoteService.SetNoteFavoriteAsync(_currentNote.Id, IsFavorite);
+            OnEditingStarted();
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ToggleFavoriteAsync));
+            IsFavorite = previousValue;
+            _currentNote.IsFavorite = previousValue;
+            await _dialogService.ShowMessageAsync(
+                AppResources.Favorite_ErrorTitle,
+                string.Format(AppResources.Favorite_ErrorMessage, ex.Message),
+                System.Windows.MessageBoxImage.Error);
         }
     }
 

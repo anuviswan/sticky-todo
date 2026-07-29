@@ -82,6 +82,12 @@
   <data name="DragDeleteNote_ErrorMessage" xml:space="preserve">
     <value>Error deleting note: {0}</value>
   </data>
+  <data name="Favorite_ErrorTitle" xml:space="preserve">
+    <value>Favorite Error</value>
+  </data>
+  <data name="Favorite_ErrorMessage" xml:space="preserve">
+    <value>Error updating favorite status: {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>Syncing...</value>
   </data>

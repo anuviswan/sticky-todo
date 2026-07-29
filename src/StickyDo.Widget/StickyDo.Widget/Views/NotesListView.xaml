@@ -30,12 +30,15 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <local:StickyNoteListItem
+                                                NoteId="{Binding Id, Mode=OneWay}"
                                                 Title="{Binding Title, Mode=OneWay}"
                                                 HasTasks="{Binding HasTasks, Mode=OneWay}"
+                                                IsFavorite="{Binding IsFavorite, Mode=OneWay}"
                                                 FirstTaskTitle="{Binding FirstTaskTitle, Mode=OneWay}"
                                                 FirstTaskCompleted="{Binding FirstTaskCompleted, Mode=OneWay}"
                                                 RemainingTaskCount="{Binding RemainingTaskCount, Mode=OneWay}"
                                                 ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
+                                                ToggleFavoriteCommand="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 Cursor="Hand"
                                                 MouseLeftButtonDown="StickyNoteListItem_MouseLeftButtonDown"
                                                 PreviewMouseLeftButtonDown="StickyNoteListItem_PreviewMouseLeftButtonDown"
