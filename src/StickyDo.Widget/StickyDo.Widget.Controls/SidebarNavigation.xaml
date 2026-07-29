@@ -5,7 +5,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="clr-namespace:StickyDo.Widget.Controls.Converters"
              xmlns:behaviors="clr-namespace:StickyDo.Widget.Controls.Behaviors"
-             xmlns:local="clr-namespace:StickyDo.Widget.Controls"
              mc:Ignorable="d"
              Width="64"
              Background="#F3F3F3"
@@ -139,7 +138,6 @@
             <Grid Width="40" Height="40">
                 <Rectangle x:Name="TrashDropTarget" Style="{StaticResource TrashDropTargetStyle}"
                            ToolTip="Drag a note here to delete"
-                           behaviors:DragDropTargetBehavior.DataFormat="{x:Static local:StickyNoteListItem.NoteIdDataFormat}"
                            behaviors:DragDropTargetBehavior.DropCommand="{Binding NotesListViewModel.RequestDeleteNoteCommand}"/>
                 <Viewbox Width="18" Height="18" IsHitTestVisible="False">
                     <Canvas Width="16" Height="16">

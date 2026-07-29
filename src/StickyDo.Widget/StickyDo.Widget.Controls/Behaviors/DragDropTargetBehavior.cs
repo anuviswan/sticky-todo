@@ -4,13 +4,12 @@ using System.Windows.Input;
 namespace StickyDo.Widget.Controls.Behaviors;
 
 /// <summary>
-/// Attached behavior that turns any UIElement into an MVVM-friendly drop target: set DataFormat
-/// to the DataObject format key expected (e.g. StickyNoteListItem.NoteIdDataFormat) and
-/// DropCommand to a bound ICommand&lt;T&gt; that receives the dropped value as its parameter.
-/// WPF's DragDrop API has no commanding surface of its own, so this is the single place that
-/// bridges it to the ViewModel instead of each drop target needing its own code-behind handlers.
-/// IsDragOver is toggled internally and is read-only for callers; bind a Style Trigger to it for
-/// drop-target visual feedback.
+/// Attached behavior that turns any UIElement into an MVVM-friendly drop target for a dragged
+/// note: set DropCommand to a bound ICommand&lt;T&gt; that receives the dropped note id as its
+/// parameter. WPF's DragDrop API has no commanding surface of its own, so this is the single
+/// place that bridges it to the ViewModel instead of each drop target needing its own code-behind
+/// handlers. IsDragOver is toggled internally and is read-only for callers; bind a Style Trigger
+/// to it for drop-target visual feedback.
 /// </summary>
 public static class DragDropTargetBehavior
 {
@@ -24,17 +23,6 @@ public static class DragDropTargetBehavior
             typeof(ICommand),
             typeof(DragDropTargetBehavior),
             new PropertyMetadata(null, OnDropCommandChanged));
-
-    public static string? GetDataFormat(DependencyObject obj) => (string?)obj.GetValue(DataFormatProperty);
-
-    public static void SetDataFormat(DependencyObject obj, string? value) => obj.SetValue(DataFormatProperty, value);
-
-    public static readonly DependencyProperty DataFormatProperty =
-        DependencyProperty.RegisterAttached(
-            "DataFormat",
-            typeof(string),
-            typeof(DragDropTargetBehavior),
-            new PropertyMetadata(null));
 
     public static bool GetIsDragOver(DependencyObject obj) => (bool)obj.GetValue(IsDragOverProperty);
 
@@ -74,8 +62,7 @@ public static class DragDropTargetBehavior
 
     private static void OnDragOver(object sender, DragEventArgs e)
     {
-        var element = (UIElement)sender;
-        var accepted = TryGetDroppedValue(element, e, out _);
+        var accepted = TryGetDroppedValue(e, out _);
 
         e.Effects = accepted ? DragDropEffects.Move : DragDropEffects.None;
         e.Handled = true;
@@ -89,10 +76,9 @@ public static class DragDropTargetBehavior
 
     private static void OnDrop(object sender, DragEventArgs e)
     {
-        var element = (UIElement)sender;
         SetIsDragOver((DependencyObject)sender, false);
 
-        if (!TryGetDroppedValue(element, e, out var value))
+        if (!TryGetDroppedValue(e, out var value))
             return;
 
         var command = GetDropCommand((DependencyObject)sender);
@@ -100,14 +86,13 @@ public static class DragDropTargetBehavior
             command.Execute(value);
     }
 
-    private static bool TryGetDroppedValue(UIElement element, DragEventArgs e, out object? value)
+    private static bool TryGetDroppedValue(DragEventArgs e, out object? value)
     {
         value = null;
-        var format = GetDataFormat(element);
-        if (string.IsNullOrEmpty(format) || !e.Data.GetDataPresent(format))
+        if (!e.Data.GetDataPresent(StickyNoteListItem.NoteIdDataFormat))
             return false;
 
-        value = e.Data.GetData(format);
+        value = e.Data.GetData(StickyNoteListItem.NoteIdDataFormat);
         return value is not null;
     }
 }
