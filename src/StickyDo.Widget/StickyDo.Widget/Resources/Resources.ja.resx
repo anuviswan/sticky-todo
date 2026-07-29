@@ -70,6 +70,18 @@
   <data name="DeleteNote_ConfirmMessage" xml:space="preserve">
     <value>このノートは完全に削除されます。この操作は元に戻せません。</value>
   </data>
+  <data name="DragDeleteNote_ConfirmTitle" xml:space="preserve">
+    <value>ノートを削除</value>
+  </data>
+  <data name="DragDeleteNote_ConfirmMessage" xml:space="preserve">
+    <value>「{0}」を完全に削除しますか? この操作は元に戻せません。</value>
+  </data>
+  <data name="DragDeleteNote_ErrorTitle" xml:space="preserve">
+    <value>削除エラー</value>
+  </data>
+  <data name="DragDeleteNote_ErrorMessage" xml:space="preserve">
+    <value>ノートの削除中にエラーが発生しました: {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>同期中...</value>
   </data>

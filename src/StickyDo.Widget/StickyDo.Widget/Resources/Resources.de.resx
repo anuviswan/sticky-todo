@@ -70,6 +70,18 @@
   <data name="DeleteNote_ConfirmMessage" xml:space="preserve">
     <value>Diese Notiz wird dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</value>
   </data>
+  <data name="DragDeleteNote_ConfirmTitle" xml:space="preserve">
+    <value>Notiz löschen</value>
+  </data>
+  <data name="DragDeleteNote_ConfirmMessage" xml:space="preserve">
+    <value>'{0}' dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.</value>
+  </data>
+  <data name="DragDeleteNote_ErrorTitle" xml:space="preserve">
+    <value>Fehler beim Löschen</value>
+  </data>
+  <data name="DragDeleteNote_ErrorMessage" xml:space="preserve">
+    <value>Fehler beim Löschen der Notiz: {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>Synchronisiere...</value>
   </data>

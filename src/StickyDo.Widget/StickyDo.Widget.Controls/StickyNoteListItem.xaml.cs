@@ -9,6 +9,9 @@ namespace StickyDo.Widget.Controls;
 /// </summary>
 public partial class StickyNoteListItem : UserControl
 {
+    /// <summary>Drag-and-drop data format key used to carry a note's Guid when dragged (e.g. onto the Trash icon).</summary>
+    public const string NoteIdDataFormat = "StickyDo.NoteId";
+
     public StickyNoteListItem()
     {
         InitializeComponent();

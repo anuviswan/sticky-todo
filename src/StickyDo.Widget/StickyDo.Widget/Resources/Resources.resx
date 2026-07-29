@@ -70,6 +70,18 @@
   <data name="DeleteNote_ConfirmMessage" xml:space="preserve">
     <value>This note will be permanently deleted. This action cannot be undone.</value>
   </data>
+  <data name="DragDeleteNote_ConfirmTitle" xml:space="preserve">
+    <value>Delete Note</value>
+  </data>
+  <data name="DragDeleteNote_ConfirmMessage" xml:space="preserve">
+    <value>Permanently delete '{0}'? This action cannot be undone.</value>
+  </data>
+  <data name="DragDeleteNote_ErrorTitle" xml:space="preserve">
+    <value>Delete Error</value>
+  </data>
+  <data name="DragDeleteNote_ErrorMessage" xml:space="preserve">
+    <value>Error deleting note: {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>Syncing...</value>
   </data>

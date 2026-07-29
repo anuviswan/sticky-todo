@@ -17,6 +17,10 @@ public static class Resources
     public static string MoreOptionsPopup_DeleteNote => Get(nameof(MoreOptionsPopup_DeleteNote));
     public static string DeleteNote_ConfirmTitle => Get(nameof(DeleteNote_ConfirmTitle));
     public static string DeleteNote_ConfirmMessage => Get(nameof(DeleteNote_ConfirmMessage));
+    public static string DragDeleteNote_ConfirmTitle => Get(nameof(DragDeleteNote_ConfirmTitle));
+    public static string DragDeleteNote_ConfirmMessage => Get(nameof(DragDeleteNote_ConfirmMessage));
+    public static string DragDeleteNote_ErrorTitle => Get(nameof(DragDeleteNote_ErrorTitle));
+    public static string DragDeleteNote_ErrorMessage => Get(nameof(DragDeleteNote_ErrorMessage));
     public static string SyncingStatus => Get(nameof(SyncingStatus));
     public static string SyncedStatus => Get(nameof(SyncedStatus));
     public static string ErrorStatus => Get(nameof(ErrorStatus));

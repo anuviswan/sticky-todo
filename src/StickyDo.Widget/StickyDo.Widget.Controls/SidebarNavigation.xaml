@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="clr-namespace:StickyDo.Widget.Controls.Converters"
+             xmlns:behaviors="clr-namespace:StickyDo.Widget.Controls.Behaviors"
              mc:Ignorable="d"
              Width="64"
              Background="#F3F3F3"
@@ -57,14 +58,21 @@
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="TrashNavButtonStyle" TargetType="Button" BasedOn="{StaticResource SidebarIconButtonStyle}">
+        <!-- Trash is a plain drop target, not a nav button: it isn't clickable and doesn't
+             navigate anywhere, so it's a dashed Rectangle rather than a Button. The Rectangle
+             itself (not some wrapping panel) carries the drag-and-drop attached properties, so
+             its Fill can react directly to the IsDragOver trigger below. -->
+        <Style x:Key="TrashDropTargetStyle" TargetType="Rectangle">
+            <Setter Property="Stroke" Value="#B0B0B0"/>
+            <Setter Property="StrokeThickness" Value="1.3"/>
+            <Setter Property="StrokeDashArray" Value="3 2"/>
+            <Setter Property="RadiusX" Value="8"/>
+            <Setter Property="RadiusY" Value="8"/>
+            <Setter Property="Fill" Value="Transparent"/>
             <Style.Triggers>
-                <DataTrigger Value="True">
-                    <DataTrigger.Binding>
-                        <Binding Path="SelectedNavView" Converter="{StaticResource EnumNameEqualsConverter}" ConverterParameter="Trash"/>
-                    </DataTrigger.Binding>
-                    <Setter Property="Background" Value="#EDE4C0"/>
-                </DataTrigger>
+                <Trigger Property="behaviors:DragDropTargetBehavior.IsDragOver" Value="True">
+                    <Setter Property="Fill" Value="#F8D7D7"/>
+                </Trigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
@@ -119,9 +127,19 @@
                 <TextBlock Text="⭐" FontSize="30"/>
             </Button>
 
-            <Button x:Name="TrashNavButton" Style="{StaticResource TrashNavButtonStyle}"
-                    Command="{Binding ShowTrashCommand}" ToolTip="Trash">
-                <Viewbox Width="18" Height="18">
+            <Button x:Name="SettingsNavButton" Style="{StaticResource SidebarIconButtonStyle}" ToolTip="Settings">
+                <TextBlock Text="⚙️" FontSize="16"/>
+            </Button>
+        </StackPanel>
+
+        <!-- Trash, pinned to the bottom: a dashed drop target, not a clickable nav icon. It only
+             reacts to a note being dragged onto it - it has no Command and never navigates. -->
+        <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,0,20">
+            <Grid Width="40" Height="40">
+                <Rectangle x:Name="TrashDropTarget" Style="{StaticResource TrashDropTargetStyle}"
+                           ToolTip="Drag a note here to delete"
+                           behaviors:DragDropTargetBehavior.DropCommand="{Binding NotesListViewModel.RequestDeleteNoteCommand}"/>
+                <Viewbox Width="18" Height="18" IsHitTestVisible="False">
                     <Canvas Width="16" Height="16">
                         <Line X1="6.5" Y1="2" X2="6.5" Y2="4" Stroke="#333333" StrokeThickness="1.1"/>
                         <Line X1="9.5" Y1="2" X2="9.5" Y2="4" Stroke="#333333" StrokeThickness="1.1"/>
@@ -134,14 +152,7 @@
                         <Line X1="9" Y1="6.5" X2="9" Y2="11.5" Stroke="#333333" StrokeThickness="1"/>
                     </Canvas>
                 </Viewbox>
-            </Button>
-        </StackPanel>
-
-        <!-- Settings, pinned to the bottom -->
-        <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,0,20">
-            <Button x:Name="SettingsNavButton" Style="{StaticResource SidebarIconButtonStyle}" ToolTip="Settings">
-                <TextBlock Text="⚙️" FontSize="16"/>
-            </Button>
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>

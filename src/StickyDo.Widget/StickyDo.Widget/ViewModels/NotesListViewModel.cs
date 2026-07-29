@@ -180,6 +180,45 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Prompts for confirmation - warning that the action is permanent and cannot be undone -
+    /// then permanently deletes the note, e.g. when dropped onto the Trash icon. Reuses the same
+    /// StickyNoteService.DeleteNoteAsync + Deleted broadcast as the note window's own "Delete
+    /// Note" menu action (StickyNoteWindowViewModel.DeleteNoteAsync); this is just a second
+    /// trigger for the same irreversible operation, not a soft delete/Trash storage.
+    /// Exposed as a command (rather than called directly) so SidebarNavigation's Trash drop
+    /// target can invoke it via binding without StickyDo.Widget.Controls needing a reference to
+    /// this ViewModel's project.
+    /// </summary>
+    [RelayCommand]
+    public async Task RequestDeleteNoteAsync(Guid noteId)
+    {
+        var note = _allNotes.FirstOrDefault(n => n.Id == noteId);
+        if (note is null)
+            return;
+
+        var confirmed = await _dialogService.ShowConfirmationAsync(
+            AppResources.DragDeleteNote_ConfirmTitle,
+            string.Format(AppResources.DragDeleteNote_ConfirmMessage, note.Title));
+
+        if (!confirmed)
+            return;
+
+        try
+        {
+            await _stickyNoteService.DeleteNoteAsync(noteId);
+            _messenger.Send(new StickyNoteChangedMessage(noteId, StickyNoteChangeType.Deleted));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(RequestDeleteNoteAsync));
+            await _dialogService.ShowMessageAsync(
+                AppResources.DragDeleteNote_ErrorTitle,
+                string.Format(AppResources.DragDeleteNote_ErrorMessage, ex.Message),
+                System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
     /// Applies the search filter and regroups the results into color-based columns,
     /// ordered by palette position, with notes sorted by Last Updated descending.
     /// </summary>
