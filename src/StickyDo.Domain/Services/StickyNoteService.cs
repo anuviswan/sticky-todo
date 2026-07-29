@@ -119,6 +119,23 @@ public class StickyNoteService
     }
 
     /// <summary>
+    /// Sets whether a note is marked as a favourite.
+    /// </summary>
+    public async Task SetNoteFavoriteAsync(Guid id, bool isFavorite)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Note ID cannot be empty.", nameof(id));
+
+        var note = await _noteRepository.GetByIdAsync(id);
+        if (note is null)
+            throw new InvalidOperationException($"Note with ID {id} not found.");
+
+        note.IsFavorite = isFavorite;
+
+        await _noteRepository.UpdateAsync(note);
+    }
+
+    /// <summary>
     /// Persists the floating window's current screen position and size for a note, so it can be
     /// restored to the same spot the next time it's opened, including after an application restart.
     /// </summary>

@@ -35,6 +35,9 @@ public class StickyNote
     /// <summary>Whether the note is pinned, preventing it from being moved or closed.</summary>
     public bool IsPinned { get; set; }
 
+    /// <summary>Whether the note is marked as a favourite, surfacing it in the Favourites view.</summary>
+    public bool IsFavorite { get; set; }
+
     /// <summary>Persisted screen position (left) of the floating note window, from the last time it was closed.</summary>
     public double? WindowLeft { get; set; }
 

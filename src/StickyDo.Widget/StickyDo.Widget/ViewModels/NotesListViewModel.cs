@@ -31,7 +31,15 @@ public partial class NotesListViewModel : ObservableObject
     [ObservableProperty]
     private string searchQuery = string.Empty;
 
+    [ObservableProperty]
+    private bool showFavoritesOnly;
+
     partial void OnSearchQueryChanged(string value)
+    {
+        ApplyFilter();
+    }
+
+    partial void OnShowFavoritesOnlyChanged(bool value)
     {
         ApplyFilter();
     }
@@ -173,6 +181,7 @@ public partial class NotesListViewModel : ObservableObject
             LastModified = note.UpdatedAt,
             ColorArgb = note.ColorArgb ?? ColorPalette.GetDefaultColor(),
             HasTasks = firstTask is not null,
+            IsFavorite = note.IsFavorite,
             FirstTaskTitle = firstTask?.Title ?? string.Empty,
             FirstTaskCompleted = firstTask?.IsCompleted ?? false,
             RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1)
@@ -219,12 +228,50 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Toggles the favourite state of a note and persists it, e.g. when the star icon on a note
+    /// card in the list is clicked. Reverts the icon back to its previous state if persisting
+    /// fails, so the UI never shows a favourite status that wasn't actually saved.
+    /// </summary>
+    [RelayCommand]
+    public async Task ToggleFavoriteAsync(Guid noteId)
+    {
+        var note = _allNotes.FirstOrDefault(n => n.Id == noteId);
+        if (note is null)
+            return;
+
+        var previousValue = note.IsFavorite;
+        note.IsFavorite = !previousValue;
+        ApplyFilter();
+
+        try
+        {
+            await _stickyNoteService.SetNoteFavoriteAsync(noteId, note.IsFavorite);
+            _messenger.Send(new StickyNoteChangedMessage(noteId, StickyNoteChangeType.Updated));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ToggleFavoriteAsync));
+            note.IsFavorite = previousValue;
+            ApplyFilter();
+            await _dialogService.ShowMessageAsync(
+                AppResources.Favorite_ErrorTitle,
+                string.Format(AppResources.Favorite_ErrorMessage, ex.Message),
+                System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
     /// Applies the search filter and regroups the results into color-based columns,
     /// ordered by palette position, with notes sorted by Last Updated descending.
     /// </summary>
     private void ApplyFilter()
     {
         var filtered = _allNotes.AsEnumerable();
+
+        if (ShowFavoritesOnly)
+        {
+            filtered = filtered.Where(n => n.IsFavorite);
+        }
 
         if (!string.IsNullOrWhiteSpace(SearchQuery))
         {

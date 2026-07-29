@@ -70,23 +70,25 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Shows all notes by clearing search filter (placeholder for Phase 2).
+    /// Shows all notes by clearing the search filter and the Favorites-only filter.
     /// </summary>
     [RelayCommand]
     public void ShowAllNotes()
     {
         SelectedNavView = NavigationView.AllNotes;
         NotesListViewModel.SearchQuery = string.Empty;
+        NotesListViewModel.ShowFavoritesOnly = false;
     }
 
     /// <summary>
-    /// Shows favorite notes (placeholder for Phase 2).
+    /// Shows only notes marked as favorite.
     /// </summary>
     [RelayCommand]
     public void ShowFavorites()
     {
         SelectedNavView = NavigationView.Favorites;
         NotesListViewModel.SearchQuery = string.Empty;
+        NotesListViewModel.ShowFavoritesOnly = true;
     }
 
     /// <summary>

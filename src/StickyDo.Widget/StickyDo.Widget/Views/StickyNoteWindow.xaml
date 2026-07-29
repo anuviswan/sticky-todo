@@ -41,6 +41,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Create New Note Button -->
@@ -73,14 +74,50 @@
                              VerticalAlignment="Center"
                              Cursor="IBeam"/>
 
-                    <!-- Pin / Unpin Icon -->
+                    <!-- Favorite / Unfavorite Icon -->
                     <Button Grid.Column="2"
                             Width="24"
                             Height="24"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Margin="12,0,8,0"
+                            Margin="12,0,4,0"
+                            VerticalAlignment="Center"
+                            Command="{Binding ToggleFavoriteCommand}">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="ToolTip" Value="Mark as favorite"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                        <Setter Property="ToolTip" Value="Remove from favorites"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                        <TextBlock FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="☆"/>
+                                    <Setter Property="Foreground" Value="#666666"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                                            <Setter Property="Text" Value="★"/>
+                                            <Setter Property="Foreground" Value="#F5A623"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Button>
+
+                    <!-- Pin / Unpin Icon -->
+                    <Button Grid.Column="3"
+                            Width="24"
+                            Height="24"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Margin="0,0,8,0"
                             VerticalAlignment="Center"
                             Command="{Binding TogglePinCommand}">
                         <Button.Style>
@@ -129,7 +166,7 @@
                     </Button>
 
                     <!-- Close Button -->
-                    <Button Grid.Column="3"
+                    <Button Grid.Column="4"
                             Width="24"
                             Height="24"
                             Background="Transparent"

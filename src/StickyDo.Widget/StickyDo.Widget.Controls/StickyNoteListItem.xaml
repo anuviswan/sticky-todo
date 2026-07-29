@@ -16,10 +16,51 @@
     <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="8"
             BorderBrush="#14000000" BorderThickness="1" Padding="14,12,14,12">
         <StackPanel>
-            <!-- Title -->
-            <TextBlock Text="{Binding Title, Mode=OneWay, ElementName=Root}"
-                       FontWeight="700" FontSize="14" Foreground="#3A4550"
-                       TextTrimming="CharacterEllipsis" Margin="0,0,0,14"/>
+            <!-- Title row: title text plus favorite toggle -->
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Text="{Binding Title, Mode=OneWay, ElementName=Root}"
+                           FontWeight="700" FontSize="14" Foreground="#3A4550"
+                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Width="20" Height="20"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Command="{Binding ToggleFavoriteCommand, ElementName=Root}"
+                        CommandParameter="{Binding NoteId, ElementName=Root}">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="ToolTip" Value="Mark as favorite"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFavorite, ElementName=Root}" Value="True">
+                                    <Setter Property="ToolTip" Value="Remove from favorites"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <TextBlock FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="☆"/>
+                                <Setter Property="Foreground" Value="#666666"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFavorite, ElementName=Root}" Value="True">
+                                        <Setter Property="Text" Value="★"/>
+                                        <Setter Property="Foreground" Value="#F5A623"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Button>
+            </Grid>
 
             <!-- First task (checkbox + text), shown only when the note has tasks -->
             <StackPanel Orientation="Horizontal"

@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace StickyDo.Widget.Controls;
@@ -16,6 +17,39 @@ public partial class StickyNoteListItem : UserControl
     {
         InitializeComponent();
     }
+
+    /// <summary>Gets or sets the unique identifier of the note, passed to <see cref="ToggleFavoriteCommand"/>.</summary>
+    public Guid NoteId
+    {
+        get => (Guid)GetValue(NoteIdProperty);
+        set => SetValue(NoteIdProperty, value);
+    }
+
+    public static readonly DependencyProperty NoteIdProperty =
+        DependencyProperty.Register("NoteId", typeof(Guid), typeof(StickyNoteListItem),
+            new PropertyMetadata(Guid.Empty));
+
+    /// <summary>Gets or sets whether the note is marked as a favourite.</summary>
+    public bool IsFavorite
+    {
+        get => (bool)GetValue(IsFavoriteProperty);
+        set => SetValue(IsFavoriteProperty, value);
+    }
+
+    public static readonly DependencyProperty IsFavoriteProperty =
+        DependencyProperty.Register("IsFavorite", typeof(bool), typeof(StickyNoteListItem),
+            new PropertyMetadata(false));
+
+    /// <summary>Gets or sets the command invoked with <see cref="NoteId"/> when the favourite icon is clicked.</summary>
+    public ICommand? ToggleFavoriteCommand
+    {
+        get => (ICommand?)GetValue(ToggleFavoriteCommandProperty);
+        set => SetValue(ToggleFavoriteCommandProperty, value);
+    }
+
+    public static readonly DependencyProperty ToggleFavoriteCommandProperty =
+        DependencyProperty.Register("ToggleFavoriteCommand", typeof(ICommand), typeof(StickyNoteListItem),
+            new PropertyMetadata(null));
 
     /// <summary>Gets or sets the title of the note.</summary>
     public string Title
