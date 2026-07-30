@@ -88,6 +88,12 @@
   <data name="Favorite_ErrorMessage" xml:space="preserve">
     <value>Erreur lors de la mise à jour du statut favori : {0}</value>
   </data>
+  <data name="Search_ErrorTitle" xml:space="preserve">
+    <value>Erreur de recherche</value>
+  </data>
+  <data name="Search_ErrorMessage" xml:space="preserve">
+    <value>Erreur lors de la recherche des notes : {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>Synchronisation...</value>
   </data>

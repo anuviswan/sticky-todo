@@ -86,6 +86,9 @@
                             <DataTrigger Binding="{Binding ShowFavoritesOnly}" Value="True">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
+                            <DataTrigger Binding="{Binding IsSearchActive}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
@@ -109,9 +112,13 @@
                     <Style TargetType="StackPanel">
                         <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding ShowFavoritesOnly}" Value="True">
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ShowFavoritesOnly}" Value="True"/>
+                                    <Condition Binding="{Binding IsSearchActive}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
                                 <Setter Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
+                            </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
@@ -120,6 +127,27 @@
                 <TextBlock Text="No favorite notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
                            HorizontalAlignment="Center" Margin="0,0,0,8"/>
                 <TextBlock Text="Mark a note as favorite by clicking its star icon to have it appear here."
+                           FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
+                           Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <!-- Search empty state: takes priority over the states above whenever a search is active -->
+            <StackPanel x:Name="SearchEmptyState">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSearchActive}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="🔍" FontSize="64" Foreground="#D0D0D0"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="No matching notes found" FontSize="18" FontWeight="500" Foreground="#666666"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Try a different search term."
                            FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
                            Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
             </StackPanel>

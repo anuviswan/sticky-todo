@@ -88,6 +88,12 @@
   <data name="Favorite_ErrorMessage" xml:space="preserve">
     <value>Error updating favorite status: {0}</value>
   </data>
+  <data name="Search_ErrorTitle" xml:space="preserve">
+    <value>Search Error</value>
+  </data>
+  <data name="Search_ErrorMessage" xml:space="preserve">
+    <value>Error searching notes: {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>Syncing...</value>
   </data>
