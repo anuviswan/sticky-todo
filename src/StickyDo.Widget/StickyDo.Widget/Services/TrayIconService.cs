@@ -26,13 +26,25 @@ public class TrayIconService : ITrayIconService
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = System.Drawing.SystemIcons.Application,
+            Icon = LoadAppIcon(),
             Text = "StickyDo",
             ContextMenuStrip = contextMenu,
             Visible = true
         };
 
         _notifyIcon.DoubleClick += (s, e) => onOpenRequested();
+    }
+
+    private static System.Drawing.Icon LoadAppIcon()
+    {
+        var resourceInfo = System.Windows.Application.GetResourceStream(
+            new Uri("pack://application:,,,/Assets/app.ico"));
+
+        if (resourceInfo == null)
+            return System.Drawing.SystemIcons.Application;
+
+        using var stream = resourceInfo.Stream;
+        return new System.Drawing.Icon(stream);
     }
 
     public void Dispose()

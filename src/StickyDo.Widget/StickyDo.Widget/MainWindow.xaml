@@ -9,6 +9,7 @@
         xmlns:converters="clr-namespace:StickyDo.Widget.Converters"
         mc:Ignorable="d"
         Title="StickyDo" Height="700" Width="1200"
+        Icon="pack://application:,,,/Assets/app.png"
         Background="Transparent" ResizeMode="CanResizeWithGrip"
         WindowStyle="None" AllowsTransparency="True"
         WindowStartupLocation="CenterScreen" ShowInTaskbar="True">
