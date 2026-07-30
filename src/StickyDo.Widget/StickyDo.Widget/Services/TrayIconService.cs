@@ -20,7 +20,7 @@ public class TrayIconService : ITrayIconService
             return;
 
         var contextMenu = new ContextMenuStrip();
-        contextMenu.Items.Add("Open Sticky TODO", null, (s, e) => onOpenRequested());
+        contextMenu.Items.Add("Open StickyDo", null, (s, e) => onOpenRequested());
         contextMenu.Items.Add(new ToolStripSeparator());
         contextMenu.Items.Add("Exit", null, (s, e) => onExitRequested());
 
