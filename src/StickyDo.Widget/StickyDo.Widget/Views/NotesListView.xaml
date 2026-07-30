@@ -77,18 +77,52 @@
         <StackPanel x:Name="EmptyStatePanel" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Visibility="{Binding Columns, Mode=OneWay, Converter={StaticResource CollectionToVisibilityConverter}, ConverterParameter=inverted}"
                     Background="#F9F9F9">
-            <TextBlock Text="📋" FontSize="64" Foreground="#D0D0D0"
-                       HorizontalAlignment="Center" Margin="0,0,0,16"/>
-            <TextBlock Text="No notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
-                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
-            <TextBlock Text="Start by creating your first sticky note to stay organized."
-                       FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
-                       Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
-            <Button Content="+ Create New Note" Padding="24,12,24,12"
-                    FontSize="13" FontWeight="500"
-                    Background="#0066CC" Foreground="White"
-                    BorderThickness="0" Cursor="Hand"
-                    Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
+
+            <!-- All Notes empty state -->
+            <StackPanel x:Name="AllNotesEmptyState">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowFavoritesOnly}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="📋" FontSize="64" Foreground="#D0D0D0"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="No notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Start by creating your first sticky note to stay organized."
+                           FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
+                           Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
+                <Button Content="+ Create New Note" Padding="24,12,24,12"
+                        FontSize="13" FontWeight="500"
+                        Background="#0066CC" Foreground="White"
+                        BorderThickness="0" Cursor="Hand"
+                        Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Favorites empty state -->
+            <StackPanel x:Name="FavoritesEmptyState">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ShowFavoritesOnly}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="☆" FontSize="64" Foreground="#D0D0D0"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="No favorite notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Mark a note as favorite by clicking its star icon to have it appear here."
+                           FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
+                           Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>
