@@ -23,6 +23,8 @@ public static class Resources
     public static string DragDeleteNote_ErrorMessage => Get(nameof(DragDeleteNote_ErrorMessage));
     public static string Favorite_ErrorTitle => Get(nameof(Favorite_ErrorTitle));
     public static string Favorite_ErrorMessage => Get(nameof(Favorite_ErrorMessage));
+    public static string Search_ErrorTitle => Get(nameof(Search_ErrorTitle));
+    public static string Search_ErrorMessage => Get(nameof(Search_ErrorMessage));
     public static string SyncingStatus => Get(nameof(SyncingStatus));
     public static string SyncedStatus => Get(nameof(SyncedStatus));
     public static string ErrorStatus => Get(nameof(ErrorStatus));

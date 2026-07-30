@@ -11,6 +11,12 @@ src/StickyDo.Domain.Tests/bin/*
 src/StickyDo.Domain.Tests/obj
 src/StickyDo.Domain.Tests/obj/*
 
+src/StickyDo.Widget.Tests/bin
+src/StickyDo.Widget.Tests/bin/*
+
+src/StickyDo.Widget.Tests/obj
+src/StickyDo.Widget.Tests/obj/*
+
 src/StickyDo.Widget/StickyDo.Widget/bin
 src/StickyDo.Widget/StickyDo.Widget/bin/*
 

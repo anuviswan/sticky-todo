@@ -88,6 +88,12 @@
   <data name="Favorite_ErrorMessage" xml:space="preserve">
     <value>お気に入りの状態の更新中にエラーが発生しました: {0}</value>
   </data>
+  <data name="Search_ErrorTitle" xml:space="preserve">
+    <value>検索エラー</value>
+  </data>
+  <data name="Search_ErrorMessage" xml:space="preserve">
+    <value>メモの検索中にエラーが発生しました: {0}</value>
+  </data>
   <data name="SyncingStatus" xml:space="preserve">
     <value>同期中...</value>
   </data>

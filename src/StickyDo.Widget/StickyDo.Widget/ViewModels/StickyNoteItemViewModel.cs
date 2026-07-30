@@ -33,4 +33,8 @@ public partial class StickyNoteItemViewModel : ObservableObject
 
     [ObservableProperty]
     private int remainingTaskCount;
+
+    /// <summary>Titles of all tasks in the note, used to search notes by content.</summary>
+    [ObservableProperty]
+    private IReadOnlyList<string> taskTitles = [];
 }

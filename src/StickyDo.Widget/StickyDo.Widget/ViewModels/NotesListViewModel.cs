@@ -29,10 +29,14 @@ public partial class NotesListViewModel : ObservableObject
     private ObservableCollection<NoteColumnViewModel> columns = new();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSearchActive))]
     private string searchQuery = string.Empty;
 
     [ObservableProperty]
     private bool showFavoritesOnly;
+
+    /// <summary>Whether a non-blank search query is currently active, used to drive the search empty state.</summary>
+    public bool IsSearchActive => !string.IsNullOrWhiteSpace(SearchQuery);
 
     partial void OnSearchQueryChanged(string value)
     {
@@ -184,7 +188,8 @@ public partial class NotesListViewModel : ObservableObject
             IsFavorite = note.IsFavorite,
             FirstTaskTitle = firstTask?.Title ?? string.Empty,
             FirstTaskCompleted = firstTask?.IsCompleted ?? false,
-            RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1)
+            RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1),
+            TaskTitles = orderedTasks.Select(t => t.Title).ToList()
         };
     }
 
@@ -263,42 +268,57 @@ public partial class NotesListViewModel : ObservableObject
     /// <summary>
     /// Applies the search filter and regroups the results into color-based columns,
     /// ordered by palette position, with notes sorted by Last Updated descending.
+    /// The grouped result is fully materialized before <see cref="Columns"/> is touched, so if
+    /// filtering fails, the previously displayed notes remain visible instead of being cleared.
     /// </summary>
     private void ApplyFilter()
     {
-        var filtered = _allNotes.AsEnumerable();
-
-        if (ShowFavoritesOnly)
+        try
         {
-            filtered = filtered.Where(n => n.IsFavorite);
-        }
+            var filtered = _allNotes.AsEnumerable();
 
-        if (!string.IsNullOrWhiteSpace(SearchQuery))
-        {
-            var query = SearchQuery.ToLower();
-            filtered = filtered.Where(n =>
-                n.Title.ToLower().Contains(query)
-            );
-        }
-
-        var grouped = filtered
-            .GroupBy(n => n.ColorArgb)
-            .OrderBy(g => Array.IndexOf(ColorPalette.Colors, g.Key));
-
-        Columns.Clear();
-        foreach (var group in grouped)
-        {
-            var column = new NoteColumnViewModel { ColorArgb = group.Key };
-            foreach (var note in group.OrderByDescending(n => n.LastModified))
+            if (ShowFavoritesOnly)
             {
-                column.Notes.Add(note);
+                filtered = filtered.Where(n => n.IsFavorite);
             }
 
-            Columns.Add(column);
-        }
+            var query = SearchQuery.Trim();
+            if (query.Length > 0)
+            {
+                filtered = filtered.Where(n =>
+                    n.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    n.TaskTitles.Any(t => t.Contains(query, StringComparison.OrdinalIgnoreCase))
+                );
+            }
 
-        // ItemsControl.ItemsSource observes CollectionChanged directly, but the empty-state
-        // Visibility binding goes through a converter and only refreshes on PropertyChanged.
-        OnPropertyChanged(nameof(Columns));
+            var grouped = filtered
+                .GroupBy(n => n.ColorArgb)
+                .OrderBy(g => Array.IndexOf(ColorPalette.Colors, g.Key))
+                .ToList();
+
+            Columns.Clear();
+            foreach (var group in grouped)
+            {
+                var column = new NoteColumnViewModel { ColorArgb = group.Key };
+                foreach (var note in group.OrderByDescending(n => n.LastModified))
+                {
+                    column.Notes.Add(note);
+                }
+
+                Columns.Add(column);
+            }
+
+            // ItemsControl.ItemsSource observes CollectionChanged directly, but the empty-state
+            // Visibility binding goes through a converter and only refreshes on PropertyChanged.
+            OnPropertyChanged(nameof(Columns));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ApplyFilter));
+            _ = _dialogService.ShowMessageAsync(
+                AppResources.Search_ErrorTitle,
+                string.Format(AppResources.Search_ErrorMessage, ex.Message),
+                System.Windows.MessageBoxImage.Error);
+        }
     }
 }

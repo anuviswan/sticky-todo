@@ -168,17 +168,6 @@ public class StickyNoteService
     }
 
     /// <summary>
-    /// Searches for notes by title or content.
-    /// </summary>
-    public async Task<IEnumerable<StickyNote>> SearchNotesAsync(string query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-            return await _noteRepository.GetAllAsync();
-
-        return await _noteRepository.SearchAsync(query.Trim());
-    }
-
-    /// <summary>
     /// Retrieves notes filtered by their status.
     /// </summary>
     public async Task<IEnumerable<StickyNote>> GetNotesByStatusAsync(StickyNoteStatus status)
