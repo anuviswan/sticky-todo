@@ -177,23 +177,6 @@ public class FileBasedRepositoryTests
     }
 
     [TestMethod]
-    public async Task SearchAsync_FindsNotesByTitle()
-    {
-        // Arrange
-        var repository = new FileBasedRepository();
-        await repository.InitializeAsync();
-
-        var note = new StickyNote { Id = Guid.NewGuid(), Title = "Unique Search Term" };
-        await repository.CreateAsync(note);
-
-        // Act
-        var results = await repository.SearchAsync("Search");
-
-        // Assert
-        Assert.IsTrue(results.Any(n => n.Id == note.Id));
-    }
-
-    [TestMethod]
     public async Task GetByStatusAsync_FiltersNotesByStatus()
     {
         // Arrange

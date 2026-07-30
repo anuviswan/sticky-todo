@@ -34,11 +34,6 @@ public interface IStickyNoteRepository
     Task DeleteAsync(Guid id);
 
     /// <summary>
-    /// Searches for sticky notes by title or content.
-    /// </summary>
-    Task<IEnumerable<StickyNote>> SearchAsync(string query);
-
-    /// <summary>
     /// Retrieves sticky notes filtered by status.
     /// </summary>
     Task<IEnumerable<StickyNote>> GetByStatusAsync(StickyNoteStatus status);

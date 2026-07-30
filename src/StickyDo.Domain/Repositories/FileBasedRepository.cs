@@ -225,19 +225,6 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         return Task.CompletedTask;
     }
 
-    public Task<IEnumerable<StickyNote>> SearchAsync(string query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-            return Task.FromResult(_notes.AsEnumerable());
-
-        var lowerQuery = query.ToLower();
-        var results = _notes.Where(n =>
-            n.Title.ToLower().Contains(lowerQuery)
-        );
-
-        return Task.FromResult(results.AsEnumerable());
-    }
-
     public Task<IEnumerable<StickyNote>> GetByStatusAsync(StickyNoteStatus status)
     {
         var results = _notes.Where(n => n.Status == status);
