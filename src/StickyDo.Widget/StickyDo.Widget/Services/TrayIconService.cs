@@ -27,7 +27,7 @@ public class TrayIconService : ITrayIconService
         _notifyIcon = new NotifyIcon
         {
             Icon = System.Drawing.SystemIcons.Application,
-            Text = "Sticky TODO",
+            Text = "StickyDo",
             ContextMenuStrip = contextMenu,
             Visible = true
         };
