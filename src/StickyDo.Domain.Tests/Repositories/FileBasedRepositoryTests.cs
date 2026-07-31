@@ -12,12 +12,12 @@ public class FileBasedRepositoryTests
     [TestInitialize]
     public void Setup()
     {
-        _testDataDirectory = Path.Combine(Path.GetTempPath(), "StickyTODO_Tests", Guid.NewGuid().ToString());
+        _testDataDirectory = Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_testDataDirectory);
 
         // Redirect the data directory for testing
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var originalPath = Path.Combine(appDataPath, "StickyTODO");
+        var originalPath = Path.Combine(appDataPath, "StickyDo");
 
         // Back up original if it exists
         if (Directory.Exists(originalPath))
@@ -29,14 +29,14 @@ public class FileBasedRepositoryTests
         }
 
         // Create test directory in LocalAppData
-        Directory.CreateDirectory(Path.Combine(appDataPath, "StickyTODO"));
+        Directory.CreateDirectory(Path.Combine(appDataPath, "StickyDo"));
     }
 
     [TestCleanup]
     public void Cleanup()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var testPath = Path.Combine(appDataPath, "StickyTODO");
+        var testPath = Path.Combine(appDataPath, "StickyDo");
         var backupPath = testPath + ".backup";
 
         if (Directory.Exists(testPath))

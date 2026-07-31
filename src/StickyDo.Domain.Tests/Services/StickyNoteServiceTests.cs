@@ -13,11 +13,11 @@ public class StickyNoteServiceTests
     [TestInitialize]
     public void Setup()
     {
-        _testDataDirectory = Path.Combine(Path.GetTempPath(), "StickyTODO_Tests", Guid.NewGuid().ToString());
+        _testDataDirectory = Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_testDataDirectory);
 
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var originalPath = Path.Combine(appDataPath, "StickyTODO");
+        var originalPath = Path.Combine(appDataPath, "StickyDo");
 
         if (Directory.Exists(originalPath))
         {
@@ -27,14 +27,14 @@ public class StickyNoteServiceTests
             Directory.Move(originalPath, backupPath);
         }
 
-        Directory.CreateDirectory(Path.Combine(appDataPath, "StickyTODO"));
+        Directory.CreateDirectory(Path.Combine(appDataPath, "StickyDo"));
     }
 
     [TestCleanup]
     public void Cleanup()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var testPath = Path.Combine(appDataPath, "StickyTODO");
+        var testPath = Path.Combine(appDataPath, "StickyDo");
         var backupPath = testPath + ".backup";
 
         if (Directory.Exists(testPath))

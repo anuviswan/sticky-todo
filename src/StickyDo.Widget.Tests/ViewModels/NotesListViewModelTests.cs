@@ -21,7 +21,7 @@ public class NotesListViewModelTests
     public async Task Setup()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var originalPath = Path.Combine(appDataPath, "StickyTODO");
+        var originalPath = Path.Combine(appDataPath, "StickyDo");
 
         if (Directory.Exists(originalPath))
         {
@@ -47,7 +47,7 @@ public class NotesListViewModelTests
     public void Cleanup()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var testPath = Path.Combine(appDataPath, "StickyTODO");
+        var testPath = Path.Combine(appDataPath, "StickyDo");
         var backupPath = testPath + ".backup";
 
         if (Directory.Exists(testPath))

@@ -12,7 +12,7 @@ public class AtomicFileWriterTests
     [TestInitialize]
     public void Setup()
     {
-        _testDirectory = Path.Combine(Path.GetTempPath(), "StickyTODO_Tests", Guid.NewGuid().ToString());
+        _testDirectory = Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_testDirectory);
     }
 
