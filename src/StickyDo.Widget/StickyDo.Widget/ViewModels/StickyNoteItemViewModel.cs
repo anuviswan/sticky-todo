@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using StickyDo.Domain.Models;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -18,6 +19,9 @@ public partial class StickyNoteItemViewModel : ObservableObject
 
     [ObservableProperty]
     private uint colorArgb = 0xFFFFCC07;
+
+    [ObservableProperty]
+    private NoteType type = NoteType.Todo;
 
     [ObservableProperty]
     private bool hasTasks;

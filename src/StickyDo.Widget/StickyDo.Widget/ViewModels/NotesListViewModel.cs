@@ -35,6 +35,10 @@ public partial class NotesListViewModel : ObservableObject
     [ObservableProperty]
     private bool showFavoritesOnly;
 
+    /// <summary>When set, restricts the list to notes of this type (e.g. Todos-only or Notes-only sections).</summary>
+    [ObservableProperty]
+    private NoteType? typeFilter;
+
     /// <summary>Whether a non-blank search query is currently active, used to drive the search empty state.</summary>
     public bool IsSearchActive => !string.IsNullOrWhiteSpace(SearchQuery);
 
@@ -44,6 +48,11 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     partial void OnShowFavoritesOnlyChanged(bool value)
+    {
+        ApplyFilter();
+    }
+
+    partial void OnTypeFilterChanged(NoteType? value)
     {
         ApplyFilter();
     }
@@ -184,6 +193,7 @@ public partial class NotesListViewModel : ObservableObject
             Title = note.Title,
             LastModified = note.UpdatedAt,
             ColorArgb = note.ColorArgb ?? ColorPalette.GetDefaultColor(),
+            Type = note.Type,
             HasTasks = firstTask is not null,
             IsFavorite = note.IsFavorite,
             FirstTaskTitle = firstTask?.Title ?? string.Empty,
@@ -280,6 +290,11 @@ public partial class NotesListViewModel : ObservableObject
             if (ShowFavoritesOnly)
             {
                 filtered = filtered.Where(n => n.IsFavorite);
+            }
+
+            if (TypeFilter is not null)
+            {
+                filtered = filtered.Where(n => n.Type == TypeFilter.Value);
             }
 
             var query = SearchQuery.Trim();
