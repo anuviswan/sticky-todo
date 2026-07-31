@@ -8,7 +8,7 @@ namespace StickyDo.Domain.Repositories;
 
 /// <summary>
 /// File-based implementation of sticky note repositories.
-/// Persists notes as individual JSON files in %LocalAppData%\StickyTODO.
+/// Persists notes as individual JSON files in %LocalAppData%\StickyDo.
 /// Implements both IStickyNoteRepository and IStickyNoteTaskRepository.
 /// </summary>
 public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskRepository
@@ -47,7 +47,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         catch (UnauthorizedAccessException ex)
         {
             throw new InvalidOperationException(
-                $"No permission to access the data directory. Ensure you have write access to %LocalAppData%\\StickyTODO. Error: {ex.Message}", ex);
+                $"No permission to access the data directory. Ensure you have write access to %LocalAppData%\\StickyDo. Error: {ex.Message}", ex);
         }
         catch (Exception ex)
         {

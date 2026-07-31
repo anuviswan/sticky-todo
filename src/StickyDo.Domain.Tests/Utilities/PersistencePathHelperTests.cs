@@ -14,7 +14,7 @@ public class PersistencePathHelperTests
 
         // Assert
         Assert.IsNotNull(path);
-        Assert.IsTrue(path.Contains("StickyTODO"));
+        Assert.IsTrue(path.Contains("StickyDo"));
         Assert.IsTrue(path.Contains("LocalAppData") || path.Contains("AppData"));
     }
 
@@ -79,7 +79,7 @@ public class PersistencePathHelperTests
     public void ExtractNoteIdFromFilePath_ReturnsNullForInvalidPath()
     {
         // Arrange
-        var invalidPath = "C:\\StickyTODO\\notavalid.json";
+        var invalidPath = "C:\\StickyDo\\notavalid.json";
 
         // Act
         var extractedId = PersistencePathHelper.ExtractNoteIdFromFilePath(invalidPath);

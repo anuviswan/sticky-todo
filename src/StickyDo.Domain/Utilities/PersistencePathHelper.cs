@@ -7,10 +7,10 @@ namespace StickyDo.Domain.Utilities;
 /// </summary>
 public static class PersistencePathHelper
 {
-    private const string AppDataFolderName = "StickyTODO";
+    private const string AppDataFolderName = "StickyDo";
 
     /// <summary>
-    /// Gets the application data directory path: %LocalAppData%\StickyTODO
+    /// Gets the application data directory path: %LocalAppData%\StickyDo
     /// </summary>
     public static string GetDataDirectoryPath()
     {
@@ -49,7 +49,7 @@ public static class PersistencePathHelper
     /// Gets the file path for a note's JSON file.
     /// </summary>
     /// <param name="noteId">The note's GUID identifier</param>
-    /// <returns>Path like: %LocalAppData%\StickyTODO\{guid}.json</returns>
+    /// <returns>Path like: %LocalAppData%\StickyDo\{guid}.json</returns>
     public static string GetNoteFilePath(Guid noteId)
     {
         var dataDir = GetDataDirectoryPath();
@@ -60,7 +60,7 @@ public static class PersistencePathHelper
     /// Gets the temporary file path used during atomic writes.
     /// </summary>
     /// <param name="noteId">The note's GUID identifier</param>
-    /// <returns>Path like: %LocalAppData%\StickyTODO\{guid}.json.tmp</returns>
+    /// <returns>Path like: %LocalAppData%\StickyDo\{guid}.json.tmp</returns>
     public static string GetNoteTemporaryFilePath(Guid noteId)
     {
         var dataDir = GetDataDirectoryPath();
@@ -71,7 +71,7 @@ public static class PersistencePathHelper
     /// Gets the corrupt file path used when a JSON file cannot be deserialized.
     /// </summary>
     /// <param name="noteId">The note's GUID identifier</param>
-    /// <returns>Path like: %LocalAppData%\StickyTODO\{guid}.json.corrupt</returns>
+    /// <returns>Path like: %LocalAppData%\StickyDo\{guid}.json.corrupt</returns>
     public static string GetNoteCorruptFilePath(Guid noteId)
     {
         var dataDir = GetDataDirectoryPath();
