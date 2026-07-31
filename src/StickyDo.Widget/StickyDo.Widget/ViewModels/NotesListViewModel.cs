@@ -105,7 +105,9 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Creates a new sticky note and opens it in a floating window.
+    /// Creates a new sticky note and opens it in a floating window. The created note's type
+    /// follows the current section: Notes (<see cref="TypeFilter"/> == <see cref="NoteType.Note"/>)
+    /// creates a free-form Note; every other section (Todos, All Notes, Favorites) creates a Todo.
     /// </summary>
     [RelayCommand]
     public async Task CreateNoteAsync()
@@ -114,7 +116,8 @@ public partial class NotesListViewModel : ObservableObject
         {
             var noteNumber = await _stickyNoteService.GetNextNoteNumberAsync();
             var noteTitle = $"Note {noteNumber}";
-            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle);
+            var type = TypeFilter == NoteType.Note ? NoteType.Note : NoteType.Todo;
+            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, type: type);
 
             // Open the window first - it adds the default "First Task" during load. Notifying
             // the list only after that completes ensures its card reflects that task, instead

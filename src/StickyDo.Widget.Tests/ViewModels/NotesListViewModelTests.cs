@@ -212,6 +212,34 @@ public class NotesListViewModelTests
         Assert.AreEqual("Grocery Notes", AllVisibleNotes().Single().Title);
     }
 
+    [TestMethod]
+    public async Task CreateNoteAsync_WhenTypeFilterIsNote_CreatesNoteTypeItem()
+    {
+        _viewModel.TypeFilter = NoteType.Note;
+
+        await _viewModel.CreateNoteAsync();
+
+        var created = AllVisibleNotes().Single();
+        Assert.AreEqual(NoteType.Note, created.Type);
+
+        var persisted = await _service.GetNoteByIdAsync(created.Id);
+        Assert.AreEqual(NoteType.Note, persisted!.Type);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_WhenTypeFilterIsTodoOrNull_CreatesTodoTypeItem()
+    {
+        _viewModel.TypeFilter = NoteType.Todo;
+        await _viewModel.CreateNoteAsync();
+
+        _viewModel.TypeFilter = null;
+        await _viewModel.CreateNoteAsync();
+
+        _viewModel.TypeFilter = null;
+        Assert.AreEqual(2, AllVisibleNotes().Count());
+        Assert.IsTrue(AllVisibleNotes().All(n => n.Type == NoteType.Todo));
+    }
+
     private sealed class FakeStickyNoteWindowService : IStickyNoteWindowService
     {
         public Task OpenNoteWindowAsync(Guid noteId) => Task.CompletedTask;
