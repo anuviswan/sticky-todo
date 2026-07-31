@@ -17,6 +17,9 @@ public class StickyNote
     /// <summary>Current status of the note.</summary>
     public StickyNoteStatus Status { get; set; } = StickyNoteStatus.Active;
 
+    /// <summary>Whether this item is a structured Todo or a free-form Note.</summary>
+    public NoteType Type { get; set; } = NoteType.Todo;
+
     /// <summary>UTC timestamp when the note was created.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

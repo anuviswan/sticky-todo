@@ -38,9 +38,9 @@ public class StickyNoteService
     }
 
     /// <summary>
-    /// Creates a new sticky note with the provided title and optional color.
+    /// Creates a new sticky note with the provided title, optional color, and type (defaults to Todo).
     /// </summary>
-    public async Task<Guid> CreateNoteAsync(string title, uint? colorArgb = null)
+    public async Task<Guid> CreateNoteAsync(string title, uint? colorArgb = null, NoteType type = NoteType.Todo)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Note title cannot be empty.", nameof(title));
@@ -50,6 +50,7 @@ public class StickyNoteService
             Id = Guid.NewGuid(),
             Title = title.Trim(),
             Status = StickyNoteStatus.Active,
+            Type = type,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow,
             DisplayOrder = 0,
@@ -131,6 +132,23 @@ public class StickyNoteService
             throw new InvalidOperationException($"Note with ID {id} not found.");
 
         note.IsFavorite = isFavorite;
+
+        await _noteRepository.UpdateAsync(note);
+    }
+
+    /// <summary>
+    /// Sets whether a note is a structured Todo or a free-form Note.
+    /// </summary>
+    public async Task SetNoteTypeAsync(Guid id, NoteType type)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Note ID cannot be empty.", nameof(id));
+
+        var note = await _noteRepository.GetByIdAsync(id);
+        if (note is null)
+            throw new InvalidOperationException($"Note with ID {id} not found.");
+
+        note.Type = type;
 
         await _noteRepository.UpdateAsync(note);
     }

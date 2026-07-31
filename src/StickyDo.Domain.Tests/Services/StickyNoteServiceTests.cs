@@ -227,6 +227,104 @@ public class StickyNoteServiceTests
     }
 
     [TestMethod]
+    public async Task CreateNoteAsync_Default_SetsTypeToTodo()
+    {
+        // Arrange & Act
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(NoteType.Todo, note!.Type);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_WithNoteType_PersistsNoteType()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        var noteId = await service.CreateNoteAsync("Test Note", type: NoteType.Note);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(NoteType.Note, note!.Type);
+    }
+
+    [TestMethod]
+    public async Task SetNoteTypeAsync_ChangesTypeFromTodoToNote()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Act
+        await service.SetNoteTypeAsync(noteId, NoteType.Note);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(NoteType.Note, note!.Type);
+    }
+
+    [TestMethod]
+    public async Task SetNoteTypeAsync_ChangesTypeFromNoteToTodo()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.SetNoteTypeAsync(noteId, NoteType.Note);
+
+        // Act
+        await service.SetNoteTypeAsync(noteId, NoteType.Todo);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(NoteType.Todo, note!.Type);
+    }
+
+    [TestMethod]
+    public async Task SetNoteTypeAsync_DoesNotChangeTitleOrColor()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.UpdateNoteAsync(noteId, "Test Note", StickyNoteStatus.Active, 0xFFAABBCC);
+
+        // Act
+        await service.SetNoteTypeAsync(noteId, NoteType.Note);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual("Test Note", note!.Title);
+        Assert.AreEqual((uint)0xFFAABBCC, note.ColorArgb);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public async Task SetNoteTypeAsync_ThrowsOnEmptyId()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        await service.SetNoteTypeAsync(Guid.Empty, NoteType.Note);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public async Task SetNoteTypeAsync_ThrowsWhenNoteNotFound()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+
+        // Act
+        await service.SetNoteTypeAsync(Guid.NewGuid(), NoteType.Note);
+    }
+
+    [TestMethod]
     public async Task UpdateNoteWindowBoundsAsync_PersistsPositionAndSize()
     {
         // Arrange

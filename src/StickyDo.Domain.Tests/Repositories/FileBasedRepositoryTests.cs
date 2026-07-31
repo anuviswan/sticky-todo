@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
+using StickyDo.Domain.Utilities;
 
 namespace StickyDo.Domain.Tests.Repositories;
 
@@ -130,6 +131,74 @@ public class FileBasedRepositoryTests
         Assert.IsNotNull(retrieved);
         Assert.AreEqual("Updated", retrieved.Title);
         Assert.IsTrue(repository.GetDirtyNotes().Contains(note.Id));
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_ModifiesTypeAndMarksDirty()
+    {
+        // Arrange
+        var repository = new FileBasedRepository();
+        await repository.InitializeAsync();
+
+        var note = new StickyNote
+        {
+            Id = Guid.NewGuid(),
+            Title = "Original",
+            Status = StickyNoteStatus.Active,
+            Type = NoteType.Todo
+        };
+        await repository.CreateAsync(note);
+
+        var updatedNote = new StickyNote
+        {
+            Id = note.Id,
+            Title = "Original",
+            Status = StickyNoteStatus.Active,
+            Type = NoteType.Note
+        };
+
+        // Act
+        await repository.UpdateAsync(updatedNote);
+
+        // Assert
+        var retrieved = await repository.GetByIdAsync(note.Id);
+        Assert.IsNotNull(retrieved);
+        Assert.AreEqual(NoteType.Note, retrieved.Type);
+        Assert.IsTrue(repository.GetDirtyNotes().Contains(note.Id));
+    }
+
+    [TestMethod]
+    public async Task LoadAllNotesFromDiskAsync_MissingTypeProperty_DefaultsToTodo()
+    {
+        // Arrange - write a raw JSON file without a "Type" property, simulating a note
+        // saved before this field existed.
+        PersistencePathHelper.EnsureDataDirectoryExists();
+        var noteId = Guid.NewGuid();
+        var json = $$"""
+        {
+            "Id": "{{noteId}}",
+            "Title": "Legacy Note",
+            "Tasks": [],
+            "Status": "Active",
+            "CreatedAt": "2026-01-01T00:00:00Z",
+            "UpdatedAt": "2026-01-01T00:00:00Z",
+            "DisplayOrder": 0,
+            "IsOpened": false,
+            "IsPinned": false,
+            "IsFavorite": false
+        }
+        """;
+        await File.WriteAllTextAsync(PersistencePathHelper.GetNoteFilePath(noteId), json);
+
+        var repository = new FileBasedRepository();
+
+        // Act
+        await repository.InitializeAsync();
+
+        // Assert
+        var note = await repository.GetByIdAsync(noteId);
+        Assert.IsNotNull(note);
+        Assert.AreEqual(NoteType.Todo, note.Type);
     }
 
     [TestMethod]
