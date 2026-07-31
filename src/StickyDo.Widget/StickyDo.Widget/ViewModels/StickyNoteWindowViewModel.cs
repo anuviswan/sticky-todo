@@ -49,6 +49,12 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     private string title = string.Empty;
 
     [ObservableProperty]
+    private NoteType type = NoteType.Todo;
+
+    [ObservableProperty]
+    private string content = string.Empty;
+
+    [ObservableProperty]
     private ObservableCollection<StickyNoteTaskItemViewModel> tasks = new();
 
     [ObservableProperty]
@@ -101,6 +107,16 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         if (_currentNote != null)
         {
             _currentNote.Title = value;
+            _hasUnsavedChanges = true;
+            OnEditingStarted();
+        }
+    }
+
+    partial void OnContentChanged(string value)
+    {
+        if (_currentNote != null)
+        {
+            _currentNote.Content = value;
             _hasUnsavedChanges = true;
             OnEditingStarted();
         }
@@ -185,47 +201,55 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
             NoteId = _currentNote.Id;
             Title = _currentNote.Title;
+            Type = _currentNote.Type;
             CurrentColor = _currentNote.ColorArgb ?? ColorPalette.GetDefaultColor();
             IsPinned = _currentNote.IsPinned;
             IsFavorite = _currentNote.IsFavorite;
 
             Tasks.Clear();
 
-            // If no tasks exist, add a sample task for demonstration
-            if (!_currentNote.Tasks.Any())
+            if (Type == NoteType.Note)
             {
-                var sampleTaskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, "First Task");
-                var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
-                if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
-                {
-                    var taskVm = new StickyNoteTaskItemViewModel
-                    {
-                        Id = newTask.Id,
-                        Title = newTask.Title,
-                        IsCompleted = newTask.IsCompleted,
-                        Order = newTask.Order,
-                        CreatedAt = newTask.CreatedAt,
-                        UpdatedAt = newTask.UpdatedAt
-                    };
-                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
-                    Tasks.Add(taskVm);
-                }
+                Content = _currentNote.Content ?? string.Empty;
             }
             else
             {
-                foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
+                // If no tasks exist, add a sample task for demonstration
+                if (!_currentNote.Tasks.Any())
                 {
-                    var taskVm = new StickyNoteTaskItemViewModel
+                    var sampleTaskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, "First Task");
+                    var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
+                    if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
                     {
-                        Id = task.Id,
-                        Title = task.Title,
-                        IsCompleted = task.IsCompleted,
-                        Order = task.Order,
-                        CreatedAt = task.CreatedAt,
-                        UpdatedAt = task.UpdatedAt
-                    };
-                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
-                    Tasks.Add(taskVm);
+                        var taskVm = new StickyNoteTaskItemViewModel
+                        {
+                            Id = newTask.Id,
+                            Title = newTask.Title,
+                            IsCompleted = newTask.IsCompleted,
+                            Order = newTask.Order,
+                            CreatedAt = newTask.CreatedAt,
+                            UpdatedAt = newTask.UpdatedAt
+                        };
+                        taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
+                        Tasks.Add(taskVm);
+                    }
+                }
+                else
+                {
+                    foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
+                    {
+                        var taskVm = new StickyNoteTaskItemViewModel
+                        {
+                            Id = task.Id,
+                            Title = task.Title,
+                            IsCompleted = task.IsCompleted,
+                            Order = task.Order,
+                            CreatedAt = task.CreatedAt,
+                            UpdatedAt = task.UpdatedAt
+                        };
+                        taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
+                        Tasks.Add(taskVm);
+                    }
                 }
             }
 
@@ -344,7 +368,8 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             await _stickyNoteService.UpdateNoteAsync(
                 _currentNote.Id,
                 _currentNote.Title,
-                _currentNote.Status);
+                _currentNote.Status,
+                content: _currentNote.Content);
 
             _hasUnsavedChanges = false;
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));

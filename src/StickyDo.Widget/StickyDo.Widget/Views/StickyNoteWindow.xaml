@@ -191,8 +191,9 @@
                 </Grid>
             </Border>
 
-            <!-- Task List with Add Task -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8">
+            <!-- Task List with Add Task (Todo type only) -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="12,12,12,8"
+                          Visibility="{Binding Type, Converter={StaticResource NoteTypeToVisibilityConverter}, ConverterParameter=Todo}">
                 <StackPanel>
                     <!-- Existing Tasks -->
                     <ItemsControl ItemsSource="{Binding Tasks}">
@@ -290,6 +291,43 @@
                     </Grid>
                 </StackPanel>
             </ScrollViewer>
+
+            <!-- Free-form Content (Note type only) -->
+            <Grid Grid.Row="1"
+                  Visibility="{Binding Type, Converter={StaticResource NoteTypeToVisibilityConverter}, ConverterParameter=Note}">
+                <!-- Placeholder (shows when content is empty) -->
+                <TextBlock Text="Start typing your note..."
+                           FontSize="13"
+                           Foreground="#000000"
+                           FontStyle="Italic"
+                           Margin="12,12,12,8"
+                           IsHitTestVisible="False">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Content}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBox Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="13"
+                         Foreground="#333333"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="12,12,12,8"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         Cursor="IBeam"/>
+            </Grid>
 
             <!-- Status Bar -->
             <Border Grid.Row="2" Background="{Binding CurrentColor, Converter={StaticResource ColorToFooterColorConverter}}" BorderBrush="#E8D4B8" BorderThickness="0,1,0,0" Padding="12,6,12,6"

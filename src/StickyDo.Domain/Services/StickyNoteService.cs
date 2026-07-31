@@ -61,9 +61,11 @@ public class StickyNoteService
     }
 
     /// <summary>
-    /// Updates an existing sticky note.
+    /// Updates an existing sticky note. <paramref name="content"/> is only applied when
+    /// non-null, so callers that don't touch the free-form body (e.g. a color change) don't
+    /// accidentally clear it.
     /// </summary>
-    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status, uint? color = null)
+    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status, uint? color = null, string? content = null)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(id));
@@ -81,6 +83,9 @@ public class StickyNoteService
 
         if (color.HasValue)
             note.ColorArgb = color.Value;
+
+        if (content is not null)
+            note.Content = content;
 
         await _noteRepository.UpdateAsync(note);
     }
