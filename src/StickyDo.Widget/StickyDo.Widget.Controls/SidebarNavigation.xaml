@@ -130,36 +130,39 @@
         <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
             <Button x:Name="AllNotesNavButton" Style="{StaticResource AllNotesNavButtonStyle}"
                     Command="{Binding ShowAllNotesCommand}" ToolTip="All Notes" Margin="0,0,0,10">
+                <!-- 2x2 grid: reads as "everything/overview", distinct from the checklist and pencil silhouettes below. -->
                 <Viewbox Width="18" Height="18">
                     <Canvas Width="16" Height="16">
-                        <Rectangle Canvas.Left="2" Canvas.Top="1" Width="12" Height="14" RadiusX="1.5" RadiusY="1.5"
+                        <Rectangle Canvas.Left="1.5" Canvas.Top="1.5" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
                                    Stroke="#333333" StrokeThickness="1.3"/>
-                        <Line X1="4.5" Y1="5.5" X2="11.5" Y2="5.5" Stroke="#333333" StrokeThickness="1.2"
-                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        <Line X1="4.5" Y1="8.5" X2="11.5" Y2="8.5" Stroke="#333333" StrokeThickness="1.2"
-                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        <Line X1="4.5" Y1="11.5" X2="9" Y2="11.5" Stroke="#333333" StrokeThickness="1.2"
-                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        <Rectangle Canvas.Left="9" Canvas.Top="1.5" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
+                                   Stroke="#333333" StrokeThickness="1.3"/>
+                        <Rectangle Canvas.Left="1.5" Canvas.Top="9" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
+                                   Stroke="#333333" StrokeThickness="1.3"/>
+                        <Rectangle Canvas.Left="9" Canvas.Top="9" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
+                                   Stroke="#333333" StrokeThickness="1.3"/>
                     </Canvas>
                 </Viewbox>
             </Button>
 
             <Button x:Name="TodosNavButton" Style="{StaticResource TodosNavButtonStyle}"
                     Command="{Binding ShowTodosCommand}" ToolTip="Todos" Margin="0,0,0,10">
+                <!-- Standalone checklist (no page outline), so the checkbox rows themselves are the whole silhouette. -->
                 <Viewbox Width="18" Height="18">
                     <Canvas Width="16" Height="16">
-                        <Rectangle Canvas.Left="2" Canvas.Top="1" Width="12" Height="14" RadiusX="1.5" RadiusY="1.5"
-                                   Stroke="#333333" StrokeThickness="1.3"/>
-                        <Rectangle Canvas.Left="4" Canvas.Top="4" Width="1.8" Height="1.8" Stroke="#333333" StrokeThickness="1"/>
-                        <Polyline Points="4.2,4.9 4.7,5.4 5.6,4.1" Stroke="#333333" StrokeThickness="0.7"
+                        <Rectangle Canvas.Left="1.5" Canvas.Top="1.8" Width="3.4" Height="3.4" RadiusX="0.6" RadiusY="0.6"
+                                   Stroke="#333333" StrokeThickness="1.2"/>
+                        <Polyline Points="2.1,3.4 2.9,4.2 4.3,2.4" Stroke="#0066CC" StrokeThickness="0.9"
                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
-                        <Line X1="7" Y1="4.9" X2="12" Y2="4.9" Stroke="#333333" StrokeThickness="1.1"
+                        <Line X1="6.6" Y1="3.5" X2="14.5" Y2="3.5" Stroke="#333333" StrokeThickness="1.3"
                               StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        <Rectangle Canvas.Left="4" Canvas.Top="7.3" Width="1.8" Height="1.8" Stroke="#333333" StrokeThickness="1"/>
-                        <Line X1="7" Y1="8.2" X2="12" Y2="8.2" Stroke="#333333" StrokeThickness="1.1"
+                        <Rectangle Canvas.Left="1.5" Canvas.Top="6.3" Width="3.4" Height="3.4" RadiusX="0.6" RadiusY="0.6"
+                                   Stroke="#333333" StrokeThickness="1.2"/>
+                        <Line X1="6.6" Y1="8" X2="14.5" Y2="8" Stroke="#333333" StrokeThickness="1.3"
                               StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        <Rectangle Canvas.Left="4" Canvas.Top="10.6" Width="1.8" Height="1.8" Stroke="#333333" StrokeThickness="1"/>
-                        <Line X1="7" Y1="11.5" X2="11" Y2="11.5" Stroke="#333333" StrokeThickness="1.1"
+                        <Rectangle Canvas.Left="1.5" Canvas.Top="10.8" Width="3.4" Height="3.4" RadiusX="0.6" RadiusY="0.6"
+                                   Stroke="#333333" StrokeThickness="1.2"/>
+                        <Line X1="6.6" Y1="12.5" X2="13" Y2="12.5" Stroke="#333333" StrokeThickness="1.3"
                               StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
                     </Canvas>
                 </Viewbox>
@@ -167,16 +170,17 @@
 
             <Button x:Name="NotesNavButton" Style="{StaticResource NotesNavButtonStyle}"
                     Command="{Binding ShowNotesCommand}" ToolTip="Notes" Margin="0,0,0,10">
+                <!-- Pencil: reads as "free-form writing", an elongated diagonal silhouette unlike the grid/checklist above. -->
                 <Viewbox Width="18" Height="18">
                     <Canvas Width="16" Height="16">
-                        <Rectangle Canvas.Left="2" Canvas.Top="1" Width="12" Height="14" RadiusX="1.5" RadiusY="1.5"
-                                   Stroke="#333333" StrokeThickness="1.3"/>
-                        <Polyline Points="4.5,5.5 6,4.3 7.5,6.5 9,4.3 10.5,6.5 12,5.3" Stroke="#333333" StrokeThickness="1.1"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
-                        <Polyline Points="4.5,9.5 6,8.3 7.5,10.5 9,8.3 10.5,10.5 12,9.3" Stroke="#333333" StrokeThickness="1.1"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
-                        <Polyline Points="4.5,13 7,11.8 9.5,13" Stroke="#333333" StrokeThickness="1.1"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                        <Canvas Width="16" Height="16" RenderTransformOrigin="0.5,0.5">
+                            <Canvas.RenderTransform>
+                                <RotateTransform Angle="-45"/>
+                            </Canvas.RenderTransform>
+                            <Rectangle Canvas.Left="1.5" Canvas.Top="6.3" Width="8.5" Height="3.4" Stroke="#333333" StrokeThickness="1.2"/>
+                            <Line X1="9" Y1="6.3" X2="9" Y2="9.7" Stroke="#333333" StrokeThickness="0.9"/>
+                            <Polygon Points="10,6.3 14.5,8 10,9.7" Stroke="#333333" StrokeThickness="1.2" StrokeLineJoin="Round"/>
+                        </Canvas>
                     </Canvas>
                 </Viewbox>
             </Button>
