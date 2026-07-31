@@ -57,9 +57,10 @@ public class NotesListViewModelTests
             Directory.Move(backupPath, testPath);
     }
 
-    private async Task<Guid> CreateNoteWithTaskAsync(string title, string taskTitle, bool isFavorite = false)
+    private async Task<Guid> CreateNoteWithTaskAsync(
+        string title, string taskTitle, bool isFavorite = false, NoteType type = NoteType.Todo)
     {
-        var noteId = await _service.CreateNoteAsync(title);
+        var noteId = await _service.CreateNoteAsync(title, type: type);
         var note = await _repository.GetByIdAsync(noteId);
         note!.Tasks.Add(new StickyNoteTask { Id = Guid.NewGuid(), Title = taskTitle, Order = 0 });
         note.IsFavorite = isFavorite;
@@ -156,6 +157,59 @@ public class NotesListViewModelTests
 
         Assert.IsFalse(_viewModel.IsSearchActive);
         Assert.AreEqual(1, AllVisibleNotes().Count());
+    }
+
+    [TestMethod]
+    public async Task ApplyFilter_TypeFilterTodo_ReturnsOnlyTodoNotes()
+    {
+        await CreateNoteWithTaskAsync("Grocery List", "Buy milk", type: NoteType.Todo);
+        await CreateNoteWithTaskAsync("Journal Entry", "n/a", type: NoteType.Note);
+        await _viewModel.LoadNotesAsync();
+
+        _viewModel.TypeFilter = NoteType.Todo;
+
+        Assert.AreEqual(1, AllVisibleNotes().Count());
+        Assert.AreEqual("Grocery List", AllVisibleNotes().Single().Title);
+    }
+
+    [TestMethod]
+    public async Task ApplyFilter_TypeFilterNote_ReturnsOnlyNoteNotes()
+    {
+        await CreateNoteWithTaskAsync("Grocery List", "Buy milk", type: NoteType.Todo);
+        await CreateNoteWithTaskAsync("Journal Entry", "n/a", type: NoteType.Note);
+        await _viewModel.LoadNotesAsync();
+
+        _viewModel.TypeFilter = NoteType.Note;
+
+        Assert.AreEqual(1, AllVisibleNotes().Count());
+        Assert.AreEqual("Journal Entry", AllVisibleNotes().Single().Title);
+    }
+
+    [TestMethod]
+    public async Task ApplyFilter_TypeFilterNull_ReturnsAllNotes()
+    {
+        await CreateNoteWithTaskAsync("Grocery List", "Buy milk", type: NoteType.Todo);
+        await CreateNoteWithTaskAsync("Journal Entry", "n/a", type: NoteType.Note);
+        await _viewModel.LoadNotesAsync();
+
+        _viewModel.TypeFilter = NoteType.Todo;
+        _viewModel.TypeFilter = null;
+
+        Assert.AreEqual(2, AllVisibleNotes().Count());
+    }
+
+    [TestMethod]
+    public async Task ApplyFilter_ComposesTypeFilterWithSearch()
+    {
+        await CreateNoteWithTaskAsync("Grocery List", "Buy milk", type: NoteType.Todo);
+        await CreateNoteWithTaskAsync("Grocery Notes", "n/a", type: NoteType.Note);
+        await _viewModel.LoadNotesAsync();
+
+        _viewModel.TypeFilter = NoteType.Note;
+        _viewModel.SearchQuery = "grocery";
+
+        Assert.AreEqual(1, AllVisibleNotes().Count());
+        Assert.AreEqual("Grocery Notes", AllVisibleNotes().Single().Title);
     }
 
     private sealed class FakeStickyNoteWindowService : IStickyNoteWindowService

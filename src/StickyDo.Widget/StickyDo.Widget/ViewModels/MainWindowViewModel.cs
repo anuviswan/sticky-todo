@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StickyDo.Domain.Models;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
@@ -13,6 +14,8 @@ namespace StickyDo.Widget.ViewModels;
 public enum NavigationView
 {
     AllNotes,
+    Todos,
+    Notes,
     Favorites
 }
 
@@ -78,10 +81,35 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedNavView = NavigationView.AllNotes;
         NotesListViewModel.SearchQuery = string.Empty;
         NotesListViewModel.ShowFavoritesOnly = false;
+        NotesListViewModel.TypeFilter = null;
     }
 
     /// <summary>
-    /// Shows only notes marked as favorite.
+    /// Shows only notes of type Todo.
+    /// </summary>
+    [RelayCommand]
+    public void ShowTodos()
+    {
+        SelectedNavView = NavigationView.Todos;
+        NotesListViewModel.SearchQuery = string.Empty;
+        NotesListViewModel.ShowFavoritesOnly = false;
+        NotesListViewModel.TypeFilter = NoteType.Todo;
+    }
+
+    /// <summary>
+    /// Shows only notes of type Note.
+    /// </summary>
+    [RelayCommand]
+    public void ShowNotes()
+    {
+        SelectedNavView = NavigationView.Notes;
+        NotesListViewModel.SearchQuery = string.Empty;
+        NotesListViewModel.ShowFavoritesOnly = false;
+        NotesListViewModel.TypeFilter = NoteType.Note;
+    }
+
+    /// <summary>
+    /// Shows only notes marked as favorite, regardless of their type.
     /// </summary>
     [RelayCommand]
     public void ShowFavorites()
@@ -89,6 +117,7 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedNavView = NavigationView.Favorites;
         NotesListViewModel.SearchQuery = string.Empty;
         NotesListViewModel.ShowFavoritesOnly = true;
+        NotesListViewModel.TypeFilter = null;
     }
 
     /// <summary>

@@ -5,10 +5,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
              xmlns:conv="clr-namespace:StickyDo.Widget.Controls;assembly=StickyDo.Widget.Controls"
+             xmlns:converters="clr-namespace:StickyDo.Widget.Controls.Converters;assembly=StickyDo.Widget.Controls"
              mc:Ignorable="d"
              Background="#F9F9F9">
     <UserControl.Resources>
         <conv:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter"/>
+        <converters:EnumNameEqualsConverter x:Key="EnumNameEqualsConverter"/>
     </UserControl.Resources>
     <Grid x:Name="ContentGrid">
         <!-- Notes Board: notes grouped into color-based columns -->
@@ -89,6 +91,18 @@
                             <DataTrigger Binding="{Binding IsSearchActive}" Value="True">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
+                            <DataTrigger Value="True">
+                                <DataTrigger.Binding>
+                                    <Binding Path="TypeFilter" Converter="{StaticResource EnumNameEqualsConverter}" ConverterParameter="Todo"/>
+                                </DataTrigger.Binding>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Value="True">
+                                <DataTrigger.Binding>
+                                    <Binding Path="TypeFilter" Converter="{StaticResource EnumNameEqualsConverter}" ConverterParameter="Note"/>
+                                </DataTrigger.Binding>
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
@@ -104,6 +118,61 @@
                         Background="#0066CC" Foreground="White"
                         BorderThickness="0" Cursor="Hand"
                         Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Todos empty state -->
+            <StackPanel x:Name="TodosEmptyState">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding TypeFilter, Converter={StaticResource EnumNameEqualsConverter}, ConverterParameter=Todo}" Value="True"/>
+                                    <Condition Binding="{Binding IsSearchActive}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="✅" FontSize="64" Foreground="#D0D0D0"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="No todos yet" FontSize="18" FontWeight="500" Foreground="#666666"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Create a todo to start tracking tasks."
+                           FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
+                           Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
+                <Button Content="+ Create New Note" Padding="24,12,24,12"
+                        FontSize="13" FontWeight="500"
+                        Background="#0066CC" Foreground="White"
+                        BorderThickness="0" Cursor="Hand"
+                        Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Notes empty state -->
+            <StackPanel x:Name="NotesEmptyState">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding TypeFilter, Converter={StaticResource EnumNameEqualsConverter}, ConverterParameter=Note}" Value="True"/>
+                                    <Condition Binding="{Binding IsSearchActive}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+                <TextBlock Text="📝" FontSize="64" Foreground="#D0D0D0"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="No notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Free-form notes you create will appear here."
+                           FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
+                           Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
             </StackPanel>
 
             <!-- Favorites empty state -->
