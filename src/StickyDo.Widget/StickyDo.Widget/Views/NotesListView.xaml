@@ -11,6 +11,32 @@
     <UserControl.Resources>
         <conv:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter"/>
         <converters:EnumNameEqualsConverter x:Key="EnumNameEqualsConverter"/>
+        <converters:NoteTypeToCreateLabelConverter x:Key="NoteTypeToCreateLabelConverter"/>
+
+        <!-- Dashed-border "Create New Note" tile, shared by the board view and the empty states -->
+        <Style x:Key="CreateNoteTileButtonStyle" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="220"/>
+            <Setter Property="Height" Value="90"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Rectangle Stroke="#B0B0B0" StrokeThickness="1.5" StrokeDashArray="4 3"
+                                       RadiusX="10" RadiusY="10" Fill="Transparent"/>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="&#128221;" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                <TextBlock Text="{Binding TypeFilter, Converter={StaticResource NoteTypeToCreateLabelConverter}}"
+                                           FontSize="12" Foreground="#666666" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
     <Grid x:Name="ContentGrid">
         <!-- Notes Board: notes grouped into color-based columns -->
@@ -55,23 +81,8 @@
                 </ItemsControl>
 
                 <!-- Create New Note tile -->
-                <Button Command="{Binding CreateNoteCommand}" Cursor="Hand"
-                        Width="220" Height="90" VerticalAlignment="Top"
-                        Background="Transparent" BorderThickness="0" Padding="0">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Grid>
-                                <Rectangle Stroke="#B0B0B0" StrokeThickness="1.5" StrokeDashArray="4 3"
-                                           RadiusX="10" RadiusY="10" Fill="Transparent"/>
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <TextBlock Text="&#128221;" FontSize="20" HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                        <TextBlock Text="Create New Note" FontSize="12" Foreground="#666666" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                <Button Style="{StaticResource CreateNoteTileButtonStyle}"
+                        Command="{Binding CreateNoteCommand}" VerticalAlignment="Top"/>
             </StackPanel>
         </ScrollViewer>
 
@@ -110,14 +121,9 @@
                            HorizontalAlignment="Center" Margin="0,0,0,16"/>
                 <TextBlock Text="No notes yet" FontSize="18" FontWeight="500" Foreground="#666666"
                            HorizontalAlignment="Center" Margin="0,0,0,8"/>
-                <TextBlock Text="Start by creating your first sticky note to stay organized."
+                <TextBlock Text="Create a todo or note from the Todos or Notes section to get started."
                            FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
                            Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
-                <Button Content="+ Create New Note" Padding="24,12,24,12"
-                        FontSize="13" FontWeight="500"
-                        Background="#0066CC" Foreground="White"
-                        BorderThickness="0" Cursor="Hand"
-                        Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
             </StackPanel>
 
             <!-- Todos empty state -->
@@ -143,10 +149,7 @@
                 <TextBlock Text="Create a todo to start tracking tasks."
                            FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
                            Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
-                <Button Content="+ Create New Note" Padding="24,12,24,12"
-                        FontSize="13" FontWeight="500"
-                        Background="#0066CC" Foreground="White"
-                        BorderThickness="0" Cursor="Hand"
+                <Button Style="{StaticResource CreateNoteTileButtonStyle}"
                         Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
             </StackPanel>
 
@@ -173,10 +176,7 @@
                 <TextBlock Text="Free-form notes you create will appear here."
                            FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
                            Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
-                <Button Content="+ Create New Note" Padding="24,12,24,12"
-                        FontSize="13" FontWeight="500"
-                        Background="#0066CC" Foreground="White"
-                        BorderThickness="0" Cursor="Hand"
+                <Button Style="{StaticResource CreateNoteTileButtonStyle}"
                         Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
             </StackPanel>
 
