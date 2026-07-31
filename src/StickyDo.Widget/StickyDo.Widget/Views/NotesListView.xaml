@@ -173,6 +173,11 @@
                 <TextBlock Text="Free-form notes you create will appear here."
                            FontSize="13" Foreground="#999999" HorizontalAlignment="Center"
                            Margin="0,0,0,24" MaxWidth="400" TextAlignment="Center" TextWrapping="Wrap"/>
+                <Button Content="+ Create New Note" Padding="24,12,24,12"
+                        FontSize="13" FontWeight="500"
+                        Background="#0066CC" Foreground="White"
+                        BorderThickness="0" Cursor="Hand"
+                        Command="{Binding CreateNoteCommand}" HorizontalAlignment="Center"/>
             </StackPanel>
 
             <!-- Favorites empty state -->
