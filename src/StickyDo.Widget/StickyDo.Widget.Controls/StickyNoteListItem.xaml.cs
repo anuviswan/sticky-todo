@@ -127,4 +127,17 @@ public partial class StickyNoteListItem : UserControl
     public static readonly DependencyProperty RemainingTaskCountProperty =
         DependencyProperty.Register("RemainingTaskCount", typeof(int), typeof(StickyNoteListItem),
             new PropertyMetadata(0));
+
+    /// <summary>Gets or sets the note's type (a boxed <c>NoteType</c> enum value), selecting the
+    /// Todo/Note icon shown next to the title. Boxed as <see cref="object"/>, compared by string
+    /// representation in XAML, so this assembly doesn't need to reference the Domain project.</summary>
+    public object? Type
+    {
+        get => GetValue(TypeProperty);
+        set => SetValue(TypeProperty, value);
+    }
+
+    public static readonly DependencyProperty TypeProperty =
+        DependencyProperty.Register("Type", typeof(object), typeof(StickyNoteListItem),
+            new PropertyMetadata(null));
 }
