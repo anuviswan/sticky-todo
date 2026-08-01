@@ -19,7 +19,7 @@ public static class ColorPalette
         0xFFf2d5f2,  // Pink - Creative, attention-grabbing
         0xFFe3d3fd,  // Purple - Imaginative, thoughtful
         0xFFf1f1f1,  // Gray - Neutral, balanced
-        0xFF4c4c4c,  // Dark Gray - Professional, formal
+        0xFFd9e7dd,  // Sage - Soft, natural
         0xFFc1f3f1,  // Cyan - Clear, modern
         0xFFffdfb8,  // Orange - Energetic, warm
         0xFFffcfcf,  // Red - Alert, important
@@ -44,7 +44,7 @@ public static class ColorPalette
             0xFFf2d5f2 => "Pink",
             0xFFe3d3fd => "Purple",
             0xFFf1f1f1 => "Gray",
-            0xFF4c4c4c => "Dark Gray",
+            0xFFd9e7dd => "Sage",
             0xFFc1f3f1 => "Cyan",
             0xFFffdfb8 => "Orange",
             0xFFffcfcf => "Red",
