@@ -199,11 +199,32 @@ public partial class NotesListViewModel : ObservableObject
             Type = note.Type,
             HasTasks = firstTask is not null,
             IsFavorite = note.IsFavorite,
-            FirstTaskTitle = firstTask?.Title ?? string.Empty,
+            FirstTaskTitle = BuildContentPreview(firstTask?.Title),
             FirstTaskCompleted = firstTask?.IsCompleted ?? false,
             RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1),
-            TaskTitles = orderedTasks.Select(t => t.Title).ToList()
+            TaskTitles = orderedTasks.Select(t => t.Title).ToList(),
+            ContentPreview = BuildContentPreview(note.Content)
         };
+    }
+
+    /// <summary>
+    /// Builds a card-friendly preview of a note's display text (a Todo's first task title, or a
+    /// free-form Note's content): the first few words, with "..." appended when there's more.
+    /// Splits on whitespace (collapsing newlines) so multi-line content still previews as a
+    /// single line.
+    /// </summary>
+    private const int ContentPreviewMaxWords = 12;
+
+    private static string BuildContentPreview(string? content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return string.Empty;
+
+        var words = content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length <= ContentPreviewMaxWords)
+            return string.Join(' ', words);
+
+        return string.Join(' ', words.Take(ContentPreviewMaxWords)) + "...";
     }
 
     /// <summary>

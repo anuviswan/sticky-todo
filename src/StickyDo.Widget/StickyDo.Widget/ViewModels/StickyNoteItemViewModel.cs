@@ -32,6 +32,10 @@ public partial class StickyNoteItemViewModel : ObservableObject
     [ObservableProperty]
     private string firstTaskTitle = string.Empty;
 
+    /// <summary>Truncated preview of a free-form note's content, for display on its list card.</summary>
+    [ObservableProperty]
+    private string contentPreview = string.Empty;
+
     [ObservableProperty]
     private bool firstTaskCompleted;
 

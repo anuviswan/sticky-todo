@@ -62,17 +62,26 @@
                 </Button>
             </Grid>
 
-            <!-- First task (checkbox + text), shown only when the note has tasks -->
-            <StackPanel Orientation="Horizontal"
-                        Visibility="{Binding HasTasks, Mode=OneWay, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <!-- First task (checkbox + text), shown only when the note has tasks.
+                 Uses a Grid (not a horizontal StackPanel) so the text column has a bounded
+                 width - a StackPanel gives its children unconstrained width along the stacking
+                 axis, which silently defeats TextWrapping="Wrap" and lets long text render past
+                 the card's edge instead of wrapping/truncating. -->
+            <Grid Visibility="{Binding HasTasks, Mode=OneWay, ElementName=Root, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
                 <!-- Shared checkbox style (Resources/Styles.xaml) so this matches the floating note editor's -->
-                <CheckBox Style="{StaticResource TaskCheckBoxStyle}"
+                <CheckBox Grid.Column="0"
+                          Style="{StaticResource TaskCheckBoxStyle}"
                           IsChecked="{Binding FirstTaskCompleted, Mode=OneWay, ElementName=Root}"
                           IsHitTestVisible="False" Focusable="False" FocusVisualStyle="{x:Null}"
                           VerticalAlignment="Top" Margin="0,2,10,0"/>
-                <TextBlock Text="{Binding FirstTaskTitle, Mode=OneWay, ElementName=Root}"
+                <TextBlock Grid.Column="1"
+                           Text="{Binding FirstTaskTitle, Mode=OneWay, ElementName=Root}"
                            FontSize="14" Foreground="#333333"
-                           TextWrapping="Wrap" VerticalAlignment="Top">
+                           TextTrimming="CharacterEllipsis" VerticalAlignment="Top">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
@@ -84,7 +93,23 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-            </StackPanel>
+            </Grid>
+
+            <!-- Free-form content preview, shown only for Note-type items with content -->
+            <TextBlock Text="{Binding ContentPreview, Mode=OneWay, ElementName=Root}"
+                       FontSize="14" Foreground="#333333"
+                       TextTrimming="CharacterEllipsis" VerticalAlignment="Top">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ContentPreview, ElementName=Root}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
 
             <!-- Expand indicator: always shown for a consistent card footer; the "+N more" text
                  is Hidden (not Collapsed) when there's nothing extra, so it still reserves its
