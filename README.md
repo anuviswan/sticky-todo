@@ -85,3 +85,11 @@ dotnet run --project src/StickyDo.Widget/StickyDo.Widget/StickyDo.Widget.csproj
 ```bash
 dotnet test src/StickyDo.Domain.Tests/StickyDo.Domain.Tests.csproj
 ```
+
+## License
+
+StickyDo is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for details.
+
+Copyright © 2026 DefineStack.
+
+Please note that the **StickyDo** name, logo, icons, artwork, screenshots, and other branding assets are the intellectual property of **DefineStack** and are **not** covered by the MIT License. These assets may not be used, copied, or redistributed without prior written permission.
