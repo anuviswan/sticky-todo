@@ -1,7 +1,6 @@
 using System.Text.Json;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Serialization;
-using StickyDo.Domain.Utilities;
 
 namespace StickyDo.Domain.Repositories;
 
@@ -106,11 +105,11 @@ public static class AtomicFileWriter
     /// 3. If no .json exists and .tmp is valid JSON, promote .tmp to .json
     /// 4. If no .json exists and .tmp is invalid JSON, delete .tmp
     /// </summary>
-    public static void CleanupOrphanedTemporaryFiles()
+    public static void CleanupOrphanedTemporaryFiles(string dataDirectory)
     {
         try
         {
-            var dataDir = PersistencePathHelper.GetDataDirectoryPath();
+            var dataDir = dataDirectory;
             if (!Directory.Exists(dataDir))
                 return;
 

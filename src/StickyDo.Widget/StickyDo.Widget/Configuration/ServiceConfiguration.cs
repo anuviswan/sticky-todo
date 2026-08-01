@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Domain.Storage;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
 using StickyDo.Widget.ViewModels;
@@ -36,8 +37,11 @@ public static class ServiceConfiguration
     /// </summary>
     private static void ConfigureRepositories(IServiceCollection services)
     {
+        var storageLocationProvider = new StorageLocationProvider();
+        services.AddSingleton<IStorageLocationProvider>(storageLocationProvider);
+
         System.Diagnostics.Debug.WriteLine("Initializing file-based repository...");
-        var fileBasedRepository = new FileBasedRepository();
+        var fileBasedRepository = new FileBasedRepository(storageLocationProvider);
 
         // Run on a thread-pool thread (no captured WPF DispatcherSynchronizationContext) to avoid
         // a sync-over-async deadlock: blocking the UI thread here while InitializeAsync's internal

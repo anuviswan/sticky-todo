@@ -1,21 +1,28 @@
+using StickyDo.Domain.Storage;
+
 namespace StickyDo.Domain.Utilities;
 
 /// <summary>
 /// Centralizes all persistence path logic for consistent file management.
 /// Justification: Encapsulates path construction, enables future platform-specific paths,
 /// and provides single source of truth for file naming conventions (GUIDs, extensions, etc).
+/// Obtains its storage root exclusively through <see cref="IStorageLocationProvider"/>.
 /// </summary>
-public static class PersistencePathHelper
+public class PersistencePathHelper
 {
-    private const string AppDataFolderName = "StickyDo";
+    private readonly IStorageLocationProvider _storageLocationProvider;
+
+    public PersistencePathHelper(IStorageLocationProvider storageLocationProvider)
+    {
+        _storageLocationProvider = storageLocationProvider ?? throw new ArgumentNullException(nameof(storageLocationProvider));
+    }
 
     /// <summary>
-    /// Gets the application data directory path: %LocalAppData%\StickyDo
+    /// Gets the application data directory path.
     /// </summary>
-    public static string GetDataDirectoryPath()
+    public string GetDataDirectoryPath()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(appDataPath, AppDataFolderName);
+        return _storageLocationProvider.DataDirectory;
     }
 
     /// <summary>
@@ -23,7 +30,7 @@ public static class PersistencePathHelper
     /// </summary>
     /// <exception cref="UnauthorizedAccessException">Thrown if no permission to create directory</exception>
     /// <exception cref="IOException">Thrown if directory creation fails for other I/O reasons</exception>
-    public static void EnsureDataDirectoryExists()
+    public void EnsureDataDirectoryExists()
     {
         var dataDir = GetDataDirectoryPath();
         if (!Directory.Exists(dataDir))
@@ -49,8 +56,8 @@ public static class PersistencePathHelper
     /// Gets the file path for a note's JSON file.
     /// </summary>
     /// <param name="noteId">The note's GUID identifier</param>
-    /// <returns>Path like: %LocalAppData%\StickyDo\{guid}.json</returns>
-    public static string GetNoteFilePath(Guid noteId)
+    /// <returns>Path like: {DataDirectory}\{guid}.json</returns>
+    public string GetNoteFilePath(Guid noteId)
     {
         var dataDir = GetDataDirectoryPath();
         return Path.Combine(dataDir, $"{noteId:N}.json");
@@ -60,8 +67,8 @@ public static class PersistencePathHelper
     /// Gets the temporary file path used during atomic writes.
     /// </summary>
     /// <param name="noteId">The note's GUID identifier</param>
-    /// <returns>Path like: %LocalAppData%\StickyDo\{guid}.json.tmp</returns>
-    public static string GetNoteTemporaryFilePath(Guid noteId)
+    /// <returns>Path like: {DataDirectory}\{guid}.json.tmp</returns>
+    public string GetNoteTemporaryFilePath(Guid noteId)
     {
         var dataDir = GetDataDirectoryPath();
         return Path.Combine(dataDir, $"{noteId:N}.json.tmp");
@@ -71,8 +78,8 @@ public static class PersistencePathHelper
     /// Gets the corrupt file path used when a JSON file cannot be deserialized.
     /// </summary>
     /// <param name="noteId">The note's GUID identifier</param>
-    /// <returns>Path like: %LocalAppData%\StickyDo\{guid}.json.corrupt</returns>
-    public static string GetNoteCorruptFilePath(Guid noteId)
+    /// <returns>Path like: {DataDirectory}\{guid}.json.corrupt</returns>
+    public string GetNoteCorruptFilePath(Guid noteId)
     {
         var dataDir = GetDataDirectoryPath();
         return Path.Combine(dataDir, $"{noteId:N}.json.corrupt");
@@ -82,7 +89,7 @@ public static class PersistencePathHelper
     /// Gets all note JSON files in the data directory.
     /// Excludes temporary and corrupt files.
     /// </summary>
-    public static IEnumerable<string> GetAllNoteFiles()
+    public IEnumerable<string> GetAllNoteFiles()
     {
         var dataDir = GetDataDirectoryPath();
         if (!Directory.Exists(dataDir))

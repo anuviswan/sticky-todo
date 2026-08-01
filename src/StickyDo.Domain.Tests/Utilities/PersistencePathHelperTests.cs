@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using StickyDo.Domain.Storage;
 using StickyDo.Domain.Utilities;
 
 namespace StickyDo.Domain.Tests.Utilities;
@@ -6,16 +7,32 @@ namespace StickyDo.Domain.Tests.Utilities;
 [TestClass]
 public class PersistencePathHelperTests
 {
+    private string _testRootDirectory = null!;
+    private PersistencePathHelper _pathHelper = null!;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _testRootDirectory = Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_testRootDirectory);
+        _pathHelper = new PersistencePathHelper(new FakeStorageLocationProvider(_testRootDirectory));
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Directory.Exists(_testRootDirectory))
+            Directory.Delete(_testRootDirectory, recursive: true);
+    }
+
     [TestMethod]
-    public void GetDataDirectoryPath_ReturnsValidPath()
+    public void GetDataDirectoryPath_ReturnsProviderDataDirectory()
     {
         // Act
-        var path = PersistencePathHelper.GetDataDirectoryPath();
+        var path = _pathHelper.GetDataDirectoryPath();
 
         // Assert
-        Assert.IsNotNull(path);
-        Assert.IsTrue(path.Contains("StickyDo"));
-        Assert.IsTrue(path.Contains("LocalAppData") || path.Contains("AppData"));
+        Assert.AreEqual(Path.Combine(_testRootDirectory, "Data"), path);
     }
 
     [TestMethod]
@@ -25,7 +42,7 @@ public class PersistencePathHelperTests
         var noteId = Guid.NewGuid();
 
         // Act
-        var path = PersistencePathHelper.GetNoteFilePath(noteId);
+        var path = _pathHelper.GetNoteFilePath(noteId);
 
         // Assert
         Assert.IsTrue(path.EndsWith(".json"));
@@ -39,7 +56,7 @@ public class PersistencePathHelperTests
         var noteId = Guid.NewGuid();
 
         // Act
-        var path = PersistencePathHelper.GetNoteTemporaryFilePath(noteId);
+        var path = _pathHelper.GetNoteTemporaryFilePath(noteId);
 
         // Assert
         Assert.IsTrue(path.EndsWith(".json.tmp"));
@@ -53,7 +70,7 @@ public class PersistencePathHelperTests
         var noteId = Guid.NewGuid();
 
         // Act
-        var path = PersistencePathHelper.GetNoteCorruptFilePath(noteId);
+        var path = _pathHelper.GetNoteCorruptFilePath(noteId);
 
         // Assert
         Assert.IsTrue(path.EndsWith(".json.corrupt"));
@@ -65,7 +82,7 @@ public class PersistencePathHelperTests
     {
         // Arrange
         var noteId = Guid.NewGuid();
-        var filePath = PersistencePathHelper.GetNoteFilePath(noteId);
+        var filePath = _pathHelper.GetNoteFilePath(noteId);
 
         // Act
         var extractedId = PersistencePathHelper.ExtractNoteIdFromFilePath(filePath);
@@ -92,10 +109,10 @@ public class PersistencePathHelperTests
     public void EnsureDataDirectoryExists_CreatesDirectory()
     {
         // Act
-        PersistencePathHelper.EnsureDataDirectoryExists();
+        _pathHelper.EnsureDataDirectoryExists();
 
         // Assert
-        var path = PersistencePathHelper.GetDataDirectoryPath();
+        var path = _pathHelper.GetDataDirectoryPath();
         Assert.IsTrue(Directory.Exists(path));
     }
 
@@ -103,24 +120,35 @@ public class PersistencePathHelperTests
     public void GetAllNoteFiles_ReturnsValidJsonFiles()
     {
         // Arrange
-        var dataDir = PersistencePathHelper.GetDataDirectoryPath();
-        if (Directory.Exists(dataDir))
-            Directory.Delete(dataDir, recursive: true);
-
-        PersistencePathHelper.EnsureDataDirectoryExists();
+        _pathHelper.EnsureDataDirectoryExists();
 
         var testNoteId = Guid.NewGuid();
-        var testFilePath = PersistencePathHelper.GetNoteFilePath(testNoteId);
+        var testFilePath = _pathHelper.GetNoteFilePath(testNoteId);
         File.WriteAllText(testFilePath, "{}");
 
         // Act
-        var files = PersistencePathHelper.GetAllNoteFiles().ToList();
+        var files = _pathHelper.GetAllNoteFiles().ToList();
 
         // Assert
         Assert.AreEqual(1, files.Count);
         Assert.IsTrue(files[0].EndsWith(".json"));
+    }
 
-        // Cleanup
-        File.Delete(testFilePath);
+    private sealed class FakeStorageLocationProvider : IStorageLocationProvider
+    {
+        public FakeStorageLocationProvider(string root)
+        {
+            RootDirectory = root;
+            DataDirectory = Path.Combine(root, "Data");
+            SettingsDirectory = Path.Combine(root, "Settings");
+            LogsDirectory = Path.Combine(root, "Logs");
+            BackupsDirectory = Path.Combine(root, "Backups");
+        }
+
+        public string RootDirectory { get; }
+        public string DataDirectory { get; }
+        public string SettingsDirectory { get; }
+        public string LogsDirectory { get; }
+        public string BackupsDirectory { get; }
     }
 }

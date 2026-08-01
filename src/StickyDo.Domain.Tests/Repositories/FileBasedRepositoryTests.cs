@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
+using StickyDo.Domain.Storage;
 using StickyDo.Domain.Utilities;
 
 namespace StickyDo.Domain.Tests.Repositories;
@@ -9,43 +10,19 @@ namespace StickyDo.Domain.Tests.Repositories;
 public class FileBasedRepositoryTests
 {
     private string _testDataDirectory = null!;
+    private IStorageLocationProvider _storageLocationProvider = null!;
 
     [TestInitialize]
     public void Setup()
     {
         _testDataDirectory = Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString());
         Directory.CreateDirectory(_testDataDirectory);
-
-        // Redirect the data directory for testing
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var originalPath = Path.Combine(appDataPath, "StickyDo");
-
-        // Back up original if it exists
-        if (Directory.Exists(originalPath))
-        {
-            var backupPath = originalPath + ".backup";
-            if (Directory.Exists(backupPath))
-                Directory.Delete(backupPath, recursive: true);
-            Directory.Move(originalPath, backupPath);
-        }
-
-        // Create test directory in LocalAppData
-        Directory.CreateDirectory(Path.Combine(appDataPath, "StickyDo"));
+        _storageLocationProvider = new FakeStorageLocationProvider(_testDataDirectory);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var testPath = Path.Combine(appDataPath, "StickyDo");
-        var backupPath = testPath + ".backup";
-
-        if (Directory.Exists(testPath))
-            Directory.Delete(testPath, recursive: true);
-
-        if (Directory.Exists(backupPath))
-            Directory.Move(backupPath, testPath);
-
         if (Directory.Exists(_testDataDirectory))
             Directory.Delete(_testDataDirectory, recursive: true);
     }
@@ -54,7 +31,7 @@ public class FileBasedRepositoryTests
     public async Task InitializeAsync_LoadsNotesFromDisk()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
 
         // Act
         await repository.InitializeAsync();
@@ -68,7 +45,7 @@ public class FileBasedRepositoryTests
     public async Task CreateAsync_AddsNoteAndMarksDirty()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote
@@ -94,7 +71,7 @@ public class FileBasedRepositoryTests
     public async Task CreateAsync_ThrowsOnNullNote()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         // Act
@@ -105,7 +82,7 @@ public class FileBasedRepositoryTests
     public async Task UpdateAsync_ModifiesNoteAndMarksDirty()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote
@@ -137,7 +114,7 @@ public class FileBasedRepositoryTests
     public async Task UpdateAsync_ModifiesTypeAndMarksDirty()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote
@@ -172,7 +149,8 @@ public class FileBasedRepositoryTests
     {
         // Arrange - write a raw JSON file without a "Type" property, simulating a note
         // saved before this field existed.
-        PersistencePathHelper.EnsureDataDirectoryExists();
+        var pathHelper = new PersistencePathHelper(_storageLocationProvider);
+        pathHelper.EnsureDataDirectoryExists();
         var noteId = Guid.NewGuid();
         var json = $$"""
         {
@@ -188,9 +166,9 @@ public class FileBasedRepositoryTests
             "IsFavorite": false
         }
         """;
-        await File.WriteAllTextAsync(PersistencePathHelper.GetNoteFilePath(noteId), json);
+        await File.WriteAllTextAsync(pathHelper.GetNoteFilePath(noteId), json);
 
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
 
         // Act
         await repository.InitializeAsync();
@@ -205,7 +183,7 @@ public class FileBasedRepositoryTests
     public async Task DeleteAsync_RemovesNoteAndMarksDirty()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote
@@ -229,7 +207,7 @@ public class FileBasedRepositoryTests
     public async Task GetAllAsync_ReturnsAllNotes()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note1 = new StickyNote { Id = Guid.NewGuid(), Title = "Note 1" };
@@ -249,7 +227,7 @@ public class FileBasedRepositoryTests
     public async Task GetByStatusAsync_FiltersNotesByStatus()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var activeNote = new StickyNote { Id = Guid.NewGuid(), Title = "Active", Status = StickyNoteStatus.Active };
@@ -266,7 +244,7 @@ public class FileBasedRepositoryTests
     public async Task CreateTask_AddsTaskToNote()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote { Id = Guid.NewGuid(), Title = "Note with Task" };
@@ -288,7 +266,7 @@ public class FileBasedRepositoryTests
     public async Task UpdateTask_ModifiesTaskInNote()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote { Id = Guid.NewGuid(), Title = "Note" };
@@ -313,7 +291,7 @@ public class FileBasedRepositoryTests
     public async Task DeleteTask_RemovesTaskFromNote()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote { Id = Guid.NewGuid(), Title = "Note" };
@@ -334,7 +312,7 @@ public class FileBasedRepositoryTests
     public async Task SaveNoteAsync_WriteNoteToFile()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote { Id = Guid.NewGuid(), Title = "To Save" };
@@ -351,7 +329,7 @@ public class FileBasedRepositoryTests
     public async Task SaveAllDirtyNotesAsync_SavesAllModifiedNotes()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note1 = new StickyNote { Id = Guid.NewGuid(), Title = "Note 1" };
@@ -371,7 +349,7 @@ public class FileBasedRepositoryTests
     public async Task HasPendingChanges_ReflectsDirtyState()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         // Act & Assert
@@ -391,7 +369,7 @@ public class FileBasedRepositoryTests
     public async Task UpdateAsync_PersistsIsPinnedFlag()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote { Id = Guid.NewGuid(), Title = "Pinnable" };
@@ -411,7 +389,7 @@ public class FileBasedRepositoryTests
     public async Task UpdateAsync_PersistsWindowBounds()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         var note = new StickyNote { Id = Guid.NewGuid(), Title = "Positioned" };
@@ -442,7 +420,7 @@ public class FileBasedRepositoryTests
     public async Task GetByIdAsync_ReturnsNullForNonExistentNote()
     {
         // Arrange
-        var repository = new FileBasedRepository();
+        var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
 
         // Act
@@ -450,5 +428,23 @@ public class FileBasedRepositoryTests
 
         // Assert
         Assert.IsNull(result);
+    }
+
+    private sealed class FakeStorageLocationProvider : IStorageLocationProvider
+    {
+        public FakeStorageLocationProvider(string root)
+        {
+            RootDirectory = root;
+            DataDirectory = Path.Combine(root, "Data");
+            SettingsDirectory = Path.Combine(root, "Settings");
+            LogsDirectory = Path.Combine(root, "Logs");
+            BackupsDirectory = Path.Combine(root, "Backups");
+        }
+
+        public string RootDirectory { get; }
+        public string DataDirectory { get; }
+        public string SettingsDirectory { get; }
+        public string LogsDirectory { get; }
+        public string BackupsDirectory { get; }
     }
 }
