@@ -2,24 +2,28 @@ using System.Text.Json;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Serialization;
+using StickyDo.Domain.Storage;
 using StickyDo.Domain.Utilities;
 
 namespace StickyDo.Domain.Repositories;
 
 /// <summary>
 /// File-based implementation of sticky note repositories.
-/// Persists notes as individual JSON files in %LocalAppData%\StickyDo.
+/// Persists notes as individual JSON files under the directory resolved by
+/// the injected <see cref="IStorageLocationProvider"/>.
 /// Implements both IStickyNoteRepository and IStickyNoteTaskRepository.
 /// </summary>
 public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskRepository
 {
     private readonly List<StickyNote> _notes = [];
     private readonly IDirtyTracker _dirtyTracker;
+    private readonly PersistencePathHelper _pathHelper;
     private bool _initialized;
 
-    public FileBasedRepository()
+    public FileBasedRepository(IStorageLocationProvider storageLocationProvider)
     {
         _dirtyTracker = new DirtyTracker();
+        _pathHelper = new PersistencePathHelper(storageLocationProvider);
     }
 
     /// <summary>
@@ -34,11 +38,11 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         try
         {
             System.Diagnostics.Debug.WriteLine("FileBasedRepository: Ensuring data directory exists...");
-            PersistencePathHelper.EnsureDataDirectoryExists();
-            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Data directory ready at {PersistencePathHelper.GetDataDirectoryPath()}");
+            _pathHelper.EnsureDataDirectoryExists();
+            System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Data directory ready at {_pathHelper.GetDataDirectoryPath()}");
 
             System.Diagnostics.Debug.WriteLine("FileBasedRepository: Cleaning up orphaned temporary files...");
-            AtomicFileWriter.CleanupOrphanedTemporaryFiles();
+            AtomicFileWriter.CleanupOrphanedTemporaryFiles(_pathHelper.GetDataDirectoryPath());
 
             System.Diagnostics.Debug.WriteLine("FileBasedRepository: Loading notes from disk...");
             await LoadAllNotesFromDiskAsync();
@@ -66,7 +70,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     private async Task LoadAllNotesFromDiskAsync()
     {
         _notes.Clear();
-        var noteFiles = PersistencePathHelper.GetAllNoteFiles();
+        var noteFiles = _pathHelper.GetAllNoteFiles();
 
         foreach (var filePath in noteFiles)
         {
@@ -371,7 +375,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     /// </summary>
     public void ClearAllPersistedNotes()
     {
-        var noteFiles = PersistencePathHelper.GetAllNoteFiles().ToList();
+        var noteFiles = _pathHelper.GetAllNoteFiles().ToList();
         foreach (var filePath in noteFiles)
         {
             try
@@ -395,14 +399,14 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     private async Task SaveNoteToDiskAsync(StickyNote note)
     {
         var json = JsonSerializer.Serialize(note, JsonSerializationOptions.Default);
-        var filePath = PersistencePathHelper.GetNoteFilePath(note.Id);
+        var filePath = _pathHelper.GetNoteFilePath(note.Id);
 
         await AtomicFileWriter.WriteAtomicAsync(filePath, json);
     }
 
-    private static void DeleteNoteFromDisk(Guid noteId)
+    private void DeleteNoteFromDisk(Guid noteId)
     {
-        var filePath = PersistencePathHelper.GetNoteFilePath(noteId);
+        var filePath = _pathHelper.GetNoteFilePath(noteId);
         try
         {
             if (File.Exists(filePath))

@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Domain.Storage;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.ViewModels;
 
@@ -13,6 +14,7 @@ namespace StickyDo.Widget.Tests.ViewModels;
 [TestClass]
 public class NotesListViewModelTests
 {
+    private string _testDataDirectory = null!;
     private FileBasedRepository _repository = null!;
     private StickyNoteService _service = null!;
     private NotesListViewModel _viewModel = null!;
@@ -20,20 +22,10 @@ public class NotesListViewModelTests
     [TestInitialize]
     public async Task Setup()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var originalPath = Path.Combine(appDataPath, "StickyDo");
+        _testDataDirectory = Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_testDataDirectory);
 
-        if (Directory.Exists(originalPath))
-        {
-            var backupPath = originalPath + ".backup";
-            if (Directory.Exists(backupPath))
-                Directory.Delete(backupPath, recursive: true);
-            Directory.Move(originalPath, backupPath);
-        }
-
-        Directory.CreateDirectory(originalPath);
-
-        _repository = new FileBasedRepository();
+        _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
         _service = new StickyNoteService(_repository);
         _viewModel = new NotesListViewModel(
@@ -46,15 +38,8 @@ public class NotesListViewModelTests
     [TestCleanup]
     public void Cleanup()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var testPath = Path.Combine(appDataPath, "StickyDo");
-        var backupPath = testPath + ".backup";
-
-        if (Directory.Exists(testPath))
-            Directory.Delete(testPath, recursive: true);
-
-        if (Directory.Exists(backupPath))
-            Directory.Move(backupPath, testPath);
+        if (Directory.Exists(_testDataDirectory))
+            Directory.Delete(_testDataDirectory, recursive: true);
     }
 
     private async Task<Guid> CreateNoteWithTaskAsync(
@@ -316,5 +301,23 @@ public class NotesListViewModelTests
             Task.CompletedTask;
 
         public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(true);
+    }
+
+    private sealed class FakeStorageLocationProvider : IStorageLocationProvider
+    {
+        public FakeStorageLocationProvider(string root)
+        {
+            RootDirectory = root;
+            DataDirectory = Path.Combine(root, "Data");
+            SettingsDirectory = Path.Combine(root, "Settings");
+            LogsDirectory = Path.Combine(root, "Logs");
+            BackupsDirectory = Path.Combine(root, "Backups");
+        }
+
+        public string RootDirectory { get; }
+        public string DataDirectory { get; }
+        public string SettingsDirectory { get; }
+        public string LogsDirectory { get; }
+        public string BackupsDirectory { get; }
     }
 }
