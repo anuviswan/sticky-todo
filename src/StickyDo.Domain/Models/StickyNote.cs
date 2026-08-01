@@ -20,6 +20,9 @@ public class StickyNote
     /// <summary>Whether this item is a structured Todo or a free-form Note.</summary>
     public NoteType Type { get; set; } = NoteType.Todo;
 
+    /// <summary>Free-form text body. Used for notes of <see cref="NoteType.Note"/>.</summary>
+    public string? Content { get; set; }
+
     /// <summary>UTC timestamp when the note was created.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -325,6 +325,35 @@ public class StickyNoteServiceTests
     }
 
     [TestMethod]
+    public async Task UpdateNoteAsync_WithContent_PersistsContent()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+
+        // Act
+        await service.UpdateNoteAsync(noteId, "Test Note", StickyNoteStatus.Active, content: "Some free-form text");
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual("Some free-form text", note!.Content);
+    }
+
+    [TestMethod]
+    public async Task UpdateNoteAsync_WithoutContent_DoesNotClearExistingContent()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.UpdateNoteAsync(noteId, "Test Note", StickyNoteStatus.Active, content: "Some free-form text");
+
+        // Act
+        await service.UpdateNoteAsync(noteId, "Test Note", StickyNoteStatus.Active, 0xFFAABBCC);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual("Some free-form text", note!.Content);
+    }
+
+    [TestMethod]
     public async Task UpdateNoteWindowBoundsAsync_PersistsPositionAndSize()
     {
         // Arrange

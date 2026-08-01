@@ -19,6 +19,7 @@
             <converters:NoteSyncStateToIconConverter x:Key="NoteSyncStateToIconConverter"/>
             <converters:NoteSyncStateToTooltipConverter x:Key="NoteSyncStateToTooltipConverter"/>
             <converters:NoteSyncStateToPendingVisibilityConverter x:Key="NoteSyncStateToPendingVisibilityConverter"/>
+            <converters:NoteTypeToVisibilityConverter x:Key="NoteTypeToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
