@@ -38,3 +38,4 @@ src/*/.vs/
 
 # Local developer signing certificate for MSIX sideload testing (see README) — never commit private keys.
 *.pfx
+/src/StickyDo.Widget/StickyDo.Widget.Controls/bin/Debug/*
