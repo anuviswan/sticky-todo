@@ -57,7 +57,8 @@ src/
 ├── StickyDo.Domain.Tests/      Unit tests for the domain layer (MSTest)
 └── StickyDo.Widget/
     ├── StickyDo.Widget/            WPF application (views, view models, services)
-    └── StickyDo.Widget.Controls/   Shared WPF user controls
+    ├── StickyDo.Widget.Controls/   Shared WPF user controls
+    └── StickyDo.Widget.Package/    MSIX packaging project (Store submission)
 ```
 
 ## Getting Started
@@ -85,6 +86,66 @@ dotnet run --project src/StickyDo.Widget/StickyDo.Widget/StickyDo.Widget.csproj
 ```bash
 dotnet test src/StickyDo.Domain.Tests/StickyDo.Domain.Tests.csproj
 ```
+
+## MSIX Packaging
+
+`StickyDo.Widget.Package` wraps `StickyDo.Widget` in an MSIX package for Microsoft Store
+submission. It's a classic Windows Application Packaging Project (`.wapproj`), not an SDK-style
+project, so it can't be built with `dotnet build`/`dotnet restore` — those commands (and the
+`PR Validation` CI workflow) only see `StickyDo.Widget.sln`, which intentionally does **not**
+reference the packaging project. Building it requires full MSBuild from a Visual Studio
+installation with the **Universal Windows Platform development** workload (specifically the
+"MSIX Packaging Tools"/"Windows Application Packaging Project" component).
+
+### Prerequisites
+
+- Visual Studio 2022+ with the **Universal Windows Platform development** workload installed
+- A code-signing certificate. For local sideload testing, generate a throwaway self-signed one
+  (never commit it — `*.pfx` is gitignored):
+
+  ```powershell
+  $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=DefineStack" -KeyUsage DigitalSignature `
+    -FriendlyName "StickyDo Dev Certificate" -CertStoreLocation "Cert:\CurrentUser\My" `
+    -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}Subject Type:End Entity")
+  Export-PfxCertificate -Cert $cert -FilePath src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package_TemporaryKey.pfx `
+    -Password (New-Object System.Security.SecureString)
+  ```
+
+  Update `PackageCertificateThumbprint` in the `.wapproj` to match, or open the project in Visual
+  Studio and use **Package.appxmanifest → Packaging → Choose Certificate → Create...** instead.
+
+### Build the package
+
+```powershell
+$msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe"
+& $msbuild src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package.wapproj -t:Restore,Build -p:Configuration=Release -p:Platform=x64
+```
+
+The `.msix` is written to `src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/`.
+
+### Install locally
+
+```powershell
+Import-PfxCertificate -FilePath src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package_TemporaryKey.pfx `
+  -CertStoreLocation Cert:\CurrentUser\Root -Password (New-Object System.Security.SecureString)
+Add-AppxPackage -Path <path-to-generated>.msix
+```
+
+Trusting the certificate under `Cert:\CurrentUser\Root` triggers an interactive Windows
+confirmation dialog by design — there's no way around that step, and there shouldn't be, since
+it's you granting trust to a certificate. Alternatively, right-click the project in Visual Studio
+and choose **Deploy**, which handles certificate trust for you.
+
+Only `x64` is currently configured. `x86`/`arm64` and the final Store-quality icon set
+(`Square44x44Logo`, `Square150x150Logo`, `Wide310x150Logo`, splash screen at all required scales)
+are tracked separately.
+
+> **Note:** `Configuration=Debug` produces an installable sideload/test package and is what's
+> verified above. `Configuration=Release` additionally requires the standalone Windows 10/11 SDK
+> (not just the VS packaging workload) to be installed, for its `Platforms\UAP\...\Platform.xml`;
+> without it, Release fails with `APPX3217: SDK folder containing 'UAP.props' ... cannot be
+> located`. Install the Windows SDK via the Visual Studio Installer's Individual Components tab
+> before producing a Release/Store package.
 
 ## Privacy
 

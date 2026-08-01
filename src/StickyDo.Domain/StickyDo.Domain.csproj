@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Required so the MSIX packaging project (StickyDo.Widget.Package) can restore this
+         project for win-x64; NuGet requires every project in the reference graph to restore
+         the same RID once any project in the graph targets it. -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
 </Project>

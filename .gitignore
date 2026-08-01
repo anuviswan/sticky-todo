@@ -30,3 +30,11 @@ src/*/.vs/
 /src/StickyDo.Widget/StickyDo.Widget.Controls/bin/*
 /src/StickyDo.Widget/StickyDo.Widget.Controls/obj/*
 /graphify-out/*
+
+/src/StickyDo.Widget/StickyDo.Widget.Package/bin/*
+/src/StickyDo.Widget/StickyDo.Widget.Package/obj/*
+/src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/*
+/src/StickyDo.Widget/StickyDo.Widget.Package/BundleArtifacts/*
+
+# Local developer signing certificate for MSIX sideload testing (see README) — never commit private keys.
+*.pfx

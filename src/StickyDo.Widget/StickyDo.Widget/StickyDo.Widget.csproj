@@ -8,6 +8,10 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <!-- Required so the MSIX packaging project (StickyDo.Widget.Package) can restore and
+         publish a win-x64 apphost; NuGet requires every project in the reference graph to
+         restore the same RID once any project in the graph targets it. -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
