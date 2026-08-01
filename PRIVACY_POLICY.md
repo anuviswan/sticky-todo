@@ -2,12 +2,12 @@
 
 **Effective date:** August 1, 2026
 
-This policy describes how the Sticky TODO Windows app ("Sticky TODO", "the app") handles data
-in its current release. Sticky TODO is developed and maintained by DefineStack.
+This policy describes how the StickyDo Windows app ("StickyDo", "the app") handles data
+in its current release. StickyDo is developed and maintained by DefineStack.
 
 ## Summary
 
-Sticky TODO is a fully local, offline application. In this version:
+StickyDo is a fully local, offline application. In this version:
 
 - All of your data stays on your device.
 - Nothing is transmitted over the network.
@@ -16,13 +16,13 @@ Sticky TODO is a fully local, offline application. In this version:
 
 ## Data Collection
 
-Sticky TODO does not collect, transmit, or share any personal data, usage data, or diagnostic
+StickyDo does not collect, transmit, or share any personal data, usage data, or diagnostic
 data. The app does not include any telemetry, analytics, or crash-reporting SDKs, and it does
 not make network or internet calls of any kind.
 
 ## Data Storage
 
-All notes and application data created in Sticky TODO are stored locally on your computer, under
+All notes and application data created in StickyDo are stored locally on your computer, under
 your Windows user profile:
 
 ```
@@ -39,19 +39,19 @@ delete all app data from your device.
 
 ## Accounts and Sync
 
-This version of Sticky TODO does not support user accounts, sign-in, or synchronization with any
+This version of StickyDo does not support user accounts, sign-in, or synchronization with any
 server or cloud service. A future release may add optional background sync so notes can be
 shared across your own devices; if and when that happens, this policy will be updated before
 that feature is enabled, and it will describe what data is transmitted and how it is protected.
 
 ## Children's Privacy
 
-Sticky TODO does not knowingly collect any data from anyone, including children, because it does
+StickyDo does not knowingly collect any data from anyone, including children, because it does
 not collect data at all.
 
 ## Changes to This Policy
 
-If a future version of Sticky TODO changes how data is handled (for example, by introducing
+If a future version of StickyDo changes how data is handled (for example, by introducing
 account-based sync), this policy will be updated accordingly, and the effective date above will
 reflect the most recent change.
 

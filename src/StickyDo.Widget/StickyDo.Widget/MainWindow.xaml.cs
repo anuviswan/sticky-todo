@@ -5,7 +5,7 @@ using StickyDo.Widget.Behaviors;
 namespace StickyDo.Widget;
 
 /// <summary>
-/// Main application window for the Sticky TODO application.
+/// Main application window for the StickyDo application.
 /// Pure MVVM - all logic in ViewModels and Behaviors.
 /// </summary>
 public partial class MainWindow : Window

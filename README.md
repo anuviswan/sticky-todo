@@ -1,6 +1,6 @@
-# Sticky TODO
+# StickyDo
 
-Sticky TODO combines the functionality of a TODO app with the familiarity of Windows Sticky Notes. Notes are created and edited as tasks, and rendered as sticky notes on the desktop.
+StickyDo combines the functionality of a TODO app with the familiarity of Windows Sticky Notes. Notes are created and edited as tasks, and rendered as sticky notes on the desktop.
 
 The app is designed to be offline-first, syncing in the background whenever connectivity is available. (Phase 2)
 
@@ -149,7 +149,7 @@ are tracked separately.
 
 ## Privacy
 
-Sticky TODO is fully local and offline in this version — no telemetry, no accounts, no cloud
+StickyDo is fully local and offline in this version — no telemetry, no accounts, no cloud
 sync. See [PRIVACY_POLICY.md](PRIVACY_POLICY.md) for details on what data is stored and where.
 
 ## License

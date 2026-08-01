@@ -11,7 +11,7 @@
     Version="0.1.0.0" />
 
   <Properties>
-    <DisplayName>Sticky TODO</DisplayName>
+    <DisplayName>StickyDo</DisplayName>
     <PublisherDisplayName>DefineStack</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
@@ -27,7 +27,7 @@
   <Applications>
     <Application Id="StickyDoWidget" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="Sticky TODO"
+        DisplayName="StickyDo"
         Description="Combine TODOs and sticky notes on your desktop."
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
