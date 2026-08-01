@@ -97,4 +97,65 @@ public class StickyNoteTaskService
 
         await _taskRepository.DeleteAsync(noteId, taskId);
     }
+
+    /// <summary>
+    /// Converts a note between the structured Todo and free-form Note representations.
+    /// Todo -> Note joins each task's title into a line of free-form text (dropping the
+    /// checkbox structure); Note -> Todo splits the text into lines and creates one unchecked
+    /// task per non-empty line. Only the representation matching the new type is kept - the
+    /// other one is cleared, since a note only ever displays one of them at a time. Identity
+    /// and other metadata (Id, color, favourite, pinned, etc.) are untouched.
+    /// </summary>
+    public async Task<StickyNote> ConvertNoteTypeAsync(Guid noteId, NoteType targetType)
+    {
+        if (noteId == Guid.Empty)
+            throw new ArgumentException("Note ID cannot be empty.", nameof(noteId));
+
+        var note = await _noteRepository.GetByIdAsync(noteId);
+        if (note is null)
+            throw new InvalidOperationException($"Note with ID {noteId} not found.");
+
+        if (note.Type != targetType)
+        {
+            if (targetType == NoteType.Note)
+            {
+                var lines = note.Tasks.OrderBy(t => t.Order).Select(t => t.Title);
+                note.Content = string.Join(Environment.NewLine, lines);
+
+                foreach (var task in note.Tasks.OrderBy(t => t.Order).ToList())
+                    await _taskRepository.DeleteAsync(noteId, task.Id);
+            }
+            else
+            {
+                var lines = (note.Content ?? string.Empty).Split('\n');
+                var order = 0;
+
+                foreach (var rawLine in lines)
+                {
+                    var line = rawLine.TrimEnd('\r').Trim();
+                    if (line.Length == 0)
+                        continue;
+
+                    var task = new StickyNoteTask
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = line,
+                        IsCompleted = false,
+                        Order = order++,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    await _taskRepository.CreateAsync(noteId, task);
+                }
+
+                note.Content = null;
+            }
+
+            note.Type = targetType;
+            await _noteRepository.UpdateAsync(note);
+        }
+
+        return (await _noteRepository.GetByIdAsync(noteId))!;
+    }
 }

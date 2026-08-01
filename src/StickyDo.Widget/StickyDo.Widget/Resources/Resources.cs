@@ -15,6 +15,8 @@ public static class Resources
 
     public static string MoreOptionsPopup_NotesList => Get(nameof(MoreOptionsPopup_NotesList));
     public static string MoreOptionsPopup_DeleteNote => Get(nameof(MoreOptionsPopup_DeleteNote));
+    public static string MoreOptionsPopup_ConvertToNote => Get(nameof(MoreOptionsPopup_ConvertToNote));
+    public static string MoreOptionsPopup_ConvertToTodo => Get(nameof(MoreOptionsPopup_ConvertToTodo));
     public static string DeleteNote_ConfirmTitle => Get(nameof(DeleteNote_ConfirmTitle));
     public static string DeleteNote_ConfirmMessage => Get(nameof(DeleteNote_ConfirmMessage));
     public static string DragDeleteNote_ConfirmTitle => Get(nameof(DragDeleteNote_ConfirmTitle));
