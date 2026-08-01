@@ -166,14 +166,15 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     public event EventHandler? CloseRequested;
 
     /// <summary>
-    /// Creates a new note window via the creation service, inheriting this note's color.
+    /// Creates a new note window via the creation service, inheriting this note's color and type
+    /// (e.g. pressing "+" from a Note creates another Note, from a Todo creates another Todo).
     /// </summary>
     [RelayCommand]
     public async Task CreateNewNoteAsync()
     {
         try
         {
-            await _creationService.CreateNewNoteAsync(CurrentColor);
+            await _creationService.CreateNewNoteAsync(CurrentColor, Type);
         }
         catch (Exception ex)
         {
