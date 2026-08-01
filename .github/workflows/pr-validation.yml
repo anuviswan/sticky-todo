@@ -1,0 +1,52 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    # StickyDo.Widget targets net10.0-windows (WPF), so the solution can only build on Windows.
+    runs-on: windows-latest
+
+    env:
+      SOLUTION_PATH: src/StickyDo.Widget/StickyDo.Widget.sln
+      BUILD_CONFIGURATION: Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore "${{ env.SOLUTION_PATH }}"
+
+      - name: Build
+        run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+
+      - name: Test
+        # -m:1 forces MSBuild to run each test project's Test target sequentially rather than in
+        # parallel: StickyDo.Domain.Tests and StickyDo.Widget.Tests both exercise the same real
+        # %LocalAppData%\StickyDo directory as test setup/teardown, and running them concurrently
+        # races on that shared path.
+        run: dotnet test "${{ env.SOLUTION_PATH }}" --configuration ${{ env.BUILD_CONFIGURATION }} --no-build -m:1 --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          retention-days: 14
