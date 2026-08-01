@@ -9,7 +9,7 @@ namespace StickyDo.Domain.Storage;
 public interface IStorageLocationProvider
 {
     /// <summary>
-    /// The application's storage root directory (e.g. %LocalAppData%\DefineStack\StickyDO).
+    /// The application's storage root directory (e.g. %LocalAppData%\DefineStack\StickyDo).
     /// </summary>
     string RootDirectory { get; }
 

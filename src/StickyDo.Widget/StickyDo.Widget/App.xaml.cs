@@ -33,7 +33,7 @@ public partial class App : Application
         {
             if (!AcquireSingleInstanceLock())
             {
-                MessageBox.Show("Sticky TODO is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("StickyDo is already running.", "Application Running", MessageBoxButton.OK, MessageBoxImage.Information);
                 Shutdown(1);
                 return;
             }

@@ -1,6 +1,6 @@
-# Sticky TODO
+# StickyDo
 
-The purpose of Sticky TODO is to combine the functionality of TODO apps and Sticky notes. It provides user to create TODOs, which can be viewed as sticky notes on a Windows 11. User can create TODOS via Windows 11 Sticky notes or using the Android App.
+The purpose of StickyDo is to combine the functionality of TODO apps and Sticky notes. It provides user to create TODOs, which can be viewed as sticky notes on a Windows 11. User can create TODOS via Windows 11 Sticky notes or using the Android App.
 
 ## Project Architecture
 
