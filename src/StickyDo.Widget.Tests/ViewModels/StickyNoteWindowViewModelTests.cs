@@ -95,6 +95,48 @@ public class StickyNoteWindowViewModelTests
     }
 
     [TestMethod]
+    public async Task CreateNewNoteAsync_CurrentNoteIsTypeNote_RequestsNoteTypeFromCreationService()
+    {
+        var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
+        var creationService = new FakeStickyNoteCreationService();
+        var viewModel = new StickyNoteWindowViewModel(
+            _service,
+            _taskService,
+            new FakeDialogService(),
+            creationService,
+            new FakePersistenceService(),
+            new WeakReferenceMessenger(),
+            new FakeWindowService());
+        await viewModel.LoadNoteAsync(noteId);
+
+        await viewModel.CreateNewNoteCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(1, creationService.CallCount);
+        Assert.AreEqual(NoteType.Note, creationService.LastType);
+    }
+
+    [TestMethod]
+    public async Task CreateNewNoteAsync_CurrentNoteIsTypeTodo_RequestsTodoTypeFromCreationService()
+    {
+        var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
+        var creationService = new FakeStickyNoteCreationService();
+        var viewModel = new StickyNoteWindowViewModel(
+            _service,
+            _taskService,
+            new FakeDialogService(),
+            creationService,
+            new FakePersistenceService(),
+            new WeakReferenceMessenger(),
+            new FakeWindowService());
+        await viewModel.LoadNoteAsync(noteId);
+
+        await viewModel.CreateNewNoteCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(1, creationService.CallCount);
+        Assert.AreEqual(NoteType.Todo, creationService.LastType);
+    }
+
+    [TestMethod]
     public async Task OnContentChanged_MarksUnsavedAndTriggersAutoSave()
     {
         var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
@@ -139,7 +181,17 @@ public class StickyNoteWindowViewModelTests
 
     private sealed class FakeStickyNoteCreationService : IStickyNoteCreationService
     {
-        public Task CreateNewNoteAsync(uint? colorArgb = null) => Task.CompletedTask;
+        public uint? LastColorArgb { get; private set; }
+        public NoteType? LastType { get; private set; }
+        public int CallCount { get; private set; }
+
+        public Task CreateNewNoteAsync(uint? colorArgb = null, NoteType type = NoteType.Todo)
+        {
+            LastColorArgb = colorArgb;
+            LastType = type;
+            CallCount++;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeWindowService : IWindowService
