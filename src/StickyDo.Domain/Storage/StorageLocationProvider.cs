@@ -3,14 +3,14 @@ namespace StickyDo.Domain.Storage;
 /// <summary>
 /// Resolves the application's storage root based on build configuration.
 /// This is the only component containing build-specific storage logic;
-/// Release builds resolve to %LocalAppData%\DefineStack\StickyDO and
-/// Debug builds resolve to %LocalAppData%\DefineStack\StickyDO.Debug,
+/// Release builds resolve to %LocalAppData%\DefineStack\StickyDo and
+/// Debug builds resolve to %LocalAppData%\DefineStack\StickyDo.Debug,
 /// keeping developer data fully isolated from production data.
 /// </summary>
 public sealed class StorageLocationProvider : IStorageLocationProvider
 {
     private const string CompanyFolderName = "DefineStack";
-    private const string ProductFolderName = "StickyDO";
+    private const string ProductFolderName = "StickyDo";
     private const string DebugSuffix = ".Debug";
 
     public string RootDirectory { get; }

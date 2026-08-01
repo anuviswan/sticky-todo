@@ -26,7 +26,7 @@ All notes and application data created in Sticky TODO are stored locally on your
 your Windows user profile:
 
 ```
-%LocalAppData%\DefineStack\StickyDO\
+%LocalAppData%\DefineStack\StickyDo\
 ├── Data\       Your notes, stored as individual JSON files
 ├── Settings\   Application preferences
 ├── Logs\       Local diagnostic logs (written to disk only, never transmitted)

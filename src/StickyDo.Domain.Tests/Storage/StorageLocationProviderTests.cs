@@ -11,8 +11,8 @@ public class StorageLocationProviderTests
     {
         var provider = new StorageLocationProvider(isDebugBuild: false);
 
-        Assert.IsTrue(provider.RootDirectory.EndsWith(@"DefineStack\StickyDO"));
-        Assert.IsFalse(provider.RootDirectory.EndsWith("StickyDO.Debug"));
+        Assert.IsTrue(provider.RootDirectory.EndsWith(@"DefineStack\StickyDo"));
+        Assert.IsFalse(provider.RootDirectory.EndsWith("StickyDo.Debug"));
     }
 
     [TestMethod]
@@ -20,7 +20,7 @@ public class StorageLocationProviderTests
     {
         var provider = new StorageLocationProvider(isDebugBuild: true);
 
-        Assert.IsTrue(provider.RootDirectory.EndsWith(@"DefineStack\StickyDO.Debug"));
+        Assert.IsTrue(provider.RootDirectory.EndsWith(@"DefineStack\StickyDo.Debug"));
     }
 
     [TestMethod]
