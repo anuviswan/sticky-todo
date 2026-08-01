@@ -86,6 +86,11 @@ dotnet run --project src/StickyDo.Widget/StickyDo.Widget/StickyDo.Widget.csproj
 dotnet test src/StickyDo.Domain.Tests/StickyDo.Domain.Tests.csproj
 ```
 
+## Privacy
+
+Sticky TODO is fully local and offline in this version — no telemetry, no accounts, no cloud
+sync. See [PRIVACY_POLICY.md](PRIVACY_POLICY.md) for details on what data is stored and where.
+
 ## License
 
 StickyDo is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for details.
