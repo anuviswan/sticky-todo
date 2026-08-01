@@ -64,6 +64,12 @@
   <data name="MoreOptionsPopup_DeleteNote" xml:space="preserve">
     <value>Delete Note</value>
   </data>
+  <data name="MoreOptionsPopup_ConvertToNote" xml:space="preserve">
+    <value>Convert to Note</value>
+  </data>
+  <data name="MoreOptionsPopup_ConvertToTodo" xml:space="preserve">
+    <value>Convert to Todo</value>
+  </data>
   <data name="DeleteNote_ConfirmTitle" xml:space="preserve">
     <value>Delete Note</value>
   </data>

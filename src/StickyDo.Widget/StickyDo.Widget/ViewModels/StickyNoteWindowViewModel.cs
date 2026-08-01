@@ -122,6 +122,11 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         }
     }
 
+    partial void OnTypeChanged(NoteType value)
+    {
+        MoreOptionsPopupViewModel.Type = value;
+    }
+
     public StickyNoteWindowViewModel(
         StickyNoteService stickyNoteService,
         StickyNoteTaskService stickyNoteTaskService,
@@ -146,7 +151,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         _messenger = messenger;
         _windowService = windowService;
 
-        MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync, ShowNotesListAsync);
+        MoreOptionsPopupViewModel.SetCallbacks(DeleteNoteAsync, ShowNotesListAsync, ConvertNoteTypeAsync);
 
         // WeakReferenceMessenger holds this registration weakly, so it doesn't keep this
         // (transient, per-window) view model alive after its window closes.
@@ -540,6 +545,37 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         IsMoreOptionsOpen = false;
         _windowService.RequestShow();
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Converts the current note between Todo and Note - joining task titles into free-form
+    /// text, or splitting text into unchecked tasks - then reloads the window so it reflects
+    /// the new type while staying open, and notifies other view models (e.g. the notes list /
+    /// sidebar) via the messenger so they pick up the note's new location immediately.
+    /// </summary>
+    [RelayCommand]
+    public async Task ConvertNoteTypeAsync()
+    {
+        if (_currentNote is null)
+            return;
+
+        IsMoreOptionsOpen = false;
+        var newType = Type == NoteType.Todo ? NoteType.Note : NoteType.Todo;
+
+        try
+        {
+            await _stickyNoteTaskService.ConvertNoteTypeAsync(_currentNote.Id, newType);
+            await LoadNoteAsync(_currentNote.Id);
+            _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ConvertNoteTypeAsync));
+            await _dialogService.ShowMessageAsync(
+                "Convert Error",
+                $"Error converting note: {ex.Message}",
+                System.Windows.MessageBoxImage.Error);
+        }
     }
 
     /// <summary>
