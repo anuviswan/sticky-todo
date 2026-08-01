@@ -19,10 +19,15 @@ public partial class App : Application
     private bool _isExitRequested;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
+    private readonly GlobalExceptionHandler _globalExceptionHandler = new();
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Registered before anything else so that a crash during service configuration or
+        // later, on any thread, is logged and surfaced instead of silently killing the app.
+        _globalExceptionHandler.Register(this);
 
         try
         {
