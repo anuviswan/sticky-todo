@@ -60,6 +60,7 @@
                                             <local:StickyNoteListItem
                                                 NoteId="{Binding Id, Mode=OneWay}"
                                                 Title="{Binding Title, Mode=OneWay}"
+                                                Type="{Binding Type, Mode=OneWay}"
                                                 HasTasks="{Binding HasTasks, Mode=OneWay}"
                                                 IsFavorite="{Binding IsFavorite, Mode=OneWay}"
                                                 FirstTaskTitle="{Binding FirstTaskTitle, Mode=OneWay}"
