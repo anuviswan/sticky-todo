@@ -68,6 +68,13 @@ public class NotesListViewModelTests
         return noteId;
     }
 
+    private async Task<Guid> CreateNoteWithContentAsync(string title, string content)
+    {
+        var noteId = await _service.CreateNoteAsync(title, type: NoteType.Note);
+        await _service.UpdateNoteAsync(noteId, title, StickyNoteStatus.Active, content: content);
+        return noteId;
+    }
+
     private IEnumerable<StickyNoteItemViewModel> AllVisibleNotes() =>
         _viewModel.Columns.SelectMany(c => c.Notes);
 
@@ -238,6 +245,64 @@ public class NotesListViewModelTests
         _viewModel.TypeFilter = null;
         Assert.AreEqual(2, AllVisibleNotes().Count());
         Assert.IsTrue(AllVisibleNotes().All(n => n.Type == NoteType.Todo));
+    }
+
+    [TestMethod]
+    public async Task FirstTaskTitle_ShortTitle_ShowsFullText()
+    {
+        await CreateNoteWithTaskAsync("Grocery List", "Buy milk");
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual("Buy milk", AllVisibleNotes().Single().FirstTaskTitle);
+    }
+
+    [TestMethod]
+    public async Task FirstTaskTitle_LongTitle_TruncatesToFirstWordsWithEllipsis()
+    {
+        var taskTitle = string.Join(' ', Enumerable.Range(1, 20).Select(i => $"word{i}"));
+        await CreateNoteWithTaskAsync("Grocery List", taskTitle);
+        await _viewModel.LoadNotesAsync();
+
+        var expected = string.Join(' ', Enumerable.Range(1, 12).Select(i => $"word{i}")) + "...";
+        Assert.AreEqual(expected, AllVisibleNotes().Single().FirstTaskTitle);
+    }
+
+    [TestMethod]
+    public async Task ContentPreview_ShortContent_ShowsFullText()
+    {
+        await CreateNoteWithContentAsync("Journal Entry", "Buy milk and eggs");
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual("Buy milk and eggs", AllVisibleNotes().Single().ContentPreview);
+    }
+
+    [TestMethod]
+    public async Task ContentPreview_LongContent_TruncatesToFirstWordsWithEllipsis()
+    {
+        var content = string.Join(' ', Enumerable.Range(1, 20).Select(i => $"word{i}"));
+        await CreateNoteWithContentAsync("Journal Entry", content);
+        await _viewModel.LoadNotesAsync();
+
+        var expected = string.Join(' ', Enumerable.Range(1, 12).Select(i => $"word{i}")) + "...";
+        Assert.AreEqual(expected, AllVisibleNotes().Single().ContentPreview);
+    }
+
+    [TestMethod]
+    public async Task ContentPreview_MultiLineContent_CollapsesNewlinesToSingleLine()
+    {
+        await CreateNoteWithContentAsync("Journal Entry", "Line one\nLine two\nLine three");
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual("Line one Line two Line three", AllVisibleNotes().Single().ContentPreview);
+    }
+
+    [TestMethod]
+    public async Task ContentPreview_TodoNoteWithNoContent_IsEmpty()
+    {
+        await CreateNoteWithTaskAsync("Grocery List", "Buy milk");
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual(string.Empty, AllVisibleNotes().Single().ContentPreview);
     }
 
     private sealed class FakeStickyNoteWindowService : IStickyNoteWindowService

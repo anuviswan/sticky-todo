@@ -106,6 +106,17 @@ public partial class StickyNoteListItem : UserControl
         DependencyProperty.Register("FirstTaskCompleted", typeof(bool), typeof(StickyNoteListItem),
             new PropertyMetadata(false));
 
+    /// <summary>Gets or sets the truncated preview of a free-form note's content.</summary>
+    public string ContentPreview
+    {
+        get => (string)GetValue(ContentPreviewProperty);
+        set => SetValue(ContentPreviewProperty, value);
+    }
+
+    public static readonly DependencyProperty ContentPreviewProperty =
+        DependencyProperty.Register("ContentPreview", typeof(string), typeof(StickyNoteListItem),
+            new PropertyMetadata(string.Empty));
+
     /// <summary>Gets or sets the number of additional tasks beyond the first.</summary>
     public int RemainingTaskCount
     {
