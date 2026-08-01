@@ -8,14 +8,10 @@ namespace StickyDo.Domain.Utilities;
 /// and provides single source of truth for file naming conventions (GUIDs, extensions, etc).
 /// Obtains its storage root exclusively through <see cref="IStorageLocationProvider"/>.
 /// </summary>
-public class PersistencePathHelper
+public class PersistencePathHelper(IStorageLocationProvider storageLocationProvider)
 {
-    private readonly IStorageLocationProvider _storageLocationProvider;
-
-    public PersistencePathHelper(IStorageLocationProvider storageLocationProvider)
-    {
-        _storageLocationProvider = storageLocationProvider ?? throw new ArgumentNullException(nameof(storageLocationProvider));
-    }
+    private readonly IStorageLocationProvider _storageLocationProvider =
+        storageLocationProvider ?? throw new ArgumentNullException(nameof(storageLocationProvider));
 
     /// <summary>
     /// Gets the application data directory path.
