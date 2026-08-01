@@ -1,4 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
 
 namespace StickyDo.Widget.Tests.Services;
@@ -9,75 +10,79 @@ public class GlobalExceptionHandlerTests
     [TestMethod]
     public void HandleDispatcherUnhandledException_LogsAndShowsDialog()
     {
-        Exception? loggedException = null;
-        string? loggedSource = null;
-        string? dialogTitle = null;
-        string? dialogMessage = null;
-
-        var handler = new GlobalExceptionHandler(
-            showErrorDialog: (title, message) => { dialogTitle = title; dialogMessage = message; },
-            logException: (ex, source) => { loggedException = ex; loggedSource = source; });
-
+        var reporter = new FakeExceptionReporter();
+        var handler = new GlobalExceptionHandler(reporter);
         var thrown = new InvalidOperationException("boom");
 
         handler.HandleDispatcherUnhandledException(thrown);
 
-        Assert.AreSame(thrown, loggedException);
-        Assert.IsNotNull(loggedSource);
-        Assert.IsNotNull(dialogTitle);
-        Assert.IsTrue(dialogMessage!.Contains("boom"));
+        Assert.AreSame(thrown, reporter.LoggedException);
+        Assert.IsNotNull(reporter.LoggedContext);
+        Assert.IsNotNull(reporter.DialogTitle);
+        Assert.IsTrue(reporter.DialogMessage!.Contains("boom"));
     }
 
     [TestMethod]
     public void HandleAppDomainUnhandledException_WithException_LogsAndShowsDialog()
     {
-        var dialogShown = false;
-        Exception? loggedException = null;
-
-        var handler = new GlobalExceptionHandler(
-            showErrorDialog: (_, _) => dialogShown = true,
-            logException: (ex, _) => loggedException = ex);
-
+        var reporter = new FakeExceptionReporter();
+        var handler = new GlobalExceptionHandler(reporter);
         var thrown = new InvalidOperationException("background failure");
 
         handler.HandleAppDomainUnhandledException(thrown);
 
-        Assert.AreSame(thrown, loggedException);
-        Assert.IsTrue(dialogShown);
+        Assert.AreSame(thrown, reporter.LoggedException);
+        Assert.IsTrue(reporter.DialogShown);
     }
 
     [TestMethod]
     public void HandleAppDomainUnhandledException_WithNonException_LogsErrorWithoutDialog()
     {
-        var dialogShown = false;
-        string? loggedError = null;
-
-        var handler = new GlobalExceptionHandler(
-            showErrorDialog: (_, _) => dialogShown = true,
-            logError: message => loggedError = message);
+        var reporter = new FakeExceptionReporter();
+        var handler = new GlobalExceptionHandler(reporter);
 
         handler.HandleAppDomainUnhandledException("not an exception");
 
-        Assert.IsNotNull(loggedError);
-        Assert.IsTrue(loggedError!.Contains("not an exception"));
-        Assert.IsFalse(dialogShown);
+        Assert.IsNotNull(reporter.LoggedError);
+        Assert.IsTrue(reporter.LoggedError!.Contains("not an exception"));
+        Assert.IsFalse(reporter.DialogShown);
     }
 
     [TestMethod]
     public void HandleUnobservedTaskException_LogsWithoutShowingDialog()
     {
-        var dialogShown = false;
-        Exception? loggedException = null;
-
-        var handler = new GlobalExceptionHandler(
-            showErrorDialog: (_, _) => dialogShown = true,
-            logException: (ex, _) => loggedException = ex);
-
+        var reporter = new FakeExceptionReporter();
+        var handler = new GlobalExceptionHandler(reporter);
         var thrown = new AggregateException(new InvalidOperationException("unobserved"));
 
         handler.HandleUnobservedTaskException(thrown);
 
-        Assert.AreSame(thrown, loggedException);
-        Assert.IsFalse(dialogShown);
+        Assert.AreSame(thrown, reporter.LoggedException);
+        Assert.IsFalse(reporter.DialogShown);
+    }
+
+    private sealed class FakeExceptionReporter : IExceptionReporter
+    {
+        public Exception? LoggedException { get; private set; }
+        public string? LoggedContext { get; private set; }
+        public string? LoggedError { get; private set; }
+        public bool DialogShown { get; private set; }
+        public string? DialogTitle { get; private set; }
+        public string? DialogMessage { get; private set; }
+
+        public void LogException(Exception ex, string context)
+        {
+            LoggedException = ex;
+            LoggedContext = context;
+        }
+
+        public void LogError(string message) => LoggedError = message;
+
+        public void ShowErrorDialog(string title, string message)
+        {
+            DialogShown = true;
+            DialogTitle = title;
+            DialogMessage = message;
+        }
     }
 }

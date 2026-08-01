@@ -1,30 +1,23 @@
 using System.Windows;
-using StickyDo.Widget.Utilities;
+using StickyDo.Widget.Interfaces;
 
 namespace StickyDo.Widget.Services;
 
 /// <summary>
 /// Wires up process-wide unhandled exception handlers so that an exception thrown after
 /// startup is logged and surfaced to the user instead of crashing the app silently.
-/// Registered directly from <see cref="App"/> (before the DI container exists), so its
-/// dependencies are plain delegates rather than injected services.
+/// Registered directly from <see cref="App"/> (before the DI container exists), so it takes
+/// its <see cref="IExceptionReporter"/> dependency directly rather than via the container.
 /// </summary>
 public sealed class GlobalExceptionHandler
 {
     private const string ErrorDialogTitle = "Unexpected Error";
 
-    private readonly Action<string, string> _showErrorDialog;
-    private readonly Action<Exception, string> _logException;
-    private readonly Action<string> _logError;
+    private readonly IExceptionReporter _reporter;
 
-    public GlobalExceptionHandler(
-        Action<string, string>? showErrorDialog = null,
-        Action<Exception, string>? logException = null,
-        Action<string>? logError = null)
+    public GlobalExceptionHandler(IExceptionReporter reporter)
     {
-        _showErrorDialog = showErrorDialog ?? ShowErrorDialog;
-        _logException = logException ?? LoggerHelper.LogException;
-        _logError = logError ?? LoggerHelper.LogError;
+        _reporter = reporter;
     }
 
     /// <summary>
@@ -65,7 +58,7 @@ public sealed class GlobalExceptionHandler
         }
         else
         {
-            _logError($"Unhandled non-exception error on a background thread: {exceptionObject}");
+            _reporter.LogError($"Unhandled non-exception error on a background thread: {exceptionObject}");
         }
     }
 
@@ -77,22 +70,11 @@ public sealed class GlobalExceptionHandler
     /// later time on the finalizer thread.
     /// </summary>
     public void HandleUnobservedTaskException(AggregateException ex) =>
-        _logException(ex, "unobserved task exception");
+        _reporter.LogException(ex, "unobserved task exception");
 
     private void LogAndShowDialog(Exception ex, string source)
     {
-        _logException(ex, source);
-        _showErrorDialog(ErrorDialogTitle, $"An unexpected error occurred and has been logged.\n\n{ex.Message}");
-    }
-
-    private static void ShowErrorDialog(string title, string message)
-    {
-        void Show() => MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-
-        var dispatcher = Application.Current?.Dispatcher;
-        if (dispatcher is not null && !dispatcher.CheckAccess())
-            dispatcher.Invoke(Show);
-        else
-            Show();
+        _reporter.LogException(ex, source);
+        _reporter.ShowErrorDialog(ErrorDialogTitle, $"An unexpected error occurred and has been logged.\n\n{ex.Message}");
     }
 }

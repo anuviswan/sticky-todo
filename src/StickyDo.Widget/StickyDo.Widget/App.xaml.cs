@@ -19,7 +19,7 @@ public partial class App : Application
     private bool _isExitRequested;
     private static Mutex? _appMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
-    private readonly GlobalExceptionHandler _globalExceptionHandler = new();
+    private readonly GlobalExceptionHandler _globalExceptionHandler = new(new ExceptionReporter());
 
     protected override void OnStartup(StartupEventArgs e)
     {
