@@ -13,8 +13,9 @@ namespace StickyDo.Widget.ViewModels;
 public enum NavigationView
 {
     /// <summary>
-    /// No sidebar icon selects this - it's only the pre-interaction default (unfiltered notes
-    /// list, no nav icon highlighted) before the user picks Todos, Notes, or Favorites.
+    /// No sidebar icon selects this. It's the transient field-initializer value before
+    /// <see cref="MainWindowViewModel.LoadNotesAsync"/> replaces it with Todos or Notes
+    /// (whichever has more items) - never a state the user can navigate back to.
     /// </summary>
     AllNotes,
     Todos,
@@ -78,12 +79,30 @@ public partial class MainWindowViewModel : ObservableObject
             await NotesListViewModel.LoadNotesAsync();
             SyncStatus = AppResources.SyncedStatus;
             LastSyncDisplay = AppResources.JustNow;
+
+            // AllNotes is only the pre-interaction sentinel (see its doc comment above) - if
+            // the user hasn't picked a nav icon yet, this replaces it with a real selection
+            // instead of leaving the combined, unfiltered view showing.
+            if (SelectedNavView == NavigationView.AllNotes)
+                ApplyDefaultNavigationView();
         }
         catch (Exception ex)
         {
             SyncStatus = AppResources.ErrorStatus;
             LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
         }
+    }
+
+    /// <summary>
+    /// Defaults the sidebar to whichever type has more items - Todos on a tie or when there's
+    /// no data yet - since "All Notes" is no longer a selectable nav destination.
+    /// </summary>
+    private void ApplyDefaultNavigationView()
+    {
+        if (NotesListViewModel.NoteCount > NotesListViewModel.TodoCount)
+            ShowNotes();
+        else
+            ShowTodos();
     }
 
     /// <summary>

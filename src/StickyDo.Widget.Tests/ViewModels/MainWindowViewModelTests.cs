@@ -78,6 +78,55 @@ public class MainWindowViewModelTests
     }
 
     [TestMethod]
+    public async Task LoadNotesAsync_WithMoreTodos_DefaultsToTodos()
+    {
+        await _service.CreateNoteAsync("Todo 1", type: NoteType.Todo);
+        await _service.CreateNoteAsync("Todo 2", type: NoteType.Todo);
+        await _service.CreateNoteAsync("Note 1", type: NoteType.Note);
+
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual(NavigationView.Todos, _viewModel.SelectedNavView);
+        Assert.AreEqual(NoteType.Todo, _viewModel.NotesListViewModel.TypeFilter);
+    }
+
+    [TestMethod]
+    public async Task LoadNotesAsync_WithMoreNotes_DefaultsToNotes()
+    {
+        await _service.CreateNoteAsync("Todo 1", type: NoteType.Todo);
+        await _service.CreateNoteAsync("Note 1", type: NoteType.Note);
+        await _service.CreateNoteAsync("Note 2", type: NoteType.Note);
+
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual(NavigationView.Notes, _viewModel.SelectedNavView);
+        Assert.AreEqual(NoteType.Note, _viewModel.NotesListViewModel.TypeFilter);
+    }
+
+    [TestMethod]
+    public async Task LoadNotesAsync_WithEqualCountsOrNoData_DefaultsToTodos()
+    {
+        await _service.CreateNoteAsync("Todo 1", type: NoteType.Todo);
+        await _service.CreateNoteAsync("Note 1", type: NoteType.Note);
+
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual(NavigationView.Todos, _viewModel.SelectedNavView);
+    }
+
+    [TestMethod]
+    public async Task LoadNotesAsync_DoesNotOverrideAnAlreadyChosenNavView()
+    {
+        await _service.CreateNoteAsync("Note 1", type: NoteType.Note);
+        await _service.CreateNoteAsync("Note 2", type: NoteType.Note);
+        _viewModel.ShowFavorites();
+
+        await _viewModel.LoadNotesAsync();
+
+        Assert.AreEqual(NavigationView.Favorites, _viewModel.SelectedNavView);
+    }
+
+    [TestMethod]
     public void ShowFavorites_ClearsTypeFilter()
     {
         _viewModel.ShowNotes();
