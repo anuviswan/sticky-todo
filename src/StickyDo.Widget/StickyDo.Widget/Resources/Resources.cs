@@ -55,6 +55,11 @@ public static class Resources
     public static string Export_ErrorTitle => Get(nameof(Export_ErrorTitle));
     public static string Export_ErrorMessage => Get(nameof(Export_ErrorMessage));
     public static string Export_FileFilter => Get(nameof(Export_FileFilter));
+    public static string Import_SuccessTitle => Get(nameof(Import_SuccessTitle));
+    public static string Import_SuccessMessage => Get(nameof(Import_SuccessMessage));
+    public static string Import_ErrorTitle => Get(nameof(Import_ErrorTitle));
+    public static string Import_ErrorMessage => Get(nameof(Import_ErrorMessage));
+    public static string Import_FileFilter => Get(nameof(Import_FileFilter));
     public static string Settings_ApplicationName => Get(nameof(Settings_ApplicationName));
     public static string Settings_CheckForUpdates => Get(nameof(Settings_CheckForUpdates));
     public static string Settings_Copyright => Get(nameof(Settings_Copyright));

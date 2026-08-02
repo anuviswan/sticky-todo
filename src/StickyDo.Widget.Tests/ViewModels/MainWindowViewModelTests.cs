@@ -38,7 +38,9 @@ public class MainWindowViewModelTests
             new FakeBackupService(),
             new FakeFilePickerService(),
             new FakeDialogService(),
-            new FakeStorageLocationProvider(_testDataDirectory));
+            new FakeStorageLocationProvider(_testDataDirectory),
+            _repository,
+            new WeakReferenceMessenger());
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }
 
@@ -218,11 +220,15 @@ public class MainWindowViewModelTests
     private sealed class FakeBackupService : IBackupService
     {
         public Task<int> ExportAsync(string filePath, string appVersion) => Task.FromResult(0);
+
+        public Task<int> ImportAsync(string filePath) => Task.FromResult(0);
     }
 
     private sealed class FakeFilePickerService : IFilePickerService
     {
         public string? ShowSaveFileDialog(string defaultFileName, string filter, string? initialDirectory = null) => null;
+
+        public string? ShowOpenFileDialog(string filter, string? initialDirectory = null) => null;
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider

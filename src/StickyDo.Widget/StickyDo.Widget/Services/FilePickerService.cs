@@ -23,4 +23,18 @@ public class FilePickerService : IFilePickerService
 
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
+
+    public string? ShowOpenFileDialog(string filter, string? initialDirectory = null)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = filter,
+            CheckFileExists = true
+        };
+
+        if (!string.IsNullOrEmpty(initialDirectory) && Directory.Exists(initialDirectory))
+            dialog.InitialDirectory = initialDirectory;
+
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
 }

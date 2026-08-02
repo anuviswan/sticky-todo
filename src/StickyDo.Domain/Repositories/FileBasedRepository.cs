@@ -273,6 +273,13 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Reloads all notes from disk, replacing the in-memory list. Used after an external change
+    /// to the data directory (e.g. importing a backup) so the running app picks up files it
+    /// didn't write itself.
+    /// </summary>
+    public Task ReloadFromDiskAsync() => LoadAllNotesFromDiskAsync();
+
     // ========== Persistence Methods ==========
 
     /// <summary>

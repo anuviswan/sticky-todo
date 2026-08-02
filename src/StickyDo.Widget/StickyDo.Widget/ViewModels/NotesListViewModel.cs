@@ -84,6 +84,9 @@ public partial class NotesListViewModel : ObservableObject
 
         _messenger.Register<StickyNoteChangedMessage>(this, async (recipient, message) =>
             await ((NotesListViewModel)recipient).OnNoteChangedAsync(message));
+
+        _messenger.Register<NotesImportedMessage>(this, async (recipient, message) =>
+            await ((NotesListViewModel)recipient).LoadNotesAsync());
     }
 
     /// <summary>
