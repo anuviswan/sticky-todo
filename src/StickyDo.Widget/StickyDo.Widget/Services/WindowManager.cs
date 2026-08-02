@@ -16,9 +16,6 @@ public class WindowManager
     private Window? _window;
     private readonly Dictionary<Guid, Window> _openNoteWindows = new();
     private readonly Dictionary<Guid, WindowState> _windowStates = new();
-    private const string WindowStateKey = "WindowState";
-    private const string WindowSizeKey = "WindowSize";
-    private const string WindowPositionKey = "WindowPosition";
 
     public WindowManager()
     {

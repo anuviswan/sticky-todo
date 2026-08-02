@@ -190,7 +190,9 @@ public class StickyNoteWindowViewModelTests
     {
         public bool AutoSaveStarted { get; private set; }
 
+#pragma warning disable CS0067 // required by IPersistenceService; these tests don't need to raise it
         public event EventHandler<NoteSaveStateChangedEventArgs>? NoteSaveStateChanged;
+#pragma warning restore CS0067
 
         public void StartAutoSave() => AutoSaveStarted = true;
 

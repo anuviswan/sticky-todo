@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Models;
 using StickyDo.Widget.Interfaces;
-using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 using AppResources = StickyDo.Widget.Resources.Resources;
 

@@ -1,5 +1,4 @@
 using System.Text.Json;
-using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Serialization;
 using StickyDo.Domain.Storage;
@@ -120,44 +119,6 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         catch
         {
             // Ignore if rename fails
-        }
-    }
-
-    /// <summary>
-    /// Initializes sample data for first-time users.
-    /// </summary>
-    private async Task InitializeSampleDataAsync()
-    {
-        var colors = ColorPalette.Colors;
-        var titles = new[]
-        {
-            "Project Meeting Notes",
-            "Shopping List",
-            "Fix Login Bug",
-            "Code Review: PR #456",
-            "Learn C# 14 Features",
-            "Design System Review",
-            "Database Migration Plan",
-            "Team Retrospective",
-            "API Documentation",
-            "Performance Optimization"
-        };
-
-        for (int i = 0; i < titles.Length; i++)
-        {
-            var note = new StickyNote
-            {
-                Id = Guid.NewGuid(),
-                Title = titles[i],
-                Status = (StickyNoteStatus)(i % 4),
-                CreatedAt = DateTime.UtcNow.AddDays(-i),
-                UpdatedAt = DateTime.UtcNow.AddHours(-i),
-                ColorArgb = colors[i % colors.Length],
-                DisplayOrder = i
-            };
-
-            _notes.Add(note);
-            await SaveNoteToDiskAsync(note);
         }
     }
 

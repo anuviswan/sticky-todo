@@ -36,6 +36,21 @@ jobs:
       - name: Build
         run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
 
+      - name: Dead code analysis (compiler diagnostics)
+        # Promotes specific high-confidence dead-code compiler warnings to build errors:
+        # unreachable code (CS0162), unused exception variable (CS0168), unused local variable
+        # (CS0219), field assigned but never read (CS0414), unused local function (CS8321).
+        # Every other compiler warning is left as a warning and does not fail this step.
+        run: dotnet build "${{ env.SOLUTION_PATH }}" --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore -warnaserror:CS0162,CS0168,CS0219,CS0414,CS8321 -clp:ErrorsOnly -v minimal
+
+      - name: Dead code analysis (unused members and usings)
+        # dotnet format's analyzer pass evaluates IDE-style diagnostics (unused private members,
+        # unused using directives, redundant assignments) that `dotnet build` does not reliably
+        # surface on its own, even with EnforceCodeStyleInBuild set. Severities are configured in
+        # .editorconfig at the repo root. --verify-no-changes exits non-zero if any diagnostic at
+        # or above "warn" severity is found, without modifying any files.
+        run: dotnet format analyzers "${{ env.SOLUTION_PATH }}" --verify-no-changes --severity warn
+
       - name: Test
         # -m:1 forces MSBuild to run each test project's Test target sequentially rather than in
         # parallel: StickyDo.Domain.Tests and StickyDo.Widget.Tests both exercise the same real
