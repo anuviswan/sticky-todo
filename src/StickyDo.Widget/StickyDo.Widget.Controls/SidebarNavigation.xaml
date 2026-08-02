@@ -190,7 +190,8 @@
                 <TextBlock Text="⭐" FontSize="30"/>
             </Button>
 
-            <Button x:Name="SettingsNavButton" Style="{StaticResource SidebarIconButtonStyle}" ToolTip="Settings">
+            <Button x:Name="SettingsNavButton" Style="{StaticResource SidebarIconButtonStyle}" ToolTip="Settings"
+                    Command="{Binding OpenSettingsCommand}">
                 <TextBlock Text="⚙️" FontSize="16"/>
             </Button>
         </StackPanel>

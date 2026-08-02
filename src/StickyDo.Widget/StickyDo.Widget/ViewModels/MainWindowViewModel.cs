@@ -31,6 +31,12 @@ public partial class MainWindowViewModel : ObservableObject
     private NotesListViewModel notesListViewModel;
 
     [ObservableProperty]
+    private SettingsViewModel settings;
+
+    [ObservableProperty]
+    private bool isSettingsOpen;
+
+    [ObservableProperty]
     private NavigationView selectedNavView = NavigationView.AllNotes;
 
     [ObservableProperty]
@@ -50,6 +56,9 @@ public partial class MainWindowViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(notesListViewModel);
         _mainWindowService = mainWindowService;
         NotesListViewModel = notesListViewModel;
+
+        Settings = new SettingsViewModel();
+        Settings.CloseRequested += (s, e) => IsSettingsOpen = false;
     }
 
     /// <summary>
@@ -78,6 +87,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowAllNotes()
     {
+        IsSettingsOpen = false;
         SelectedNavView = NavigationView.AllNotes;
         NotesListViewModel.SearchQuery = string.Empty;
         NotesListViewModel.ShowFavoritesOnly = false;
@@ -90,6 +100,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowTodos()
     {
+        IsSettingsOpen = false;
         SelectedNavView = NavigationView.Todos;
         NotesListViewModel.SearchQuery = string.Empty;
         NotesListViewModel.ShowFavoritesOnly = false;
@@ -102,6 +113,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowNotes()
     {
+        IsSettingsOpen = false;
         SelectedNavView = NavigationView.Notes;
         NotesListViewModel.SearchQuery = string.Empty;
         NotesListViewModel.ShowFavoritesOnly = false;
@@ -114,6 +126,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     public void ShowFavorites()
     {
+        IsSettingsOpen = false;
         SelectedNavView = NavigationView.Favorites;
         NotesListViewModel.SearchQuery = string.Empty;
         NotesListViewModel.ShowFavoritesOnly = true;
@@ -137,6 +150,16 @@ public partial class MainWindowViewModel : ObservableObject
     public void CloseWindow()
     {
         _mainWindowService.RequestClose();
+    }
+
+    /// <summary>
+    /// Opens the Settings page within the main window's content area, without affecting
+    /// the notes list state or any currently open sticky note windows.
+    /// </summary>
+    [RelayCommand]
+    public void OpenSettings()
+    {
+        IsSettingsOpen = true;
     }
 
 }

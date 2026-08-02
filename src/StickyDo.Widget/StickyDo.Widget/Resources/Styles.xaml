@@ -27,4 +27,70 @@
         </Setter>
     </Style>
 
+    <!-- Pill toggle switch used in the Settings window: a CheckBox re-templated as a
+         track + thumb, since WPF has no built-in ToggleSwitch control. -->
+    <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="22"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Border x:Name="Track" CornerRadius="11" Background="#D1D5DB">
+                        <Border x:Name="Thumb" Width="18" Height="18" CornerRadius="9" Background="White"
+                                HorizontalAlignment="Left" VerticalAlignment="Center" Margin="2,0,0,0">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.25" Direction="270"/>
+                            </Border.Effect>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="#2563EB"/>
+                            <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                            <Setter TargetName="Thumb" Property="Margin" Value="0,0,2,0"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- White rounded card used to group a single setting row in the Settings window. -->
+    <Style x:Key="SettingsCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#E5E7EB"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="16"/>
+    </Style>
+
+    <!-- Square pastel icon badge shown at the left of each Settings card row. -->
+    <Style x:Key="SettingsIconBadgeStyle" TargetType="Border">
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+
+    <!-- Caps section-header label ("GENERAL", "DATA MANAGEMENT") in the Settings window. -->
+    <Style x:Key="SettingsSectionHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="#4B5563"/>
+    </Style>
+
+    <!-- Card row title ("Launch at startup", "Import notes", ...). -->
+    <Style x:Key="SettingsCardTitleTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#111827"/>
+    </Style>
+
+    <!-- Card row description text. -->
+    <Style x:Key="SettingsCardDescriptionTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="Foreground" Value="#6B7280"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
 </ResourceDictionary>

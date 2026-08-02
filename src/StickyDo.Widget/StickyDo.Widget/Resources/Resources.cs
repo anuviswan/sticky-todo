@@ -38,6 +38,23 @@ public static class Resources
     public static string SaveStatus_Saving => Get(nameof(SaveStatus_Saving));
     public static string SaveStatus_NotSaved => Get(nameof(SaveStatus_NotSaved));
     public static string SyncStatus_NotSynced => Get(nameof(SyncStatus_NotSynced));
+    public static string Settings_Title => Get(nameof(Settings_Title));
+    public static string Settings_Subtitle => Get(nameof(Settings_Subtitle));
+    public static string Settings_Section_General => Get(nameof(Settings_Section_General));
+    public static string Settings_Section_DataManagement => Get(nameof(Settings_Section_DataManagement));
+    public static string Settings_LaunchAtStartup_Title => Get(nameof(Settings_LaunchAtStartup_Title));
+    public static string Settings_LaunchAtStartup_Description => Get(nameof(Settings_LaunchAtStartup_Description));
+    public static string Settings_DefaultNoteColor_Title => Get(nameof(Settings_DefaultNoteColor_Title));
+    public static string Settings_DefaultNoteColor_Description => Get(nameof(Settings_DefaultNoteColor_Description));
+    public static string Settings_ImportNotes_Title => Get(nameof(Settings_ImportNotes_Title));
+    public static string Settings_ImportNotes_Description => Get(nameof(Settings_ImportNotes_Description));
+    public static string Settings_ExportNotes_Title => Get(nameof(Settings_ExportNotes_Title));
+    public static string Settings_ExportNotes_Description => Get(nameof(Settings_ExportNotes_Description));
+    public static string Settings_ApplicationName => Get(nameof(Settings_ApplicationName));
+    public static string Settings_CheckForUpdates => Get(nameof(Settings_CheckForUpdates));
+    public static string Settings_Copyright => Get(nameof(Settings_Copyright));
+    public static string Settings_PrivacyPolicy => Get(nameof(Settings_PrivacyPolicy));
+    public static string Settings_TermsOfService => Get(nameof(Settings_TermsOfService));
 
     private static string Get(string name) => ResourceManager.GetString(name) ?? name;
 }
