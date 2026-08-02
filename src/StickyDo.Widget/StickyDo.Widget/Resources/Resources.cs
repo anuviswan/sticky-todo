@@ -50,6 +50,11 @@ public static class Resources
     public static string Settings_ImportNotes_Description => Get(nameof(Settings_ImportNotes_Description));
     public static string Settings_ExportNotes_Title => Get(nameof(Settings_ExportNotes_Title));
     public static string Settings_ExportNotes_Description => Get(nameof(Settings_ExportNotes_Description));
+    public static string Export_SuccessTitle => Get(nameof(Export_SuccessTitle));
+    public static string Export_SuccessMessage => Get(nameof(Export_SuccessMessage));
+    public static string Export_ErrorTitle => Get(nameof(Export_ErrorTitle));
+    public static string Export_ErrorMessage => Get(nameof(Export_ErrorMessage));
+    public static string Export_FileFilter => Get(nameof(Export_FileFilter));
     public static string Settings_ApplicationName => Get(nameof(Settings_ApplicationName));
     public static string Settings_CheckForUpdates => Get(nameof(Settings_CheckForUpdates));
     public static string Settings_Copyright => Get(nameof(Settings_Copyright));

@@ -33,7 +33,12 @@ public class MainWindowViewModelTests
             new FakeDialogService(),
             new WeakReferenceMessenger(),
             new FakeSettingsRepository());
-        var settingsViewModel = new SettingsViewModel(new FakeSettingsRepository());
+        var settingsViewModel = new SettingsViewModel(
+            new FakeSettingsRepository(),
+            new FakeBackupService(),
+            new FakeFilePickerService(),
+            new FakeDialogService(),
+            new FakeStorageLocationProvider(_testDataDirectory));
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }
 
@@ -159,6 +164,16 @@ public class MainWindowViewModelTests
         public Task<AppSettings> LoadAsync() => Task.FromResult(new AppSettings());
 
         public Task SaveAsync(AppSettings settings) => Task.CompletedTask;
+    }
+
+    private sealed class FakeBackupService : IBackupService
+    {
+        public Task<int> ExportAsync(string filePath) => Task.FromResult(0);
+    }
+
+    private sealed class FakeFilePickerService : IFilePickerService
+    {
+        public string? ShowSaveFileDialog(string defaultFileName, string filter, string? initialDirectory = null) => null;
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider

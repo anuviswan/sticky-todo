@@ -1,10 +1,16 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Reflection;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
+using StickyDo.Domain.Services;
+using StickyDo.Domain.Storage;
+using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Utilities;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -13,11 +19,15 @@ namespace StickyDo.Widget.ViewModels;
 /// <see cref="LaunchAtStartup"/> and <see cref="SelectedDefaultColor"/> are automatically
 /// persisted via <see cref="ISettingsRepository"/> on every change; the real behavior behind
 /// those settings (Windows startup registration, applying the default color to new notes,
-/// import/export, update checks) is delivered by separate tickets.
+/// import, update checks) is delivered by separate tickets.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly ISettingsRepository _settingsRepository;
+    private readonly IBackupService _backupService;
+    private readonly IFilePickerService _filePickerService;
+    private readonly IDialogService _dialogService;
+    private readonly IStorageLocationProvider _storageLocationProvider;
     private bool _isLoading;
 
     [ObservableProperty]
@@ -45,10 +55,24 @@ public partial class SettingsViewModel : ObservableObject
     /// </summary>
     public event EventHandler? CloseRequested;
 
-    public SettingsViewModel(ISettingsRepository settingsRepository)
+    public SettingsViewModel(
+        ISettingsRepository settingsRepository,
+        IBackupService backupService,
+        IFilePickerService filePickerService,
+        IDialogService dialogService,
+        IStorageLocationProvider storageLocationProvider)
     {
         ArgumentNullException.ThrowIfNull(settingsRepository);
+        ArgumentNullException.ThrowIfNull(backupService);
+        ArgumentNullException.ThrowIfNull(filePickerService);
+        ArgumentNullException.ThrowIfNull(dialogService);
+        ArgumentNullException.ThrowIfNull(storageLocationProvider);
+
         _settingsRepository = settingsRepository;
+        _backupService = backupService;
+        _filePickerService = filePickerService;
+        _dialogService = dialogService;
+        _storageLocationProvider = storageLocationProvider;
     }
 
     /// <summary>
@@ -118,6 +142,43 @@ public partial class SettingsViewModel : ObservableObject
     public void Close()
     {
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Exports all notes as a zip archive of the note data files, saved to a location chosen
+    /// by the user via a Save File dialog defaulted to <see cref="IStorageLocationProvider.BackupsDirectory"/>.
+    /// </summary>
+    [RelayCommand]
+    public async Task ExportNotesAsync()
+    {
+        var backupsDirectory = _storageLocationProvider.BackupsDirectory;
+        Directory.CreateDirectory(backupsDirectory);
+
+        var defaultFileName = $"StickyDo_Backup_{DateTime.Now:yyyyMMdd_HHmmss}.zip";
+        var filePath = _filePickerService.ShowSaveFileDialog(
+            defaultFileName,
+            Resources.Resources.Export_FileFilter,
+            backupsDirectory);
+
+        if (string.IsNullOrEmpty(filePath))
+            return;
+
+        try
+        {
+            var exportedCount = await _backupService.ExportAsync(filePath);
+            await _dialogService.ShowMessageAsync(
+                Resources.Resources.Export_SuccessTitle,
+                string.Format(Resources.Resources.Export_SuccessMessage, exportedCount, Path.GetFileName(filePath)),
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ExportNotesAsync));
+            await _dialogService.ShowMessageAsync(
+                Resources.Resources.Export_ErrorTitle,
+                string.Format(Resources.Resources.Export_ErrorMessage, ex.Message),
+                MessageBoxImage.Error);
+        }
     }
 
     private static string GetApplicationVersion()

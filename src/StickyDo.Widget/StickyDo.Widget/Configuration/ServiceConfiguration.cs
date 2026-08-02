@@ -86,7 +86,12 @@ public static class ServiceConfiguration
 
         services.AddSingleton(sp =>
         {
-            var viewModel = new SettingsViewModel(sp.GetRequiredService<ISettingsRepository>());
+            var viewModel = new SettingsViewModel(
+                sp.GetRequiredService<ISettingsRepository>(),
+                sp.GetRequiredService<IBackupService>(),
+                sp.GetRequiredService<IFilePickerService>(),
+                sp.GetRequiredService<IDialogService>(),
+                sp.GetRequiredService<IStorageLocationProvider>());
             Task.Run(() => viewModel.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
             return viewModel;
         });
@@ -98,6 +103,7 @@ public static class ServiceConfiguration
     private static void ConfigureDialogAndWindow(IServiceCollection services)
     {
         services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<IFilePickerService, FilePickerService>();
         services.AddSingleton<IWindowService, WindowService>();
         services.AddSingleton<ITrayIconService, TrayIconService>();
     }
@@ -109,6 +115,7 @@ public static class ServiceConfiguration
     {
         services.AddSingleton<StickyNoteService>();
         services.AddSingleton<StickyNoteTaskService>();
+        services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<WindowManager>();
         services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
     }

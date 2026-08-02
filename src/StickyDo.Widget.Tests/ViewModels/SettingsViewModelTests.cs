@@ -1,7 +1,12 @@
+using System.IO;
+using System.Windows;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
+using StickyDo.Domain.Services;
+using StickyDo.Domain.Storage;
+using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget.Tests.ViewModels;
@@ -10,13 +15,34 @@ namespace StickyDo.Widget.Tests.ViewModels;
 public class SettingsViewModelTests
 {
     private FakeSettingsRepository _repository = null!;
+    private FakeBackupService _backupService = null!;
+    private FakeFilePickerService _filePickerService = null!;
+    private FakeDialogService _dialogService = null!;
+    private FakeStorageLocationProvider _storageLocationProvider = null!;
     private SettingsViewModel _viewModel = null!;
 
     [TestInitialize]
     public void Setup()
     {
         _repository = new FakeSettingsRepository();
-        _viewModel = new SettingsViewModel(_repository);
+        _backupService = new FakeBackupService();
+        _filePickerService = new FakeFilePickerService();
+        _dialogService = new FakeDialogService();
+        _storageLocationProvider = new FakeStorageLocationProvider(
+            Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString()));
+        _viewModel = new SettingsViewModel(
+            _repository,
+            _backupService,
+            _filePickerService,
+            _dialogService,
+            _storageLocationProvider);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Directory.Exists(_storageLocationProvider.RootDirectory))
+            Directory.Delete(_storageLocationProvider.RootDirectory, recursive: true);
     }
 
     [TestMethod]
@@ -85,6 +111,54 @@ public class SettingsViewModelTests
         Assert.AreEqual(color, _repository.StoredSettings!.DefaultNoteColor);
     }
 
+    [TestMethod]
+    public async Task ExportNotesAsync_WhenUserCancelsPicker_DoesNotExport()
+    {
+        _filePickerService.PathToReturn = null;
+
+        await _viewModel.ExportNotesAsync();
+
+        Assert.AreEqual(0, _backupService.ExportCallCount);
+        Assert.AreEqual(0, _dialogService.MessageCallCount);
+    }
+
+    [TestMethod]
+    public async Task ExportNotesAsync_CreatesBackupsDirectoryBeforeShowingDialog()
+    {
+        _filePickerService.PathToReturn = null;
+
+        await _viewModel.ExportNotesAsync();
+
+        Assert.IsTrue(Directory.Exists(_storageLocationProvider.BackupsDirectory));
+    }
+
+    [TestMethod]
+    public async Task ExportNotesAsync_OnSuccess_ExportsToChosenPathAndShowsSuccessMessage()
+    {
+        var targetPath = Path.Combine(_storageLocationProvider.BackupsDirectory, "chosen.zip");
+        _filePickerService.PathToReturn = targetPath;
+        _backupService.CountToReturn = 3;
+
+        await _viewModel.ExportNotesAsync();
+
+        Assert.AreEqual(1, _backupService.ExportCallCount);
+        Assert.AreEqual(targetPath, _backupService.LastFilePath);
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Information, _dialogService.LastIcon);
+    }
+
+    [TestMethod]
+    public async Task ExportNotesAsync_WhenBackupServiceThrows_ShowsErrorMessage()
+    {
+        _filePickerService.PathToReturn = Path.Combine(_storageLocationProvider.BackupsDirectory, "chosen.zip");
+        _backupService.ExceptionToThrow = new IOException("disk full");
+
+        await _viewModel.ExportNotesAsync();
+
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
+    }
+
     private sealed class FakeSettingsRepository : ISettingsRepository
     {
         public AppSettings? StoredSettings { get; set; }
@@ -98,5 +172,65 @@ public class SettingsViewModelTests
             SaveCallCount++;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeBackupService : IBackupService
+    {
+        public int ExportCallCount { get; private set; }
+        public string? LastFilePath { get; private set; }
+        public int CountToReturn { get; set; } = 1;
+        public Exception? ExceptionToThrow { get; set; }
+
+        public Task<int> ExportAsync(string filePath)
+        {
+            ExportCallCount++;
+            LastFilePath = filePath;
+
+            if (ExceptionToThrow is not null)
+                throw ExceptionToThrow;
+
+            return Task.FromResult(CountToReturn);
+        }
+    }
+
+    private sealed class FakeFilePickerService : IFilePickerService
+    {
+        public string? PathToReturn { get; set; }
+
+        public string? ShowSaveFileDialog(string defaultFileName, string filter, string? initialDirectory = null) =>
+            PathToReturn;
+    }
+
+    private sealed class FakeDialogService : IDialogService
+    {
+        public int MessageCallCount { get; private set; }
+        public MessageBoxImage LastIcon { get; private set; }
+
+        public Task ShowMessageAsync(string title, string message, MessageBoxImage icon = MessageBoxImage.None)
+        {
+            MessageCallCount++;
+            LastIcon = icon;
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(true);
+    }
+
+    private sealed class FakeStorageLocationProvider : IStorageLocationProvider
+    {
+        public FakeStorageLocationProvider(string root)
+        {
+            RootDirectory = root;
+            DataDirectory = Path.Combine(root, "Data");
+            SettingsDirectory = Path.Combine(root, "Settings");
+            LogsDirectory = Path.Combine(root, "Logs");
+            BackupsDirectory = Path.Combine(root, "Backups");
+        }
+
+        public string RootDirectory { get; }
+        public string DataDirectory { get; }
+        public string SettingsDirectory { get; }
+        public string LogsDirectory { get; }
+        public string BackupsDirectory { get; }
     }
 }
