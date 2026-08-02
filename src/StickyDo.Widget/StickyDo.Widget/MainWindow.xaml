@@ -93,9 +93,35 @@
                 </Grid>
             </Border>
 
-            <!-- Notes Content Area -->
+            <!-- Content Area: Notes List, or the Settings page when open -->
             <Border Grid.Column="1" Grid.Row="1" Background="#F9F9F9">
-                <views:NotesListView DataContext="{Binding NotesListViewModel}"/>
+                <Grid>
+                    <views:NotesListView DataContext="{Binding NotesListViewModel}">
+                        <views:NotesListView.Style>
+                            <Style TargetType="views:NotesListView">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DataContext.IsSettingsOpen, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </views:NotesListView.Style>
+                    </views:NotesListView>
+
+                    <views:SettingsView DataContext="{Binding Settings}">
+                        <views:SettingsView.Style>
+                            <Style TargetType="views:SettingsView">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding DataContext.IsSettingsOpen, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </views:SettingsView.Style>
+                    </views:SettingsView>
+                </Grid>
             </Border>
         </Grid>
     </Border>

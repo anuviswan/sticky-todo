@@ -87,6 +87,64 @@ public class MainWindowViewModelTests
         Assert.IsTrue(_viewModel.NotesListViewModel.ShowFavoritesOnly);
     }
 
+    [TestMethod]
+    public void ShowAllNotes_ClosesSettings()
+    {
+        _viewModel.OpenSettings();
+
+        _viewModel.ShowAllNotes();
+
+        Assert.IsFalse(_viewModel.IsSettingsOpen);
+    }
+
+    [TestMethod]
+    public void ShowTodos_ClosesSettings()
+    {
+        _viewModel.OpenSettings();
+
+        _viewModel.ShowTodos();
+
+        Assert.IsFalse(_viewModel.IsSettingsOpen);
+    }
+
+    [TestMethod]
+    public void ShowNotes_ClosesSettings()
+    {
+        _viewModel.OpenSettings();
+
+        _viewModel.ShowNotes();
+
+        Assert.IsFalse(_viewModel.IsSettingsOpen);
+    }
+
+    [TestMethod]
+    public void ShowFavorites_ClosesSettings()
+    {
+        _viewModel.OpenSettings();
+
+        _viewModel.ShowFavorites();
+
+        Assert.IsFalse(_viewModel.IsSettingsOpen);
+    }
+
+    [TestMethod]
+    public void OpenSettings_SetsIsSettingsOpen()
+    {
+        _viewModel.OpenSettings();
+
+        Assert.IsTrue(_viewModel.IsSettingsOpen);
+    }
+
+    [TestMethod]
+    public void SettingsCloseRequested_ClearsIsSettingsOpen()
+    {
+        _viewModel.OpenSettings();
+
+        _viewModel.Settings.Close();
+
+        Assert.IsFalse(_viewModel.IsSettingsOpen);
+    }
+
     private sealed class FakeWindowService : IWindowService
     {
         public void RequestMinimize() { }
