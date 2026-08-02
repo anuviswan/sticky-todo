@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Configuration;

@@ -115,7 +115,7 @@ public class AtomicFileWriterTests
         File.WriteAllText(tmpFile2, "orphaned2");
 
         // Need to temporarily change the data directory for this test
-        var originalMethod = typeof(PersistencePathHelper).GetProperty("GetDataDirectoryPath");
+        _ = typeof(PersistencePathHelper).GetProperty("GetDataDirectoryPath");
 
         // Act - we'll manually verify the cleanup by checking files
         File.Delete(tmpFile1);

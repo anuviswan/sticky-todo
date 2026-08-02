@@ -8,7 +8,6 @@ using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
-using StickyDo.Widget.Services;
 using StickyDo.Widget.Utilities;
 using AppResources = StickyDo.Widget.Resources.Resources;
 

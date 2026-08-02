@@ -1,0 +1,16 @@
+root = true
+
+# Dead code analysis severities. These are enforced during `dotnet build` (see
+# EnforceCodeStyleInBuild in src/Directory.Build.props) so violations show up locally and in CI,
+# not just in the IDE. See CONTRIBUTING.md for how the PR Validation workflow uses this and how
+# to resolve findings.
+[*.cs]
+
+# Unused private members (methods, properties, fields, events, indexers, constructors, types).
+dotnet_diagnostic.IDE0051.severity = warning
+# Private member's value is never read (write-only field/property).
+dotnet_diagnostic.IDE0052.severity = warning
+# Unnecessary using directive.
+dotnet_diagnostic.IDE0005.severity = warning
+# Unnecessary assignment of a value that is never read.
+dotnet_diagnostic.IDE0059.severity = warning

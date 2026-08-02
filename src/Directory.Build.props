@@ -11,4 +11,24 @@
     <FileVersion>0.1.0.0</FileVersion>
   </PropertyGroup>
 
+  <!--
+    Runs IDE code-style analyzers (e.g. IDE0051 unused private member, IDE0005 unused using
+    directive) as part of `dotnet build`, not just in the IDE. Severities are configured in
+    .editorconfig at the repo root. See CONTRIBUTING.md for how this feeds the PR Validation
+    workflow's dead code analysis step.
+  -->
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!--
+      Without GenerateDocumentationFile, the compiler can't evaluate IDE0005 (unused using
+      directives) during `dotnet build` and instead emits this advisory warning on every build
+      (see https://github.com/dotnet/roslyn/issues/41640). Enabling GenerateDocumentationFile
+      repo-wide to silence it would newly require XML doc comments on every public member (CS1591)
+      across the codebase, which is out of scope here. IDE0005 is instead checked by the "Dead
+      code analysis (unused members and usings)" step in pr-validation.yml, via `dotnet format
+      analyzers`, which doesn't have this limitation.
+    -->
+    <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
+  </PropertyGroup>
+
 </Project>
