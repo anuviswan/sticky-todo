@@ -169,6 +169,21 @@
   <data name="Settings_ExportNotes_Description" xml:space="preserve">
     <value>Save your notes to a local file for backup.</value>
   </data>
+  <data name="Export_SuccessTitle" xml:space="preserve">
+    <value>Export Successful</value>
+  </data>
+  <data name="Export_SuccessMessage" xml:space="preserve">
+    <value>{0} note(s) exported to {1}.</value>
+  </data>
+  <data name="Export_ErrorTitle" xml:space="preserve">
+    <value>Export Failed</value>
+  </data>
+  <data name="Export_ErrorMessage" xml:space="preserve">
+    <value>Could not export notes: {0}</value>
+  </data>
+  <data name="Export_FileFilter" xml:space="preserve">
+    <value>StickyDo Backup (*.zip)|*.zip</value>
+  </data>
   <data name="Settings_ApplicationName" xml:space="preserve">
     <value>StickyDo Desktop</value>
   </data>

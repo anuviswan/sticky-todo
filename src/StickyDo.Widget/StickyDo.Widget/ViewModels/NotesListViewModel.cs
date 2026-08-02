@@ -43,6 +43,12 @@ public partial class NotesListViewModel : ObservableObject
     /// <summary>Whether a non-blank search query is currently active, used to drive the search empty state.</summary>
     public bool IsSearchActive => !string.IsNullOrWhiteSpace(SearchQuery);
 
+    /// <summary>Total number of Todo-type items, independent of the current filter.</summary>
+    public int TodoCount => _allNotes.Count(n => n.Type == NoteType.Todo);
+
+    /// <summary>Total number of Note-type items, independent of the current filter.</summary>
+    public int NoteCount => _allNotes.Count(n => n.Type == NoteType.Note);
+
     partial void OnSearchQueryChanged(string value)
     {
         ApplyFilter();
