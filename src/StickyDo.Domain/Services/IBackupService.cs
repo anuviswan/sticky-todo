@@ -6,8 +6,9 @@ namespace StickyDo.Domain.Services;
 public interface IBackupService
 {
     /// <summary>
-    /// Zips the current note data files into a single archive at <paramref name="filePath"/>.
+    /// Zips the current note data files, plus a manifest recording <paramref name="appVersion"/>,
+    /// into a single archive at <paramref name="filePath"/>.
     /// </summary>
     /// <returns>The number of note files included in the archive.</returns>
-    Task<int> ExportAsync(string filePath);
+    Task<int> ExportAsync(string filePath, string appVersion);
 }

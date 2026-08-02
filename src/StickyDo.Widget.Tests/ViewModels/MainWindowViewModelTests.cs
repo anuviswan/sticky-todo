@@ -168,7 +168,7 @@ public class MainWindowViewModelTests
 
     private sealed class FakeBackupService : IBackupService
     {
-        public Task<int> ExportAsync(string filePath) => Task.FromResult(0);
+        public Task<int> ExportAsync(string filePath, string appVersion) => Task.FromResult(0);
     }
 
     private sealed class FakeFilePickerService : IFilePickerService

@@ -143,6 +143,7 @@ public class SettingsViewModelTests
 
         Assert.AreEqual(1, _backupService.ExportCallCount);
         Assert.AreEqual(targetPath, _backupService.LastFilePath);
+        Assert.IsFalse(string.IsNullOrEmpty(_backupService.LastAppVersion));
         Assert.AreEqual(1, _dialogService.MessageCallCount);
         Assert.AreEqual(MessageBoxImage.Information, _dialogService.LastIcon);
     }
@@ -178,13 +179,15 @@ public class SettingsViewModelTests
     {
         public int ExportCallCount { get; private set; }
         public string? LastFilePath { get; private set; }
+        public string? LastAppVersion { get; private set; }
         public int CountToReturn { get; set; } = 1;
         public Exception? ExceptionToThrow { get; set; }
 
-        public Task<int> ExportAsync(string filePath)
+        public Task<int> ExportAsync(string filePath, string appVersion)
         {
             ExportCallCount++;
             LastFilePath = filePath;
+            LastAppVersion = appVersion;
 
             if (ExceptionToThrow is not null)
                 throw ExceptionToThrow;

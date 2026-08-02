@@ -165,7 +165,7 @@ public partial class SettingsViewModel : ObservableObject
 
         try
         {
-            var exportedCount = await _backupService.ExportAsync(filePath);
+            var exportedCount = await _backupService.ExportAsync(filePath, GetRawApplicationVersion());
             await _dialogService.ShowMessageAsync(
                 Resources.Resources.Export_SuccessTitle,
                 string.Format(Resources.Resources.Export_SuccessMessage, exportedCount, Path.GetFileName(filePath)),
@@ -181,9 +181,11 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    private static string GetApplicationVersion()
+    private static string GetApplicationVersion() => $"Version {GetRawApplicationVersion()}";
+
+    private static string GetRawApplicationVersion()
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return version is null ? string.Empty : $"Version {version.ToString(3)}";
+        return version is null ? string.Empty : version.ToString(3);
     }
 }
