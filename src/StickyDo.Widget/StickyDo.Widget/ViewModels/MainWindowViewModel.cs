@@ -50,14 +50,16 @@ public partial class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel(
         IWindowService mainWindowService,
-        NotesListViewModel notesListViewModel)
+        NotesListViewModel notesListViewModel,
+        SettingsViewModel settings)
     {
         ArgumentNullException.ThrowIfNull(mainWindowService);
         ArgumentNullException.ThrowIfNull(notesListViewModel);
+        ArgumentNullException.ThrowIfNull(settings);
         _mainWindowService = mainWindowService;
         NotesListViewModel = notesListViewModel;
 
-        Settings = new SettingsViewModel();
+        Settings = settings;
         Settings.CloseRequested += (s, e) => IsSettingsOpen = false;
     }
 

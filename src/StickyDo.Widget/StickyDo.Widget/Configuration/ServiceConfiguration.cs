@@ -24,6 +24,7 @@ public static class ServiceConfiguration
 
         ConfigureRepositories(services);
         ConfigurePersistence(services);
+        ConfigureSettings(services);
         ConfigureDialogAndWindow(services);
         ConfigureCore(services);
         ConfigureViewModels(services);
@@ -69,6 +70,26 @@ public static class ServiceConfiguration
             new MessengerBridgedPersistenceService(
                 sp.GetRequiredService<PersistenceService>(),
                 sp.GetRequiredService<IMessenger>()));
+    }
+
+    /// <summary>
+    /// Registers the settings repository and a fully-loaded <see cref="SettingsViewModel"/>.
+    /// The view model's initial load runs synchronously on a thread-pool thread (same
+    /// deadlock-avoidance reasoning as <see cref="ConfigureRepositories"/>'s repository
+    /// initialization) so consumers always see persisted settings, not defaults that later
+    /// change out from under them.
+    /// </summary>
+    private static void ConfigureSettings(IServiceCollection services)
+    {
+        services.AddSingleton<ISettingsRepository>(sp =>
+            new FileBasedSettingsRepository(sp.GetRequiredService<IStorageLocationProvider>()));
+
+        services.AddSingleton(sp =>
+        {
+            var viewModel = new SettingsViewModel(sp.GetRequiredService<ISettingsRepository>());
+            Task.Run(() => viewModel.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
+            return viewModel;
+        });
     }
 
     /// <summary>

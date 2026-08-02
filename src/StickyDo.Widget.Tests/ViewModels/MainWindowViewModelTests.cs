@@ -32,7 +32,8 @@ public class MainWindowViewModelTests
             new FakeStickyNoteWindowService(),
             new FakeDialogService(),
             new WeakReferenceMessenger());
-        _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel);
+        var settingsViewModel = new SettingsViewModel(new FakeSettingsRepository());
+        _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }
 
     [TestCleanup]
@@ -165,6 +166,13 @@ public class MainWindowViewModelTests
             Task.CompletedTask;
 
         public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(true);
+    }
+
+    private sealed class FakeSettingsRepository : ISettingsRepository
+    {
+        public Task<AppSettings> LoadAsync() => Task.FromResult(new AppSettings());
+
+        public Task SaveAsync(AppSettings settings) => Task.CompletedTask;
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider
