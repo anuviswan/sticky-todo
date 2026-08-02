@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text.Json;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Serialization;
 using StickyDo.Domain.Storage;
 using StickyDo.Domain.Utilities;
@@ -62,5 +63,66 @@ public class BackupService : IBackupService
         });
 
         return noteFiles.Count;
+    }
+
+    public async Task<int> ImportAsync(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path must be provided.", nameof(filePath));
+
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException("Backup file not found.", filePath);
+
+        _pathHelper.EnsureDataDirectoryExists();
+
+        using var zipStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
+
+        if (archive.GetEntry(ManifestFileName) is null)
+            throw new InvalidDataException("The selected file is not a valid StickyDo backup.");
+
+        var existingIds = _pathHelper.GetAllNoteFiles()
+            .Select(PersistencePathHelper.ExtractNoteIdFromFilePath)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToHashSet();
+
+        var importedCount = 0;
+        var notesPrefix = $"{NotesFolderName}/";
+
+        foreach (var entry in archive.Entries)
+        {
+            if (!entry.FullName.StartsWith(notesPrefix, StringComparison.Ordinal) ||
+                !entry.FullName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            StickyNote? note;
+            try
+            {
+                using var entryStream = entry.Open();
+                using var reader = new StreamReader(entryStream);
+                var json = await reader.ReadToEndAsync();
+                note = JsonSerializer.Deserialize<StickyNote>(json, JsonSerializationOptions.Default);
+            }
+            catch (JsonException)
+            {
+                continue;
+            }
+
+            if (note is null)
+                continue;
+
+            if (existingIds.Contains(note.Id))
+                note.Id = Guid.NewGuid();
+
+            note.IsOpened = false;
+            existingIds.Add(note.Id);
+
+            var noteJson = JsonSerializer.Serialize(note, JsonSerializationOptions.Default);
+            await AtomicFileWriter.WriteAtomicAsync(_pathHelper.GetNoteFilePath(note.Id), noteJson);
+            importedCount++;
+        }
+
+        return importedCount;
     }
 }

@@ -91,7 +91,9 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<IBackupService>(),
                 sp.GetRequiredService<IFilePickerService>(),
                 sp.GetRequiredService<IDialogService>(),
-                sp.GetRequiredService<IStorageLocationProvider>());
+                sp.GetRequiredService<IStorageLocationProvider>(),
+                sp.GetRequiredService<FileBasedRepository>(),
+                sp.GetRequiredService<IMessenger>());
             Task.Run(() => viewModel.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
             return viewModel;
         });

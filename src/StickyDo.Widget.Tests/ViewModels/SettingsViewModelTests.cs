@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
@@ -7,6 +8,7 @@ using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Domain.Storage;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget.Tests.ViewModels;
@@ -19,6 +21,8 @@ public class SettingsViewModelTests
     private FakeFilePickerService _filePickerService = null!;
     private FakeDialogService _dialogService = null!;
     private FakeStorageLocationProvider _storageLocationProvider = null!;
+    private FileBasedRepository _noteRepository = null!;
+    private WeakReferenceMessenger _messenger = null!;
     private SettingsViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -30,12 +34,16 @@ public class SettingsViewModelTests
         _dialogService = new FakeDialogService();
         _storageLocationProvider = new FakeStorageLocationProvider(
             Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString()));
+        _noteRepository = new FileBasedRepository(_storageLocationProvider);
+        _messenger = new WeakReferenceMessenger();
         _viewModel = new SettingsViewModel(
             _repository,
             _backupService,
             _filePickerService,
             _dialogService,
-            _storageLocationProvider);
+            _storageLocationProvider,
+            _noteRepository,
+            _messenger);
     }
 
     [TestCleanup]
@@ -160,6 +168,58 @@ public class SettingsViewModelTests
         Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
     }
 
+    [TestMethod]
+    public async Task ImportNotesAsync_WhenUserCancelsPicker_DoesNotImport()
+    {
+        _filePickerService.OpenPathToReturn = null;
+
+        await _viewModel.ImportNotesAsync();
+
+        Assert.AreEqual(0, _backupService.ImportCallCount);
+        Assert.AreEqual(0, _dialogService.MessageCallCount);
+    }
+
+    [TestMethod]
+    public async Task ImportNotesAsync_OnSuccess_ImportsFromChosenPathAndShowsSuccessMessage()
+    {
+        var sourcePath = Path.Combine(_storageLocationProvider.BackupsDirectory, "chosen.zip");
+        _filePickerService.OpenPathToReturn = sourcePath;
+        _backupService.ImportCountToReturn = 3;
+
+        await _viewModel.ImportNotesAsync();
+
+        Assert.AreEqual(1, _backupService.ImportCallCount);
+        Assert.AreEqual(sourcePath, _backupService.LastImportFilePath);
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Information, _dialogService.LastIcon);
+    }
+
+    [TestMethod]
+    public async Task ImportNotesAsync_OnSuccess_BroadcastsNotesImportedMessage()
+    {
+        _filePickerService.OpenPathToReturn = Path.Combine(_storageLocationProvider.BackupsDirectory, "chosen.zip");
+        _backupService.ImportCountToReturn = 2;
+        NotesImportedMessage? received = null;
+        _messenger.Register<NotesImportedMessage>(this, (recipient, message) => received = message);
+
+        await _viewModel.ImportNotesAsync();
+
+        Assert.IsNotNull(received);
+        Assert.AreEqual(2, received!.ImportedCount);
+    }
+
+    [TestMethod]
+    public async Task ImportNotesAsync_WhenBackupServiceThrows_ShowsErrorMessage()
+    {
+        _filePickerService.OpenPathToReturn = Path.Combine(_storageLocationProvider.BackupsDirectory, "chosen.zip");
+        _backupService.ImportExceptionToThrow = new InvalidDataException("not a valid backup");
+
+        await _viewModel.ImportNotesAsync();
+
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
+    }
+
     private sealed class FakeSettingsRepository : ISettingsRepository
     {
         public AppSettings? StoredSettings { get; set; }
@@ -182,6 +242,10 @@ public class SettingsViewModelTests
         public string? LastAppVersion { get; private set; }
         public int CountToReturn { get; set; } = 1;
         public Exception? ExceptionToThrow { get; set; }
+        public int ImportCallCount { get; private set; }
+        public string? LastImportFilePath { get; private set; }
+        public int ImportCountToReturn { get; set; } = 1;
+        public Exception? ImportExceptionToThrow { get; set; }
 
         public Task<int> ExportAsync(string filePath, string appVersion)
         {
@@ -194,14 +258,29 @@ public class SettingsViewModelTests
 
             return Task.FromResult(CountToReturn);
         }
+
+        public Task<int> ImportAsync(string filePath)
+        {
+            ImportCallCount++;
+            LastImportFilePath = filePath;
+
+            if (ImportExceptionToThrow is not null)
+                throw ImportExceptionToThrow;
+
+            return Task.FromResult(ImportCountToReturn);
+        }
     }
 
     private sealed class FakeFilePickerService : IFilePickerService
     {
         public string? PathToReturn { get; set; }
+        public string? OpenPathToReturn { get; set; }
 
         public string? ShowSaveFileDialog(string defaultFileName, string filter, string? initialDirectory = null) =>
             PathToReturn;
+
+        public string? ShowOpenFileDialog(string filter, string? initialDirectory = null) =>
+            OpenPathToReturn;
     }
 
     private sealed class FakeDialogService : IDialogService

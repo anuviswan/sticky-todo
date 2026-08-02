@@ -4,12 +4,14 @@ using System.Reflection;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Domain.Storage;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.Utilities;
 
 namespace StickyDo.Widget.ViewModels;
@@ -19,7 +21,7 @@ namespace StickyDo.Widget.ViewModels;
 /// <see cref="LaunchAtStartup"/> and <see cref="SelectedDefaultColor"/> are automatically
 /// persisted via <see cref="ISettingsRepository"/> on every change; the real behavior behind
 /// those settings (Windows startup registration, applying the default color to new notes,
-/// import, update checks) is delivered by separate tickets.
+/// update checks) is delivered by separate tickets.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
@@ -28,6 +30,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IFilePickerService _filePickerService;
     private readonly IDialogService _dialogService;
     private readonly IStorageLocationProvider _storageLocationProvider;
+    private readonly FileBasedRepository _noteRepository;
+    private readonly IMessenger _messenger;
     private bool _isLoading;
 
     [ObservableProperty]
@@ -60,19 +64,25 @@ public partial class SettingsViewModel : ObservableObject
         IBackupService backupService,
         IFilePickerService filePickerService,
         IDialogService dialogService,
-        IStorageLocationProvider storageLocationProvider)
+        IStorageLocationProvider storageLocationProvider,
+        FileBasedRepository noteRepository,
+        IMessenger messenger)
     {
         ArgumentNullException.ThrowIfNull(settingsRepository);
         ArgumentNullException.ThrowIfNull(backupService);
         ArgumentNullException.ThrowIfNull(filePickerService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(storageLocationProvider);
+        ArgumentNullException.ThrowIfNull(noteRepository);
+        ArgumentNullException.ThrowIfNull(messenger);
 
         _settingsRepository = settingsRepository;
         _backupService = backupService;
         _filePickerService = filePickerService;
         _dialogService = dialogService;
         _storageLocationProvider = storageLocationProvider;
+        _noteRepository = noteRepository;
+        _messenger = messenger;
     }
 
     /// <summary>
@@ -177,6 +187,44 @@ public partial class SettingsViewModel : ObservableObject
             await _dialogService.ShowMessageAsync(
                 Resources.Resources.Export_ErrorTitle,
                 string.Format(Resources.Resources.Export_ErrorMessage, ex.Message),
+                MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Restores notes from a backup archive chosen by the user via an Open File dialog defaulted
+    /// to <see cref="IStorageLocationProvider.BackupsDirectory"/>. Reloads the note repository
+    /// from disk and broadcasts <see cref="NotesImportedMessage"/> afterward so the notes list
+    /// reflects the imported notes immediately, without an app restart.
+    /// </summary>
+    [RelayCommand]
+    public async Task ImportNotesAsync()
+    {
+        var backupsDirectory = _storageLocationProvider.BackupsDirectory;
+        var filePath = _filePickerService.ShowOpenFileDialog(
+            Resources.Resources.Import_FileFilter,
+            Directory.Exists(backupsDirectory) ? backupsDirectory : null);
+
+        if (string.IsNullOrEmpty(filePath))
+            return;
+
+        try
+        {
+            var importedCount = await _backupService.ImportAsync(filePath);
+            await _noteRepository.ReloadFromDiskAsync();
+            _messenger.Send(new NotesImportedMessage(importedCount));
+
+            await _dialogService.ShowMessageAsync(
+                Resources.Resources.Import_SuccessTitle,
+                string.Format(Resources.Resources.Import_SuccessMessage, importedCount),
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ImportNotesAsync));
+            await _dialogService.ShowMessageAsync(
+                Resources.Resources.Import_ErrorTitle,
+                string.Format(Resources.Resources.Import_ErrorMessage, ex.Message),
                 MessageBoxImage.Error);
         }
     }

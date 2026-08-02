@@ -184,6 +184,21 @@
   <data name="Export_FileFilter" xml:space="preserve">
     <value>StickyDo Backup (*.zip)|*.zip</value>
   </data>
+  <data name="Import_SuccessTitle" xml:space="preserve">
+    <value>Import Successful</value>
+  </data>
+  <data name="Import_SuccessMessage" xml:space="preserve">
+    <value>{0} note(s) imported successfully.</value>
+  </data>
+  <data name="Import_ErrorTitle" xml:space="preserve">
+    <value>Import Failed</value>
+  </data>
+  <data name="Import_ErrorMessage" xml:space="preserve">
+    <value>Could not import notes: {0}</value>
+  </data>
+  <data name="Import_FileFilter" xml:space="preserve">
+    <value>StickyDo Backup (*.zip)|*.zip</value>
+  </data>
   <data name="Settings_ApplicationName" xml:space="preserve">
     <value>StickyDo Desktop</value>
   </data>

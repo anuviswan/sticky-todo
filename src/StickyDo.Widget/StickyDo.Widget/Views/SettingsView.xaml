@@ -207,6 +207,10 @@
 
                 <!-- Import notes -->
                 <Border Grid.Column="0" Style="{StaticResource SettingsCardStyle}" Cursor="Hand">
+                    <Border.InputBindings>
+                        <MouseBinding MouseAction="LeftClick"
+                                      Command="{Binding DataContext.ImportNotesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                    </Border.InputBindings>
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
