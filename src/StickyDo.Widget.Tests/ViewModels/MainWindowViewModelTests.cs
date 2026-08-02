@@ -65,13 +65,8 @@ public class MainWindowViewModelTests
     }
 
     [TestMethod]
-    public void ShowAllNotes_ClearsTypeFilterAndFavoritesOnly()
+    public void Constructor_DefaultsToUnfilteredViewWithNoNavIconSelected()
     {
-        _viewModel.ShowTodos();
-        _viewModel.ShowFavorites();
-
-        _viewModel.ShowAllNotes();
-
         Assert.AreEqual(NavigationView.AllNotes, _viewModel.SelectedNavView);
         Assert.IsNull(_viewModel.NotesListViewModel.TypeFilter);
         Assert.IsFalse(_viewModel.NotesListViewModel.ShowFavoritesOnly);
@@ -87,16 +82,6 @@ public class MainWindowViewModelTests
         Assert.AreEqual(NavigationView.Favorites, _viewModel.SelectedNavView);
         Assert.IsNull(_viewModel.NotesListViewModel.TypeFilter);
         Assert.IsTrue(_viewModel.NotesListViewModel.ShowFavoritesOnly);
-    }
-
-    [TestMethod]
-    public void ShowAllNotes_ClosesSettings()
-    {
-        _viewModel.OpenSettings();
-
-        _viewModel.ShowAllNotes();
-
-        Assert.IsFalse(_viewModel.IsSettingsOpen);
     }
 
     [TestMethod]

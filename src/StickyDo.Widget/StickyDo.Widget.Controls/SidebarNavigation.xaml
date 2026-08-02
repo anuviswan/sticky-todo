@@ -36,17 +36,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="AllNotesNavButtonStyle" TargetType="Button" BasedOn="{StaticResource SidebarIconButtonStyle}">
-            <Style.Triggers>
-                <DataTrigger Value="True">
-                    <DataTrigger.Binding>
-                        <Binding Path="SelectedNavView" Converter="{StaticResource EnumNameEqualsConverter}" ConverterParameter="AllNotes"/>
-                    </DataTrigger.Binding>
-                    <Setter Property="Background" Value="#EDE4C0"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="TodosNavButtonStyle" TargetType="Button" BasedOn="{StaticResource SidebarIconButtonStyle}">
             <Style.Triggers>
                 <DataTrigger Value="True">
@@ -128,23 +117,6 @@
 
         <!-- Navigation Icons -->
         <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top">
-            <Button x:Name="AllNotesNavButton" Style="{StaticResource AllNotesNavButtonStyle}"
-                    Command="{Binding ShowAllNotesCommand}" ToolTip="All Notes" Margin="0,0,0,10">
-                <!-- 2x2 grid: reads as "everything/overview", distinct from the checklist and pencil silhouettes below. -->
-                <Viewbox Width="18" Height="18">
-                    <Canvas Width="16" Height="16">
-                        <Rectangle Canvas.Left="1.5" Canvas.Top="1.5" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
-                                   Stroke="#333333" StrokeThickness="1.3"/>
-                        <Rectangle Canvas.Left="9" Canvas.Top="1.5" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
-                                   Stroke="#333333" StrokeThickness="1.3"/>
-                        <Rectangle Canvas.Left="1.5" Canvas.Top="9" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
-                                   Stroke="#333333" StrokeThickness="1.3"/>
-                        <Rectangle Canvas.Left="9" Canvas.Top="9" Width="5.5" Height="5.5" RadiusX="1" RadiusY="1"
-                                   Stroke="#333333" StrokeThickness="1.3"/>
-                    </Canvas>
-                </Viewbox>
-            </Button>
-
             <Button x:Name="TodosNavButton" Style="{StaticResource TodosNavButtonStyle}"
                     Command="{Binding ShowTodosCommand}" ToolTip="Todos" Margin="0,0,0,10">
                 <!-- Standalone checklist (no page outline), so the checkbox rows themselves are the whole silhouette. -->
