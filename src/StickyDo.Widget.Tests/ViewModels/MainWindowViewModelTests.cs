@@ -31,7 +31,8 @@ public class MainWindowViewModelTests
             _service,
             new FakeStickyNoteWindowService(),
             new FakeDialogService(),
-            new WeakReferenceMessenger());
+            new WeakReferenceMessenger(),
+            new FakeSettingsRepository());
         var settingsViewModel = new SettingsViewModel(new FakeSettingsRepository());
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }

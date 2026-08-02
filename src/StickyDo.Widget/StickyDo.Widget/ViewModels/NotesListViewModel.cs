@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
@@ -23,6 +24,7 @@ public partial class NotesListViewModel : ObservableObject
     private readonly IStickyNoteWindowService _windowService;
     private readonly IDialogService _dialogService;
     private readonly IMessenger _messenger;
+    private readonly ISettingsRepository _settingsRepository;
     private readonly List<StickyNoteItemViewModel> _allNotes = new();
 
     [ObservableProperty]
@@ -61,16 +63,19 @@ public partial class NotesListViewModel : ObservableObject
         StickyNoteService stickyNoteService,
         IStickyNoteWindowService windowService,
         IDialogService dialogService,
-        IMessenger messenger)
+        IMessenger messenger,
+        ISettingsRepository settingsRepository)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(messenger);
+        ArgumentNullException.ThrowIfNull(settingsRepository);
         _stickyNoteService = stickyNoteService;
         _windowService = windowService;
         _dialogService = dialogService;
         _messenger = messenger;
+        _settingsRepository = settingsRepository;
 
         _messenger.Register<StickyNoteChangedMessage>(this, async (recipient, message) =>
             await ((NotesListViewModel)recipient).OnNoteChangedAsync(message));
@@ -117,7 +122,8 @@ public partial class NotesListViewModel : ObservableObject
             var noteNumber = await _stickyNoteService.GetNextNoteNumberAsync();
             var noteTitle = $"Note {noteNumber}";
             var type = TypeFilter == NoteType.Note ? NoteType.Note : NoteType.Todo;
-            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, type: type);
+            var settings = await _settingsRepository.LoadAsync();
+            var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, settings.DefaultNoteColor, type);
 
             // Open the window first - it adds the default "First Task" during load. Notifying
             // the list only after that completes ensures its card reflects that task, instead
