@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
@@ -17,6 +18,7 @@ public class NotesListViewModelTests
     private string _testDataDirectory = null!;
     private FileBasedRepository _repository = null!;
     private StickyNoteService _service = null!;
+    private FakeSettingsRepository _settingsRepository = null!;
     private NotesListViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -28,11 +30,13 @@ public class NotesListViewModelTests
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
         _service = new StickyNoteService(_repository);
+        _settingsRepository = new FakeSettingsRepository();
         _viewModel = new NotesListViewModel(
             _service,
             new FakeStickyNoteWindowService(),
             new FakeDialogService(),
-            new WeakReferenceMessenger());
+            new WeakReferenceMessenger(),
+            _settingsRepository);
     }
 
     [TestCleanup]
@@ -233,6 +237,21 @@ public class NotesListViewModelTests
     }
 
     [TestMethod]
+    public async Task CreateNoteAsync_UsesPersistedDefaultNoteColor()
+    {
+        var color = ColorPalette.Colors[3];
+        _settingsRepository.Settings = new AppSettings { DefaultNoteColor = color };
+
+        await _viewModel.CreateNoteAsync();
+
+        var created = AllVisibleNotes().Single();
+        Assert.AreEqual(color, created.ColorArgb);
+
+        var persisted = await _service.GetNoteByIdAsync(created.Id);
+        Assert.AreEqual(color, persisted!.ColorArgb);
+    }
+
+    [TestMethod]
     public async Task FirstTaskTitle_ShortTitle_ShowsFullText()
     {
         await CreateNoteWithTaskAsync("Grocery List", "Buy milk");
@@ -301,6 +320,19 @@ public class NotesListViewModelTests
             Task.CompletedTask;
 
         public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(true);
+    }
+
+    private sealed class FakeSettingsRepository : ISettingsRepository
+    {
+        public AppSettings Settings { get; set; } = new();
+
+        public Task<AppSettings> LoadAsync() => Task.FromResult(Settings);
+
+        public Task SaveAsync(AppSettings settings)
+        {
+            Settings = settings;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider

@@ -3,18 +3,23 @@ using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using StickyDo.Domain.Constants;
+using StickyDo.Domain.Models;
+using StickyDo.Domain.Repositories;
 
 namespace StickyDo.Widget.ViewModels;
 
 /// <summary>
-/// ViewModel for the Settings page shown within the main window's content area. Holds only
-/// local, in-memory UI state for the controls whose real behavior (Windows startup
-/// registration, default-color persistence, import/export, update checks, settings
-/// persistence) is delivered by separate tickets; this view model exists to give the page
-/// something to bind to, not to implement that behavior.
+/// ViewModel for the Settings page shown within the main window's content area.
+/// <see cref="LaunchAtStartup"/> and <see cref="SelectedDefaultColor"/> are automatically
+/// persisted via <see cref="ISettingsRepository"/> on every change; the real behavior behind
+/// those settings (Windows startup registration, applying the default color to new notes,
+/// import/export, update checks) is delivered by separate tickets.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
+    private readonly ISettingsRepository _settingsRepository;
+    private bool _isLoading;
+
     [ObservableProperty]
     private bool launchAtStartup;
 
@@ -40,9 +45,65 @@ public partial class SettingsViewModel : ObservableObject
     /// </summary>
     public event EventHandler? CloseRequested;
 
+    public SettingsViewModel(ISettingsRepository settingsRepository)
+    {
+        ArgumentNullException.ThrowIfNull(settingsRepository);
+        _settingsRepository = settingsRepository;
+    }
+
     /// <summary>
-    /// Selects the default note color. Local UI state only - does not persist or affect
-    /// newly created notes.
+    /// Loads persisted settings from disk and populates the bound properties, without
+    /// triggering a redundant auto-save back to disk.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        _isLoading = true;
+        try
+        {
+            var settings = await _settingsRepository.LoadAsync();
+            LaunchAtStartup = settings.LaunchAtStartup;
+            SelectedDefaultColor = settings.DefaultNoteColor;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    partial void OnLaunchAtStartupChanged(bool value)
+    {
+        if (!_isLoading)
+            _ = SaveAsync();
+    }
+
+    partial void OnSelectedDefaultColorChanged(uint value)
+    {
+        if (!_isLoading)
+            _ = SaveAsync();
+    }
+
+    /// <summary>
+    /// Persists the current settings snapshot to disk. Failures are logged rather than
+    /// surfaced, so a transient disk error doesn't crash the UI thread.
+    /// </summary>
+    private async Task SaveAsync()
+    {
+        try
+        {
+            await _settingsRepository.SaveAsync(new AppSettings
+            {
+                LaunchAtStartup = LaunchAtStartup,
+                DefaultNoteColor = SelectedDefaultColor
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"SettingsViewModel: Failed to save settings: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Selects the default note color. Persisted automatically via <see cref="OnSelectedDefaultColorChanged"/>.
     /// </summary>
     [RelayCommand]
     public void SelectDefaultColor(uint color)

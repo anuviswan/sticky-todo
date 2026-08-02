@@ -13,6 +13,10 @@ namespace StickyDo.Widget.ViewModels;
 /// </summary>
 public enum NavigationView
 {
+    /// <summary>
+    /// No sidebar icon selects this - it's only the pre-interaction default (unfiltered notes
+    /// list, no nav icon highlighted) before the user picks Todos, Notes, or Favorites.
+    /// </summary>
     AllNotes,
     Todos,
     Notes,
@@ -50,14 +54,16 @@ public partial class MainWindowViewModel : ObservableObject
 
     public MainWindowViewModel(
         IWindowService mainWindowService,
-        NotesListViewModel notesListViewModel)
+        NotesListViewModel notesListViewModel,
+        SettingsViewModel settings)
     {
         ArgumentNullException.ThrowIfNull(mainWindowService);
         ArgumentNullException.ThrowIfNull(notesListViewModel);
+        ArgumentNullException.ThrowIfNull(settings);
         _mainWindowService = mainWindowService;
         NotesListViewModel = notesListViewModel;
 
-        Settings = new SettingsViewModel();
+        Settings = settings;
         Settings.CloseRequested += (s, e) => IsSettingsOpen = false;
     }
 
@@ -79,19 +85,6 @@ public partial class MainWindowViewModel : ObservableObject
             SyncStatus = AppResources.ErrorStatus;
             LoggerHelper.LogException(ex, nameof(LoadNotesAsync));
         }
-    }
-
-    /// <summary>
-    /// Shows all notes by clearing the search filter and the Favorites-only filter.
-    /// </summary>
-    [RelayCommand]
-    public void ShowAllNotes()
-    {
-        IsSettingsOpen = false;
-        SelectedNavView = NavigationView.AllNotes;
-        NotesListViewModel.SearchQuery = string.Empty;
-        NotesListViewModel.ShowFavoritesOnly = false;
-        NotesListViewModel.TypeFilter = null;
     }
 
     /// <summary>
