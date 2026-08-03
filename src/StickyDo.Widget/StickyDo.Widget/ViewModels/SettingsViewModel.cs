@@ -25,6 +25,9 @@ namespace StickyDo.Widget.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
+    private const string PrivacyPolicyUrl = "https://github.com/anuviswan/sticky-todo/blob/main/PRIVACY_POLICY.md";
+    private const string TermsOfServiceUrl = "https://github.com/anuviswan/sticky-todo/blob/main/TERMS_OF_SERVICE.md";
+
     private readonly ISettingsRepository _settingsRepository;
     private readonly IBackupService _backupService;
     private readonly IFilePickerService _filePickerService;
@@ -32,6 +35,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IStorageLocationProvider _storageLocationProvider;
     private readonly FileBasedRepository _noteRepository;
     private readonly IMessenger _messenger;
+    private readonly IUrlLauncherService _urlLauncherService;
     private bool _isLoading;
 
     [ObservableProperty]
@@ -66,7 +70,8 @@ public partial class SettingsViewModel : ObservableObject
         IDialogService dialogService,
         IStorageLocationProvider storageLocationProvider,
         FileBasedRepository noteRepository,
-        IMessenger messenger)
+        IMessenger messenger,
+        IUrlLauncherService urlLauncherService)
     {
         ArgumentNullException.ThrowIfNull(settingsRepository);
         ArgumentNullException.ThrowIfNull(backupService);
@@ -75,6 +80,7 @@ public partial class SettingsViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(storageLocationProvider);
         ArgumentNullException.ThrowIfNull(noteRepository);
         ArgumentNullException.ThrowIfNull(messenger);
+        ArgumentNullException.ThrowIfNull(urlLauncherService);
 
         _settingsRepository = settingsRepository;
         _backupService = backupService;
@@ -83,6 +89,7 @@ public partial class SettingsViewModel : ObservableObject
         _storageLocationProvider = storageLocationProvider;
         _noteRepository = noteRepository;
         _messenger = messenger;
+        _urlLauncherService = urlLauncherService;
     }
 
     /// <summary>
@@ -152,6 +159,24 @@ public partial class SettingsViewModel : ObservableObject
     public void Close()
     {
         CloseRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Opens the Privacy Policy in the user's default browser.
+    /// </summary>
+    [RelayCommand]
+    public void OpenPrivacyPolicy()
+    {
+        _urlLauncherService.OpenUrl(PrivacyPolicyUrl);
+    }
+
+    /// <summary>
+    /// Opens the Terms of Service in the user's default browser.
+    /// </summary>
+    [RelayCommand]
+    public void OpenTermsOfService()
+    {
+        _urlLauncherService.OpenUrl(TermsOfServiceUrl);
     }
 
     /// <summary>

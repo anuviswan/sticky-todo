@@ -303,8 +303,16 @@
                     <TextBlock Grid.Column="0" Text="{Binding CopyrightText}" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center"/>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <TextBlock Text="{x:Static res:Resources.Settings_PrivacyPolicy}" FontSize="12" Foreground="#6B7280" Cursor="Hand" Margin="0,0,20,0"/>
-                        <TextBlock Text="{x:Static res:Resources.Settings_TermsOfService}" FontSize="12" Foreground="#6B7280" Cursor="Hand"/>
+                        <TextBlock Text="{x:Static res:Resources.Settings_PrivacyPolicy}" FontSize="12" Foreground="#6B7280" Cursor="Hand" Margin="0,0,20,0">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding OpenPrivacyPolicyCommand}"/>
+                            </TextBlock.InputBindings>
+                        </TextBlock>
+                        <TextBlock Text="{x:Static res:Resources.Settings_TermsOfService}" FontSize="12" Foreground="#6B7280" Cursor="Hand">
+                            <TextBlock.InputBindings>
+                                <MouseBinding MouseAction="LeftClick" Command="{Binding OpenTermsOfServiceCommand}"/>
+                            </TextBlock.InputBindings>
+                        </TextBlock>
                     </StackPanel>
                 </Grid>
             </Border>

@@ -152,6 +152,10 @@ are tracked separately.
 StickyDo is fully local and offline in this version — no telemetry, no accounts, no cloud
 sync. See [PRIVACY_POLICY.md](PRIVACY_POLICY.md) for details on what data is stored and where.
 
+## Terms of Service
+
+See [TERMS_OF_SERVICE.md](TERMS_OF_SERVICE.md) for the terms governing use of the app.
+
 ## License
 
 StickyDo is licensed under the MIT License. See [LICENSE.md](LICENSE.md) for details.

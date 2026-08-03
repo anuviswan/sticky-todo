@@ -40,7 +40,8 @@ public class MainWindowViewModelTests
             new FakeDialogService(),
             new FakeStorageLocationProvider(_testDataDirectory),
             _repository,
-            new WeakReferenceMessenger());
+            new WeakReferenceMessenger(),
+            new FakeUrlLauncherService());
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }
 
@@ -229,6 +230,11 @@ public class MainWindowViewModelTests
         public string? ShowSaveFileDialog(string defaultFileName, string filter, string? initialDirectory = null) => null;
 
         public string? ShowOpenFileDialog(string filter, string? initialDirectory = null) => null;
+    }
+
+    private sealed class FakeUrlLauncherService : IUrlLauncherService
+    {
+        public void OpenUrl(string url) { }
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider
