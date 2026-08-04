@@ -1,3 +1,5 @@
+using StickyDo.Domain.Models.RichText;
+
 namespace StickyDo.Domain.Models;
 
 /// <summary>
@@ -10,6 +12,12 @@ public class StickyNoteTask
 
     /// <summary>The task title/description.</summary>
     public required string Title { get; set; }
+
+    /// <summary>
+    /// Optional rich-text formatting overlaying <see cref="Title"/>. Null for plain-text
+    /// tasks (including all tasks created before this was introduced).
+    /// </summary>
+    public RichTextFormatting? TitleFormatting { get; set; }
 
     /// <summary>Whether the task has been marked as completed.</summary>
     public bool IsCompleted { get; set; }

@@ -162,6 +162,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             existing.Status = note.Status;
             existing.Type = note.Type;
             existing.UpdatedAt = DateTime.UtcNow;
+            existing.ContentFormatting = note.ContentFormatting;
             existing.ColorArgb = note.ColorArgb;
             existing.DisplayOrder = note.DisplayOrder;
             existing.Tasks = note.Tasks;
@@ -246,6 +247,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         if (existingTask != null)
         {
             existingTask.Title = task.Title;
+            existingTask.TitleFormatting = task.TitleFormatting;
             existingTask.IsCompleted = task.IsCompleted;
             existingTask.Order = task.Order;
             existingTask.UpdatedAt = DateTime.UtcNow;

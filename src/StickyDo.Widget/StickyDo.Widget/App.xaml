@@ -20,6 +20,7 @@
             <converters:NoteSyncStateToTooltipConverter x:Key="NoteSyncStateToTooltipConverter"/>
             <converters:NoteSyncStateToPendingVisibilityConverter x:Key="NoteSyncStateToPendingVisibilityConverter"/>
             <converters:NoteTypeToVisibilityConverter x:Key="NoteTypeToVisibilityConverter"/>
+            <converters:IsNotNullToBooleanConverter x:Key="IsNotNullToBooleanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

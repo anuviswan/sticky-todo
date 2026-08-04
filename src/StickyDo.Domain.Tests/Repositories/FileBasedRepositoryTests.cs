@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Storage;
 using StickyDo.Domain.Utilities;
@@ -414,6 +415,107 @@ public class FileBasedRepositoryTests
         Assert.AreEqual(200, retrieved.WindowTop);
         Assert.AreEqual(300, retrieved.WindowWidth);
         Assert.AreEqual(400, retrieved.WindowHeight);
+    }
+
+    [TestMethod]
+    public async Task SaveNoteAsync_PersistsContentFormattingAcrossReload()
+    {
+        // Arrange
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+
+        var note = new StickyNote
+        {
+            Id = Guid.NewGuid(),
+            Title = "Formatted",
+            Content = "Buy milk and bread today",
+            ContentFormatting = new RichTextFormatting
+            {
+                Spans =
+                [
+                    new RichTextSpan { Start = 4, Length = 4, Bold = true },
+                    new RichTextSpan { Start = 13, Length = 5, Italic = true, Underline = true }
+                ]
+            }
+        };
+        await repository.CreateAsync(note);
+
+        // Act
+        await repository.SaveNoteAsync(note.Id);
+        var reloadedRepository = new FileBasedRepository(_storageLocationProvider);
+        await reloadedRepository.InitializeAsync();
+
+        // Assert
+        var retrieved = await reloadedRepository.GetByIdAsync(note.Id);
+        Assert.IsNotNull(retrieved);
+        Assert.IsNotNull(retrieved.ContentFormatting);
+        Assert.AreEqual(RichTextFormatting.CurrentVersion, retrieved.ContentFormatting.Version);
+        Assert.AreEqual(2, retrieved.ContentFormatting.Spans.Count);
+        Assert.IsTrue(retrieved.ContentFormatting.Spans.Any(s => s is { Start: 4, Length: 4, Bold: true }));
+        Assert.IsTrue(retrieved.ContentFormatting.Spans.Any(s => s is { Start: 13, Length: 5, Italic: true, Underline: true }));
+    }
+
+    [TestMethod]
+    public async Task SaveNoteAsync_OmitsContentFormattingKeyWhenNull()
+    {
+        // Arrange - plain/legacy note with no formatting applied
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+
+        var note = new StickyNote { Id = Guid.NewGuid(), Title = "Plain", Content = "just text" };
+        await repository.CreateAsync(note);
+
+        // Act
+        await repository.SaveNoteAsync(note.Id);
+
+        // Assert - the JSON on disk must not contain the key at all, proving old files stay
+        // in their original shape and nothing needs to migrate.
+        var pathHelper = new PersistencePathHelper(_storageLocationProvider);
+        var json = await File.ReadAllTextAsync(pathHelper.GetNoteFilePath(note.Id));
+        StringAssert.DoesNotMatch(json, new System.Text.RegularExpressions.Regex("ContentFormatting"));
+
+        var reloadedRepository = new FileBasedRepository(_storageLocationProvider);
+        await reloadedRepository.InitializeAsync();
+        var retrieved = await reloadedRepository.GetByIdAsync(note.Id);
+        Assert.IsNotNull(retrieved);
+        Assert.IsNull(retrieved.ContentFormatting);
+    }
+
+    [TestMethod]
+    public async Task UpdateTask_PersistsTitleFormattingAcrossReload()
+    {
+        // Arrange
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+
+        var note = new StickyNote { Id = Guid.NewGuid(), Title = "Todo Note" };
+        await repository.CreateAsync(note);
+
+        var task = new StickyNoteTask { Id = Guid.NewGuid(), Title = "Buy milk" };
+        await ((IStickyNoteTaskRepository)repository).CreateAsync(note.Id, task);
+
+        var updatedTask = new StickyNoteTask
+        {
+            Id = task.Id,
+            Title = "Buy milk",
+            TitleFormatting = new RichTextFormatting
+            {
+                Spans = [new RichTextSpan { Start = 0, Length = 3, Bold = true }]
+            }
+        };
+
+        // Act
+        await ((IStickyNoteTaskRepository)repository).UpdateAsync(note.Id, updatedTask);
+        await repository.SaveNoteAsync(note.Id);
+        var reloadedRepository = new FileBasedRepository(_storageLocationProvider);
+        await reloadedRepository.InitializeAsync();
+
+        // Assert
+        var retrieved = await reloadedRepository.GetByIdAsync(note.Id);
+        var retrievedTask = retrieved!.Tasks.First(t => t.Id == task.Id);
+        Assert.IsNotNull(retrievedTask.TitleFormatting);
+        Assert.AreEqual(1, retrievedTask.TitleFormatting.Spans.Count);
+        Assert.IsTrue(retrievedTask.TitleFormatting.Spans[0] is { Start: 0, Length: 3, Bold: true });
     }
 
     [TestMethod]

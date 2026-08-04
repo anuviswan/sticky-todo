@@ -1,4 +1,6 @@
-﻿namespace StickyDo.Domain.Models;
+﻿using StickyDo.Domain.Models.RichText;
+
+namespace StickyDo.Domain.Models;
 
 /// <summary>
 /// Represents a sticky note/todo item in the application.
@@ -22,6 +24,13 @@ public class StickyNote
 
     /// <summary>Free-form text body. Used for notes of <see cref="NoteType.Note"/>.</summary>
     public string? Content { get; set; }
+
+    /// <summary>
+    /// Optional rich-text formatting overlaying <see cref="Content"/>. Null for plain-text
+    /// notes (including all notes created before this was introduced) - absence means
+    /// "render as plain text", not "formatting was lost".
+    /// </summary>
+    public RichTextFormatting? ContentFormatting { get; set; }
 
     /// <summary>UTC timestamp when the note was created.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
