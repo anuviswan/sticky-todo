@@ -23,6 +23,7 @@ public class SettingsViewModelTests
     private FakeStorageLocationProvider _storageLocationProvider = null!;
     private FileBasedRepository _noteRepository = null!;
     private WeakReferenceMessenger _messenger = null!;
+    private FakeUrlLauncherService _urlLauncherService = null!;
     private SettingsViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -36,6 +37,7 @@ public class SettingsViewModelTests
             Path.Combine(Path.GetTempPath(), "StickyDo_Tests", Guid.NewGuid().ToString()));
         _noteRepository = new FileBasedRepository(_storageLocationProvider);
         _messenger = new WeakReferenceMessenger();
+        _urlLauncherService = new FakeUrlLauncherService();
         _viewModel = new SettingsViewModel(
             _repository,
             _backupService,
@@ -43,7 +45,8 @@ public class SettingsViewModelTests
             _dialogService,
             _storageLocationProvider,
             _noteRepository,
-            _messenger);
+            _messenger,
+            _urlLauncherService);
     }
 
     [TestCleanup]
@@ -220,6 +223,22 @@ public class SettingsViewModelTests
         Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
     }
 
+    [TestMethod]
+    public void OpenPrivacyPolicy_OpensPrivacyPolicyUrl()
+    {
+        _viewModel.OpenPrivacyPolicy();
+
+        Assert.AreEqual("https://github.com/anuviswan/sticky-todo/blob/main/PRIVACY_POLICY.md", _urlLauncherService.LastUrl);
+    }
+
+    [TestMethod]
+    public void OpenTermsOfService_OpensTermsOfServiceUrl()
+    {
+        _viewModel.OpenTermsOfService();
+
+        Assert.AreEqual("https://github.com/anuviswan/sticky-todo/blob/main/TERMS_OF_SERVICE.md", _urlLauncherService.LastUrl);
+    }
+
     private sealed class FakeSettingsRepository : ISettingsRepository
     {
         public AppSettings? StoredSettings { get; set; }
@@ -314,5 +333,12 @@ public class SettingsViewModelTests
         public string SettingsDirectory { get; }
         public string LogsDirectory { get; }
         public string BackupsDirectory { get; }
+    }
+
+    private sealed class FakeUrlLauncherService : IUrlLauncherService
+    {
+        public string? LastUrl { get; private set; }
+
+        public void OpenUrl(string url) => LastUrl = url;
     }
 }
