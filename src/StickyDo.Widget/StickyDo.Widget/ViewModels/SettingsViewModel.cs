@@ -19,9 +19,10 @@ namespace StickyDo.Widget.ViewModels;
 /// <summary>
 /// ViewModel for the Settings page shown within the main window's content area.
 /// <see cref="LaunchAtStartup"/> and <see cref="SelectedDefaultColor"/> are automatically
-/// persisted via <see cref="ISettingsRepository"/> on every change; the real behavior behind
-/// those settings (Windows startup registration, applying the default color to new notes,
-/// update checks) is delivered by separate tickets.
+/// persisted via <see cref="ISettingsRepository"/> on every change. <see cref="SelectedDefaultColor"/>
+/// is applied to every newly created note (see <c>NotesListViewModel.CreateNoteAsync</c>); the real
+/// behavior behind <see cref="LaunchAtStartup"/> (Windows startup registration) and update checks
+/// is delivered by separate tickets.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
