@@ -1,0 +1,63 @@
+name: Build MSIX Package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: msix-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-msix:
+    name: Build MSIX Package
+    # Pinned to windows-2022 rather than windows-latest: StickyDo.Widget.Package.wapproj targets
+    # UAP SDK 10.0.19041.0 (min 10.0.17763.0), and newer runner images are not guaranteed to carry
+    # those older Windows SDK platform files, which fails packaging with
+    # "APPX3217: SDK folder containing 'UAP.props' ... cannot be located".
+    runs-on: windows-2022
+
+    env:
+      WAPPROJ_PATH: src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package.wapproj
+      BUILD_CONFIGURATION: Release
+      BUILD_PLATFORM: x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore and build unsigned MSIX package
+        # StickyDo.Widget.Package.wapproj is a classic Windows Application Packaging Project, so it
+        # needs full MSBuild (not dotnet build/restore) - see README.md "MSIX Packaging".
+        # AppxPackageSigningEnabled=false skips signing entirely, so no code-signing certificate is
+        # required (StickyDo.Widget.Package_TemporaryKey.pfx is gitignored and never committed).
+        # Microsoft Partner Center signs the package at Store submission time.
+        run: >
+          msbuild "${{ env.WAPPROJ_PATH }}" -t:Restore,Build
+          -p:Configuration=${{ env.BUILD_CONFIGURATION }}
+          -p:Platform=${{ env.BUILD_PLATFORM }}
+          -p:AppxPackageSigningEnabled=false
+
+      - name: Upload MSIX package
+        uses: actions/upload-artifact@v4
+        with:
+          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}
+          path: |
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixbundle
+          if-no-files-found: error
+          retention-days: 14

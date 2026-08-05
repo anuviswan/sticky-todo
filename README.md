@@ -97,6 +97,12 @@ reference the packaging project. Building it requires full MSBuild from a Visual
 installation with the **Universal Windows Platform development** workload (specifically the
 "MSIX Packaging Tools"/"Windows Application Packaging Project" component).
 
+The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds an **unsigned**
+Release MSIX on every push/PR to `main` (and on demand via `workflow_dispatch`), uploading it as a
+build artifact for testing. It skips signing entirely (`AppxPackageSigningEnabled=false`) since
+Microsoft Partner Center signs the package at Store submission time — no certificate is needed in
+CI.
+
 ### Prerequisites
 
 - Visual Studio 2022+ with the **Universal Windows Platform development** workload installed
