@@ -165,12 +165,15 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>
     /// Opens the Settings page within the main window's content area, without affecting
-    /// the notes list state or any currently open sticky note windows.
+    /// the notes list state or any currently open sticky note windows. Refreshes the launch-at-startup
+    /// toggle from the real Windows registration, since it can change out-of-band (e.g. via Windows
+    /// Settings > Apps > Startup) while the app is running.
     /// </summary>
     [RelayCommand]
-    public void OpenSettings()
+    public async Task OpenSettingsAsync()
     {
         IsSettingsOpen = true;
+        await Settings.RefreshStartupStateAsync();
     }
 
 }

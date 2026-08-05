@@ -94,7 +94,8 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<IStorageLocationProvider>(),
                 sp.GetRequiredService<FileBasedRepository>(),
                 sp.GetRequiredService<IMessenger>(),
-                sp.GetRequiredService<IUrlLauncherService>());
+                sp.GetRequiredService<IUrlLauncherService>(),
+                sp.GetRequiredService<IStartupTaskService>());
             Task.Run(() => viewModel.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
             return viewModel;
         });
@@ -110,6 +111,7 @@ public static class ServiceConfiguration
         services.AddSingleton<IWindowService, WindowService>();
         services.AddSingleton<ITrayIconService, TrayIconService>();
         services.AddSingleton<IUrlLauncherService, UrlLauncherService>();
+        services.AddSingleton<IStartupTaskService, StartupTaskService>();
     }
 
     /// <summary>

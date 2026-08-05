@@ -16,6 +16,7 @@ public class MainWindowViewModelTests
     private string _testDataDirectory = null!;
     private FileBasedRepository _repository = null!;
     private StickyNoteService _service = null!;
+    private FakeStartupTaskService _startupTaskService = null!;
     private MainWindowViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -33,6 +34,7 @@ public class MainWindowViewModelTests
             new FakeDialogService(),
             new WeakReferenceMessenger(),
             new FakeSettingsRepository());
+        _startupTaskService = new FakeStartupTaskService();
         var settingsViewModel = new SettingsViewModel(
             new FakeSettingsRepository(),
             new FakeBackupService(),
@@ -41,7 +43,8 @@ public class MainWindowViewModelTests
             new FakeStorageLocationProvider(_testDataDirectory),
             _repository,
             new WeakReferenceMessenger(),
-            new FakeUrlLauncherService());
+            new FakeUrlLauncherService(),
+            _startupTaskService);
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }
 
@@ -142,9 +145,9 @@ public class MainWindowViewModelTests
     }
 
     [TestMethod]
-    public void ShowTodos_ClosesSettings()
+    public async Task ShowTodos_ClosesSettings()
     {
-        _viewModel.OpenSettings();
+        await _viewModel.OpenSettingsAsync();
 
         _viewModel.ShowTodos();
 
@@ -152,9 +155,9 @@ public class MainWindowViewModelTests
     }
 
     [TestMethod]
-    public void ShowNotes_ClosesSettings()
+    public async Task ShowNotes_ClosesSettings()
     {
-        _viewModel.OpenSettings();
+        await _viewModel.OpenSettingsAsync();
 
         _viewModel.ShowNotes();
 
@@ -162,9 +165,9 @@ public class MainWindowViewModelTests
     }
 
     [TestMethod]
-    public void ShowFavorites_ClosesSettings()
+    public async Task ShowFavorites_ClosesSettings()
     {
-        _viewModel.OpenSettings();
+        await _viewModel.OpenSettingsAsync();
 
         _viewModel.ShowFavorites();
 
@@ -172,21 +175,31 @@ public class MainWindowViewModelTests
     }
 
     [TestMethod]
-    public void OpenSettings_SetsIsSettingsOpen()
+    public async Task OpenSettingsAsync_SetsIsSettingsOpen()
     {
-        _viewModel.OpenSettings();
+        await _viewModel.OpenSettingsAsync();
 
         Assert.IsTrue(_viewModel.IsSettingsOpen);
     }
 
     [TestMethod]
-    public void SettingsCloseRequested_ClearsIsSettingsOpen()
+    public async Task SettingsCloseRequested_ClearsIsSettingsOpen()
     {
-        _viewModel.OpenSettings();
+        await _viewModel.OpenSettingsAsync();
 
         _viewModel.Settings.Close();
 
         Assert.IsFalse(_viewModel.IsSettingsOpen);
+    }
+
+    [TestMethod]
+    public async Task OpenSettingsAsync_RefreshesStartupState()
+    {
+        _startupTaskService.StatusToReturn = StartupTaskStatus.Enabled;
+
+        await _viewModel.OpenSettingsAsync();
+
+        Assert.IsTrue(_viewModel.Settings.LaunchAtStartup);
     }
 
     private sealed class FakeWindowService : IWindowService
@@ -235,6 +248,17 @@ public class MainWindowViewModelTests
     private sealed class FakeUrlLauncherService : IUrlLauncherService
     {
         public void OpenUrl(string url) { }
+    }
+
+    private sealed class FakeStartupTaskService : IStartupTaskService
+    {
+        public StartupTaskStatus StatusToReturn { get; set; } = StartupTaskStatus.Disabled;
+
+        public Task<StartupTaskStatus> GetStatusAsync() => Task.FromResult(StatusToReturn);
+
+        public Task<StartupTaskStatus> EnableAsync() => Task.FromResult(StartupTaskStatus.Enabled);
+
+        public Task DisableAsync() => Task.CompletedTask;
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider
