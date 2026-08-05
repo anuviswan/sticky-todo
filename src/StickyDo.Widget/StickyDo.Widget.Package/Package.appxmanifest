@@ -46,7 +46,7 @@
         <uap:SplashScreen Image="Images\SplashScreen.png" BackgroundColor="transparent" />
       </uap:VisualElements>
       <Extensions>
-        <uap5:Extension Category="windows.startupTask" Executable="$targetnametoken$.exe" EntryPoint="Windows.FullTrustApplication">
+        <uap5:Extension Category="windows.startupTask" Executable="StickyDo.Widget\StickyDo.Widget.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="StickyDoStartupTask" Enabled="false" DisplayName="StickyDo" />
         </uap5:Extension>
       </Extensions>
