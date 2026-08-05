@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:StickyDo.Widget.Controls"
              xmlns:converters="clr-namespace:StickyDo.Widget.Controls.Converters"
+             xmlns:behaviors="clr-namespace:StickyDo.Widget.Controls.Behaviors"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="220"
              Background="Transparent"
@@ -144,7 +145,8 @@
                           IsHitTestVisible="False" Focusable="False" FocusVisualStyle="{x:Null}"
                           VerticalAlignment="Top" Margin="0,2,10,0"/>
                 <TextBlock Grid.Column="1"
-                           Text="{Binding FirstTaskTitle, Mode=OneWay, ElementName=Root}"
+                           behaviors:RichTextPreviewBehavior.PlainText="{Binding FirstTaskTitle, Mode=OneWay, ElementName=Root}"
+                           behaviors:RichTextPreviewBehavior.Formatting="{Binding FirstTaskTitleFormatting, Mode=OneWay, ElementName=Root}"
                            FontSize="14" Foreground="#333333"
                            TextTrimming="CharacterEllipsis" VerticalAlignment="Top">
                     <TextBlock.Style>
@@ -161,7 +163,8 @@
             </Grid>
 
             <!-- Free-form content preview, shown only for Note-type items with content -->
-            <TextBlock Text="{Binding ContentPreview, Mode=OneWay, ElementName=Root}"
+            <TextBlock behaviors:RichTextPreviewBehavior.PlainText="{Binding ContentPreview, Mode=OneWay, ElementName=Root}"
+                       behaviors:RichTextPreviewBehavior.Formatting="{Binding ContentPreviewFormatting, Mode=OneWay, ElementName=Root}"
                        FontSize="14" Foreground="#333333"
                        TextTrimming="CharacterEllipsis" VerticalAlignment="Top">
                 <TextBlock.Style>

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
@@ -204,6 +205,11 @@ public partial class NotesListViewModel : ObservableObject
         var orderedTasks = note.Tasks.OrderBy(t => t.Order).ToList();
         var firstTask = orderedTasks.FirstOrDefault();
 
+        var (firstTaskPreview, firstTaskPreviewFormatting) =
+            RichTextPreviewBuilder.BuildPreview(firstTask?.Title, firstTask?.TitleFormatting, ContentPreviewMaxWords);
+        var (contentPreview, contentPreviewFormatting) =
+            RichTextPreviewBuilder.BuildPreview(note.Content, note.ContentFormatting, ContentPreviewMaxWords);
+
         return new StickyNoteItemViewModel
         {
             Id = note.Id,
@@ -213,33 +219,22 @@ public partial class NotesListViewModel : ObservableObject
             Type = note.Type,
             HasTasks = firstTask is not null,
             IsFavorite = note.IsFavorite,
-            FirstTaskTitle = BuildContentPreview(firstTask?.Title),
+            FirstTaskTitle = firstTaskPreview,
+            FirstTaskTitleFormatting = firstTaskPreviewFormatting,
             FirstTaskCompleted = firstTask?.IsCompleted ?? false,
             RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1),
             TaskTitles = orderedTasks.Select(t => t.Title).ToList(),
-            ContentPreview = BuildContentPreview(note.Content)
+            ContentPreview = contentPreview,
+            ContentPreviewFormatting = contentPreviewFormatting
         };
     }
 
     /// <summary>
-    /// Builds a card-friendly preview of a note's display text (a Todo's first task title, or a
-    /// free-form Note's content): the first few words, with "..." appended when there's more.
-    /// Splits on whitespace (collapsing newlines) so multi-line content still previews as a
-    /// single line.
+    /// Card-friendly preview length for a note's display text (a Todo's first task title, or a
+    /// free-form Note's content): the first few words, with "..." appended when there's more. See
+    /// <see cref="RichTextPreviewBuilder"/> for how this is built alongside remapped formatting.
     /// </summary>
     private const int ContentPreviewMaxWords = 12;
-
-    private static string BuildContentPreview(string? content)
-    {
-        if (string.IsNullOrWhiteSpace(content))
-            return string.Empty;
-
-        var words = content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-        if (words.Length <= ContentPreviewMaxWords)
-            return string.Join(' ', words);
-
-        return string.Join(' ', words.Take(ContentPreviewMaxWords)) + "...";
-    }
 
     /// <summary>
     /// Prompts for confirmation - warning that the action is permanent and cannot be undone -

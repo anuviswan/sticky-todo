@@ -397,14 +397,14 @@
                          last had focus in this window (see RichTextEditorBehavior.FocusedEditor),
                          the same way the Windows 11 Sticky Notes toolbar works - not tied to one
                          fixed control. Disabled (not hidden) until the user has focused an
-                         editable text field, since it never applies to titles. A tinted pill
-                         (not stock ToggleButton chrome, which renders as a plain white box) so it
-                         reads as one grouped control that blends with the note's color. -->
+                         editable text field, since it never applies to titles. The group itself
+                         has no fill (a filled pill around all four icons made the whole group read
+                         as "selected" even at rest) - only the actually-toggled-on button gets a
+                         darker background, everything else stays flush with the footer. -->
                     <Border Grid.Column="3"
-                            Margin="0,0,8,0"
+                            Margin="0"
                             Padding="2"
                             CornerRadius="4"
-                            Background="#14000000"
                             IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor), Converter={StaticResource IsNotNullToBooleanConverter}}">
                         <StackPanel Orientation="Horizontal">
                             <StackPanel.Resources>
@@ -422,10 +422,10 @@
                                                 </Border>
                                                 <ControlTemplate.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="Bg" Property="Background" Value="#1A000000"/>
+                                                        <Setter TargetName="Bg" Property="Background" Value="#14000000"/>
                                                     </Trigger>
                                                     <Trigger Property="IsChecked" Value="True">
-                                                        <Setter TargetName="Bg" Property="Background" Value="#33000000"/>
+                                                        <Setter TargetName="Bg" Property="Background" Value="#4D000000"/>
                                                     </Trigger>
                                                 </ControlTemplate.Triggers>
                                             </ControlTemplate>
@@ -451,13 +451,13 @@
                                           IsChecked="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.IsUnderlineActive), Mode=OneWay}">
                                 <TextBlock Text="U" FontSize="12" TextDecorations="Underline"/>
                             </ToggleButton>
-                            <Border Width="1" Margin="2,3" Background="#26000000"/>
                             <ToggleButton ToolTip="Strikethrough"
                                           Command="{x:Static richTextBehaviors:RichTextEditingCommands.ToggleStrikethrough}"
                                           CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor)}"
                                           IsChecked="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.IsStrikethroughActive), Mode=OneWay}">
                                 <TextBlock Text="S" FontSize="12" TextDecorations="Strikethrough"/>
                             </ToggleButton>
+                            <Border Width="1" Margin="2,3,0,3" Background="#26000000"/>
                         </StackPanel>
                     </Border>
 
@@ -469,7 +469,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Margin="12,0,8,0"
+                            Margin="8,0,8,0"
                             VerticalAlignment="Center"
                             ToolTip="Color palette"
                             Command="{Binding OpenColorPickerCommand}">

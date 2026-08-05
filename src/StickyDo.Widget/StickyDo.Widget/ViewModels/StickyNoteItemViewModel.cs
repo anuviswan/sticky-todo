@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -32,9 +33,17 @@ public partial class StickyNoteItemViewModel : ObservableObject
     [ObservableProperty]
     private string firstTaskTitle = string.Empty;
 
+    /// <summary>Formatting for <see cref="FirstTaskTitle"/>, remapped onto its (possibly truncated) offsets.</summary>
+    [ObservableProperty]
+    private RichTextFormatting? firstTaskTitleFormatting;
+
     /// <summary>Truncated preview of a free-form note's content, for display on its list card.</summary>
     [ObservableProperty]
     private string contentPreview = string.Empty;
+
+    /// <summary>Formatting for <see cref="ContentPreview"/>, remapped onto its (possibly truncated) offsets.</summary>
+    [ObservableProperty]
+    private RichTextFormatting? contentPreviewFormatting;
 
     [ObservableProperty]
     private bool firstTaskCompleted;

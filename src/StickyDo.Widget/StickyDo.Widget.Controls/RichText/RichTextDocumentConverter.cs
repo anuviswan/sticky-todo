@@ -28,7 +28,8 @@ public static class RichTextDocumentConverter
         foreach (var line in text.Split('\n'))
         {
             var paragraph = new Paragraph();
-            AppendLineRuns(paragraph, line, lineStart, formatting);
+            foreach (var run in BuildRunsForLine(line, lineStart, formatting))
+                paragraph.Inlines.Add(run);
             document.Blocks.Add(paragraph);
             lineStart += line.Length + 1; // +1 accounts for the '\n' separator consumed by Split
         }
@@ -36,10 +37,21 @@ public static class RichTextDocumentConverter
         return document;
     }
 
-    private static void AppendLineRuns(Paragraph paragraph, string line, int lineStart, RichTextFormatting? formatting)
+    /// <summary>
+    /// Builds styled Runs for a single line of text (no embedded '\n'), for read-only rendering
+    /// surfaces that don't need a full RichTextBox/FlowDocument - e.g. a notes-list card preview
+    /// TextBlock (see RichTextPreviewBehavior). Shares the same span-to-Run logic BuildDocument
+    /// uses per paragraph; the caller is responsible for pre-computing offsets that are already
+    /// relative to <paramref name="line"/> itself (0-based).
+    /// </summary>
+    public static IReadOnlyList<Run> BuildRuns(string? line, RichTextFormatting? formatting) =>
+        BuildRunsForLine(line ?? string.Empty, 0, formatting);
+
+    private static List<Run> BuildRunsForLine(string line, int lineStart, RichTextFormatting? formatting)
     {
+        var runs = new List<Run>();
         if (line.Length == 0)
-            return;
+            return runs;
 
         var flagsPerChar = new SpanFlags[line.Length];
         if (formatting is not null)
@@ -63,10 +75,12 @@ public static class RichTextDocumentConverter
         {
             if (i == line.Length || !flagsPerChar[i].Equals(flagsPerChar[runStart]))
             {
-                paragraph.Inlines.Add(CreateRun(line.Substring(runStart, i - runStart), flagsPerChar[runStart]));
+                runs.Add(CreateRun(line.Substring(runStart, i - runStart), flagsPerChar[runStart]));
                 runStart = i;
             }
         }
+
+        return runs;
     }
 
     private static Run CreateRun(string text, SpanFlags flags)
