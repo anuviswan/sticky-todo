@@ -125,16 +125,22 @@ The `.msix` is written to `src/StickyDo.Widget/StickyDo.Widget.Package/AppPackag
 
 ### Install locally
 
+AppX/MSIX deployment validates the package's signing certificate against the **Local Machine**
+`TrustedPeople` store, not `Cert:\CurrentUser\Root` — trusting it there (e.g. via
+`Import-PfxCertificate -CertStoreLocation Cert:\CurrentUser\Root`) leaves **Install** disabled in
+App Installer and `Add-AppxPackage` failing with `0x800B0109`/`0x800B010A`. From an elevated
+(Administrator) PowerShell:
+
 ```powershell
-Import-PfxCertificate -FilePath src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package_TemporaryKey.pfx `
-  -CertStoreLocation Cert:\CurrentUser\Root -Password (New-Object System.Security.SecureString)
+certutil.exe -f -p "" -addstore TrustedPeople src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package_TemporaryKey.pfx
 Add-AppxPackage -Path <path-to-generated>.msix
 ```
 
-Trusting the certificate under `Cert:\CurrentUser\Root` triggers an interactive Windows
-confirmation dialog by design — there's no way around that step, and there shouldn't be, since
-it's you granting trust to a certificate. Alternatively, right-click the project in Visual Studio
-and choose **Deploy**, which handles certificate trust for you.
+This still triggers an interactive Windows confirmation dialog by design — there's no way around
+that step, and there shouldn't be, since it's you granting trust to a certificate. Alternatively,
+right-click the project in Visual Studio and choose **Deploy**, which handles certificate trust for
+you, or run the VS-generated `Add-AppDevPackage.ps1` (found alongside a `.msix` produced via
+**Create App Packages...**), which self-elevates and trusts the cert the same way.
 
 Only `x64` is currently configured. `x86`/`arm64` and the final Store-quality icon set
 (`Square44x44Logo`, `Square150x150Logo`, `Wide310x150Logo`, splash screen at all required scales)
