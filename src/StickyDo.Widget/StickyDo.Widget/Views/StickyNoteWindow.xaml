@@ -355,6 +355,28 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
+                    <Grid.Resources>
+                        <!-- Same hover shade as the rich text toolbar's checked-state background
+                             (#4D000000, see the ToggleButton style above) - the default WPF Button
+                             hover chrome read as too bright against the note's pastel background. -->
+                        <Style x:Key="FooterIconButtonStyle" TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="3">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bg" Property="Background" Value="#4D000000"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Grid.Resources>
+
                     <!-- Save Status Icon: reflects whether the latest edits have been persisted.
                          Non-interactive (plain TextBlock, no Command) - informational only. -->
                     <TextBlock Grid.Column="0"
@@ -472,6 +494,7 @@
                             Margin="8,0,8,0"
                             VerticalAlignment="Center"
                             ToolTip="Color palette"
+                            Style="{StaticResource FooterIconButtonStyle}"
                             Command="{Binding OpenColorPickerCommand}">
                         <TextBlock Text="🎨" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                     </Button>
@@ -486,6 +509,7 @@
                             Cursor="Hand"
                             VerticalAlignment="Center"
                             ToolTip="More options"
+                            Style="{StaticResource FooterIconButtonStyle}"
                             Command="{Binding OpenMoreOptionsCommand}">
                         <TextBlock Text="⋯" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#000000"/>
                     </Button>

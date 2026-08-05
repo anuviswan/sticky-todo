@@ -151,6 +151,15 @@
   <data name="Settings_LaunchAtStartup_Description" xml:space="preserve">
     <value>Automatically open StickyDo when you sign in to Windows.</value>
   </data>
+  <data name="Settings_LaunchAtStartup_RestrictedTitle" xml:space="preserve">
+    <value>Can't change startup setting</value>
+  </data>
+  <data name="Settings_LaunchAtStartup_DisabledByPolicyMessage" xml:space="preserve">
+    <value>Your organization's policy prevents StickyDo from launching at startup.</value>
+  </data>
+  <data name="Settings_LaunchAtStartup_DisabledMessage" xml:space="preserve">
+    <value>Windows couldn't update the startup setting. Check Settings &gt; Apps &gt; Startup and try again.</value>
+  </data>
   <data name="Settings_DefaultNoteColor_Title" xml:space="preserve">
     <value>Default note color</value>
   </data>

@@ -24,6 +24,7 @@ public class SettingsViewModelTests
     private FileBasedRepository _noteRepository = null!;
     private WeakReferenceMessenger _messenger = null!;
     private FakeUrlLauncherService _urlLauncherService = null!;
+    private FakeStartupTaskService _startupTaskService = null!;
     private SettingsViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -38,6 +39,7 @@ public class SettingsViewModelTests
         _noteRepository = new FileBasedRepository(_storageLocationProvider);
         _messenger = new WeakReferenceMessenger();
         _urlLauncherService = new FakeUrlLauncherService();
+        _startupTaskService = new FakeStartupTaskService();
         _viewModel = new SettingsViewModel(
             _repository,
             _backupService,
@@ -46,7 +48,8 @@ public class SettingsViewModelTests
             _storageLocationProvider,
             _noteRepository,
             _messenger,
-            _urlLauncherService);
+            _urlLauncherService,
+            _startupTaskService);
     }
 
     [TestCleanup]
@@ -90,10 +93,11 @@ public class SettingsViewModelTests
     }
 
     [TestMethod]
-    public async Task InitializeAsync_PopulatesPropertiesFromRepository_WithoutSaving()
+    public async Task InitializeAsync_ReflectsActualStartupState_OverridingPersistedValue()
     {
         var color = ColorPalette.Colors[2];
-        _repository.StoredSettings = new AppSettings { LaunchAtStartup = true, DefaultNoteColor = color };
+        _repository.StoredSettings = new AppSettings { LaunchAtStartup = false, DefaultNoteColor = color };
+        _startupTaskService.StatusToReturn = StartupTaskStatus.Enabled;
 
         await _viewModel.InitializeAsync();
 
@@ -103,12 +107,75 @@ public class SettingsViewModelTests
     }
 
     [TestMethod]
-    public void ChangingLaunchAtStartup_SavesSettingsAutomatically()
+    public async Task InitializeAsync_WhenStartupServiceQueryFails_FallsBackToPersistedValue()
+    {
+        _repository.StoredSettings = new AppSettings { LaunchAtStartup = true };
+        _startupTaskService.StatusToReturn = StartupTaskStatus.Failed;
+
+        await _viewModel.InitializeAsync();
+
+        Assert.IsTrue(_viewModel.LaunchAtStartup);
+        Assert.AreEqual(0, _repository.SaveCallCount);
+    }
+
+    [TestMethod]
+    public async Task RefreshStartupStateAsync_UpdatesToggle_WithoutSaving()
+    {
+        _startupTaskService.StatusToReturn = StartupTaskStatus.Enabled;
+
+        await _viewModel.RefreshStartupStateAsync();
+
+        Assert.IsTrue(_viewModel.LaunchAtStartup);
+        Assert.AreEqual(0, _repository.SaveCallCount);
+    }
+
+    [TestMethod]
+    public void ChangingLaunchAtStartupToTrue_RegistersStartupTaskAndSaves()
     {
         _viewModel.LaunchAtStartup = true;
 
+        Assert.AreEqual(1, _startupTaskService.EnableCallCount);
+        Assert.IsTrue(_viewModel.LaunchAtStartup);
         Assert.AreEqual(1, _repository.SaveCallCount);
         Assert.IsTrue(_repository.StoredSettings!.LaunchAtStartup);
+    }
+
+    [TestMethod]
+    public void ChangingLaunchAtStartupToFalse_UnregistersStartupTaskAndSaves()
+    {
+        _viewModel.LaunchAtStartup = true;
+
+        _viewModel.LaunchAtStartup = false;
+
+        Assert.AreEqual(1, _startupTaskService.DisableCallCount);
+        Assert.AreEqual(2, _repository.SaveCallCount);
+        Assert.IsFalse(_repository.StoredSettings!.LaunchAtStartup);
+    }
+
+    [TestMethod]
+    public void ChangingLaunchAtStartupToTrue_WhenPolicyDisables_RevertsToggleAndShowsWarning()
+    {
+        _startupTaskService.EnableResult = StartupTaskStatus.DisabledByPolicy;
+
+        _viewModel.LaunchAtStartup = true;
+
+        Assert.IsFalse(_viewModel.LaunchAtStartup);
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Warning, _dialogService.LastIcon);
+        Assert.AreEqual(0, _repository.SaveCallCount);
+    }
+
+    [TestMethod]
+    public void ChangingLaunchAtStartupToTrue_WhenServiceThrows_RevertsToggleAndShowsWarning()
+    {
+        _startupTaskService.EnableException = new InvalidOperationException("boom");
+
+        _viewModel.LaunchAtStartup = true;
+
+        Assert.IsFalse(_viewModel.LaunchAtStartup);
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Warning, _dialogService.LastIcon);
+        Assert.AreEqual(0, _repository.SaveCallCount);
     }
 
     [TestMethod]
@@ -340,5 +407,31 @@ public class SettingsViewModelTests
         public string? LastUrl { get; private set; }
 
         public void OpenUrl(string url) => LastUrl = url;
+    }
+
+    private sealed class FakeStartupTaskService : IStartupTaskService
+    {
+        public StartupTaskStatus StatusToReturn { get; set; } = StartupTaskStatus.Disabled;
+        public StartupTaskStatus EnableResult { get; set; } = StartupTaskStatus.Enabled;
+        public Exception? EnableException { get; set; }
+        public Exception? DisableException { get; set; }
+        public int EnableCallCount { get; private set; }
+        public int DisableCallCount { get; private set; }
+
+        public Task<StartupTaskStatus> GetStatusAsync() => Task.FromResult(StatusToReturn);
+
+        public Task<StartupTaskStatus> EnableAsync()
+        {
+            EnableCallCount++;
+            return EnableException is not null
+                ? throw EnableException
+                : Task.FromResult(EnableResult);
+        }
+
+        public Task DisableAsync()
+        {
+            DisableCallCount++;
+            return DisableException is not null ? throw DisableException : Task.CompletedTask;
+        }
     }
 }

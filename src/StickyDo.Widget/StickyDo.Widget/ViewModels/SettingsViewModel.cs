@@ -18,11 +18,12 @@ namespace StickyDo.Widget.ViewModels;
 
 /// <summary>
 /// ViewModel for the Settings page shown within the main window's content area.
-/// <see cref="LaunchAtStartup"/> and <see cref="SelectedDefaultColor"/> are automatically
-/// persisted via <see cref="ISettingsRepository"/> on every change. <see cref="SelectedDefaultColor"/>
-/// is applied to every newly created note (see <c>NotesListViewModel.CreateNoteAsync</c>); the real
-/// behavior behind <see cref="LaunchAtStartup"/> (Windows startup registration) and update checks
-/// is delivered by separate tickets.
+/// <see cref="LaunchAtStartup"/> reflects the real Windows startup registration (queried via
+/// <see cref="IStartupTaskService"/> on load and whenever the Settings page is opened) and changing
+/// it registers/unregisters the app accordingly, in addition to persisting the last-known intent via
+/// <see cref="ISettingsRepository"/> as a fallback for when the OS state can't be queried.
+/// <see cref="SelectedDefaultColor"/> is likewise auto-persisted and applied to every newly created
+/// note (see <c>NotesListViewModel.CreateNoteAsync</c>); update checks are delivered by a separate ticket.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
@@ -37,6 +38,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly FileBasedRepository _noteRepository;
     private readonly IMessenger _messenger;
     private readonly IUrlLauncherService _urlLauncherService;
+    private readonly IStartupTaskService _startupTaskService;
     private bool _isLoading;
 
     [ObservableProperty]
@@ -72,7 +74,8 @@ public partial class SettingsViewModel : ObservableObject
         IStorageLocationProvider storageLocationProvider,
         FileBasedRepository noteRepository,
         IMessenger messenger,
-        IUrlLauncherService urlLauncherService)
+        IUrlLauncherService urlLauncherService,
+        IStartupTaskService startupTaskService)
     {
         ArgumentNullException.ThrowIfNull(settingsRepository);
         ArgumentNullException.ThrowIfNull(backupService);
@@ -82,6 +85,7 @@ public partial class SettingsViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(noteRepository);
         ArgumentNullException.ThrowIfNull(messenger);
         ArgumentNullException.ThrowIfNull(urlLauncherService);
+        ArgumentNullException.ThrowIfNull(startupTaskService);
 
         _settingsRepository = settingsRepository;
         _backupService = backupService;
@@ -91,6 +95,7 @@ public partial class SettingsViewModel : ObservableObject
         _noteRepository = noteRepository;
         _messenger = messenger;
         _urlLauncherService = urlLauncherService;
+        _startupTaskService = startupTaskService;
     }
 
     /// <summary>
@@ -110,12 +115,38 @@ public partial class SettingsViewModel : ObservableObject
         {
             _isLoading = false;
         }
+
+        await RefreshStartupStateAsync();
+    }
+
+    /// <summary>
+    /// Re-queries the real Windows startup registration and updates <see cref="LaunchAtStartup"/>
+    /// to match, without persisting anything. Called on load and whenever the Settings page is
+    /// opened, since the registration can change out-of-band (e.g. via Windows Settings > Apps >
+    /// Startup). If the query fails (see <see cref="StartupTaskStatus.Failed"/> - e.g. no package
+    /// identity when running unpackaged), the currently displayed value is left as-is.
+    /// </summary>
+    public async Task RefreshStartupStateAsync()
+    {
+        var status = await _startupTaskService.GetStatusAsync();
+        if (status == StartupTaskStatus.Failed)
+            return;
+
+        _isLoading = true;
+        try
+        {
+            LaunchAtStartup = status == StartupTaskStatus.Enabled;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     partial void OnLaunchAtStartupChanged(bool value)
     {
         if (!_isLoading)
-            _ = SaveAsync();
+            _ = ApplyStartupRegistrationAsync(value);
     }
 
     partial void OnSelectedDefaultColorChanged(uint value)
@@ -123,6 +154,62 @@ public partial class SettingsViewModel : ObservableObject
         if (!_isLoading)
             _ = SaveAsync();
     }
+
+    /// <summary>
+    /// Registers or unregisters the app's Windows startup task to match <paramref name="enable"/>.
+    /// If Windows denies or restricts the request (or the call fails outright), the toggle is
+    /// reverted to its previous value and the user is informed via <see cref="IDialogService"/>,
+    /// rather than persisting a state that doesn't reflect reality.
+    /// </summary>
+    private async Task ApplyStartupRegistrationAsync(bool enable)
+    {
+        try
+        {
+            if (enable)
+            {
+                var result = await _startupTaskService.EnableAsync();
+                if (result != StartupTaskStatus.Enabled)
+                {
+                    RevertLaunchAtStartup(false);
+                    await ShowStartupRestrictedMessageAsync(result);
+                    return;
+                }
+            }
+            else
+            {
+                await _startupTaskService.DisableAsync();
+            }
+
+            await SaveAsync();
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ApplyStartupRegistrationAsync));
+            RevertLaunchAtStartup(!enable);
+            await ShowStartupRestrictedMessageAsync(StartupTaskStatus.Failed);
+        }
+    }
+
+    private void RevertLaunchAtStartup(bool value)
+    {
+        _isLoading = true;
+        try
+        {
+            LaunchAtStartup = value;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private Task ShowStartupRestrictedMessageAsync(StartupTaskStatus status) =>
+        _dialogService.ShowMessageAsync(
+            Resources.Resources.Settings_LaunchAtStartup_RestrictedTitle,
+            status == StartupTaskStatus.DisabledByPolicy
+                ? Resources.Resources.Settings_LaunchAtStartup_DisabledByPolicyMessage
+                : Resources.Resources.Settings_LaunchAtStartup_DisabledMessage,
+            MessageBoxImage.Warning);
 
     /// <summary>
     /// Persists the current settings snapshot to disk. Failures are logged rather than

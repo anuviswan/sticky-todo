@@ -44,6 +44,9 @@ public static class Resources
     public static string Settings_Section_DataManagement => Get(nameof(Settings_Section_DataManagement));
     public static string Settings_LaunchAtStartup_Title => Get(nameof(Settings_LaunchAtStartup_Title));
     public static string Settings_LaunchAtStartup_Description => Get(nameof(Settings_LaunchAtStartup_Description));
+    public static string Settings_LaunchAtStartup_RestrictedTitle => Get(nameof(Settings_LaunchAtStartup_RestrictedTitle));
+    public static string Settings_LaunchAtStartup_DisabledByPolicyMessage => Get(nameof(Settings_LaunchAtStartup_DisabledByPolicyMessage));
+    public static string Settings_LaunchAtStartup_DisabledMessage => Get(nameof(Settings_LaunchAtStartup_DisabledMessage));
     public static string Settings_DefaultNoteColor_Title => Get(nameof(Settings_DefaultNoteColor_Title));
     public static string Settings_DefaultNoteColor_Description => Get(nameof(Settings_DefaultNoteColor_Description));
     public static string Settings_ImportNotes_Title => Get(nameof(Settings_ImportNotes_Title));
