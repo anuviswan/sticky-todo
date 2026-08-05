@@ -11,4 +11,12 @@
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Needed for RichTextFormatting/RichTextSpan (see RichText/RichTextDocumentConverter.cs):
+         the rich-text editing behavior is shared between the Note content editor (StickyDo.Widget)
+         and the Todo task row editor (this project), so it lives here, the common project both
+         already depend on. -->
+    <ProjectReference Include="../../StickyDo.Domain/StickyDo.Domain.csproj"/>
+  </ItemGroup>
+
 </Project>

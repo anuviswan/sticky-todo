@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Constants;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Services;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
@@ -52,6 +53,9 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private string content = string.Empty;
+
+    [ObservableProperty]
+    private RichTextFormatting? contentFormatting;
 
     [ObservableProperty]
     private ObservableCollection<StickyNoteTaskItemViewModel> tasks = new();
@@ -116,6 +120,16 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         if (_currentNote != null)
         {
             _currentNote.Content = value;
+            _hasUnsavedChanges = true;
+            OnEditingStarted();
+        }
+    }
+
+    partial void OnContentFormattingChanged(RichTextFormatting? value)
+    {
+        if (_currentNote != null)
+        {
+            _currentNote.ContentFormatting = value;
             _hasUnsavedChanges = true;
             OnEditingStarted();
         }
@@ -216,6 +230,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             if (Type == NoteType.Note)
             {
                 Content = _currentNote.Content ?? string.Empty;
+                ContentFormatting = _currentNote.ContentFormatting;
             }
             else
             {
@@ -230,6 +245,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                         {
                             Id = newTask.Id,
                             Title = newTask.Title,
+                            TitleFormatting = newTask.TitleFormatting,
                             IsCompleted = newTask.IsCompleted,
                             Order = newTask.Order,
                             CreatedAt = newTask.CreatedAt,
@@ -247,6 +263,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                         {
                             Id = task.Id,
                             Title = task.Title,
+                            TitleFormatting = task.TitleFormatting,
                             IsCompleted = task.IsCompleted,
                             Order = task.Order,
                             CreatedAt = task.CreatedAt,
@@ -288,6 +305,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 {
                     Id = newTask.Id,
                     Title = newTask.Title,
+                    TitleFormatting = newTask.TitleFormatting,
                     IsCompleted = newTask.IsCompleted,
                     Order = newTask.Order,
                     CreatedAt = newTask.CreatedAt,
@@ -310,16 +328,16 @@ public partial class StickyNoteWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Updates an existing task (completion status or title).
+    /// Updates an existing task (completion status, title, or title formatting).
     /// </summary>
-    public async Task UpdateTaskAsync(Guid taskId, string title, bool isCompleted)
+    public async Task UpdateTaskAsync(Guid taskId, string title, bool isCompleted, RichTextFormatting? titleFormatting)
     {
         if (_currentNote is null)
             return;
 
         try
         {
-            await _stickyNoteTaskService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted);
+            await _stickyNoteTaskService.UpdateTaskAsync(_currentNote.Id, taskId, title, isCompleted, titleFormatting);
             _hasUnsavedChanges = true;
             OnEditingStarted();
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));
@@ -374,7 +392,14 @@ public partial class StickyNoteWindowViewModel : ObservableObject
                 _currentNote.Id,
                 _currentNote.Title,
                 _currentNote.Status,
-                content: _currentNote.Content);
+                content: _currentNote.Content,
+                contentFormatting: _currentNote.ContentFormatting);
+
+            // UpdateNoteAsync only marks the note dirty in memory - force the actual disk write
+            // now instead of waiting for the next autosave tick, which may already have stopped
+            // (the idle timer turns it off after a few seconds of inactivity) by the time this
+            // runs, e.g. right before the window closes.
+            await _persistenceService.SaveAllDirtyNotesAsync();
 
             _hasUnsavedChanges = false;
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Updated));

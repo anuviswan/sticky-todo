@@ -1,6 +1,7 @@
 namespace StickyDo.Domain.Services;
 
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
 
 /// <summary>
@@ -60,9 +61,10 @@ public class StickyNoteTaskService
     }
 
     /// <summary>
-    /// Updates an existing task's completion status or title.
+    /// Updates an existing task's completion status or title. <paramref name="titleFormatting"/>
+    /// travels together with <paramref name="title"/> - both come from the same editing surface.
     /// </summary>
-    public async Task UpdateTaskAsync(Guid noteId, Guid taskId, string title, bool isCompleted)
+    public async Task UpdateTaskAsync(Guid noteId, Guid taskId, string title, bool isCompleted, RichTextFormatting? titleFormatting = null)
     {
         if (noteId == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(noteId));
@@ -78,6 +80,7 @@ public class StickyNoteTaskService
             throw new InvalidOperationException($"Task with ID {taskId} not found.");
 
         task.Title = title.Trim();
+        task.TitleFormatting = titleFormatting;
         task.IsCompleted = isCompleted;
         task.UpdatedAt = DateTime.UtcNow;
 
@@ -103,8 +106,10 @@ public class StickyNoteTaskService
     /// Todo -> Note joins each task's title into a line of free-form text (dropping the
     /// checkbox structure); Note -> Todo splits the text into lines and creates one unchecked
     /// task per non-empty line. Only the representation matching the new type is kept - the
-    /// other one is cleared, since a note only ever displays one of them at a time. Identity
-    /// and other metadata (Id, color, favourite, pinned, etc.) are untouched.
+    /// other one is cleared, since a note only ever displays one of them at a time. Rich-text
+    /// formatting is dropped in both directions, since per-task formatting can't be re-expressed
+    /// as offsets into joined text (and vice versa). Identity and other metadata (Id, color,
+    /// favourite, pinned, etc.) are untouched.
     /// </summary>
     public async Task<StickyNote> ConvertNoteTypeAsync(Guid noteId, NoteType targetType)
     {
@@ -121,6 +126,9 @@ public class StickyNoteTaskService
             {
                 var lines = note.Tasks.OrderBy(t => t.Order).Select(t => t.Title);
                 note.Content = string.Join(Environment.NewLine, lines);
+                // Per-task formatting can't be meaningfully re-expressed as offsets into the
+                // joined text, so it's intentionally dropped rather than carried over.
+                note.ContentFormatting = null;
 
                 foreach (var task in note.Tasks.OrderBy(t => t.Order).ToList())
                     await _taskRepository.DeleteAsync(noteId, task.Id);
@@ -149,7 +157,10 @@ public class StickyNoteTaskService
                     await _taskRepository.CreateAsync(noteId, task);
                 }
 
+                // The note's own formatting doesn't map onto any single new task, so it's
+                // intentionally dropped rather than carried over (new tasks are created plain).
                 note.Content = null;
+                note.ContentFormatting = null;
             }
 
             note.Type = targetType;

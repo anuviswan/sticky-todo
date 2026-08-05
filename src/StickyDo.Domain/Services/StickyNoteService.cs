@@ -1,6 +1,7 @@
 namespace StickyDo.Domain.Services;
 
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
 
 /// <summary>
@@ -63,9 +64,11 @@ public class StickyNoteService
     /// <summary>
     /// Updates an existing sticky note. <paramref name="content"/> is only applied when
     /// non-null, so callers that don't touch the free-form body (e.g. a color change) don't
-    /// accidentally clear it.
+    /// accidentally clear it. <paramref name="contentFormatting"/> always travels together
+    /// with <paramref name="content"/> - it comes from the same editing surface and is applied
+    /// (including clearing it to null) only when content is also being updated.
     /// </summary>
-    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status, uint? color = null, string? content = null)
+    public async Task UpdateNoteAsync(Guid id, string title, StickyNoteStatus status, uint? color = null, string? content = null, RichTextFormatting? contentFormatting = null)
     {
         if (id == Guid.Empty)
             throw new ArgumentException("Note ID cannot be empty.", nameof(id));
@@ -85,7 +88,10 @@ public class StickyNoteService
             note.ColorArgb = color.Value;
 
         if (content is not null)
+        {
             note.Content = content;
+            note.ContentFormatting = contentFormatting;
+        }
 
         await _noteRepository.UpdateAsync(note);
     }

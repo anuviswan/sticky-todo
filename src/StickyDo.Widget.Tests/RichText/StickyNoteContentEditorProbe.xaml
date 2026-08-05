@@ -1,0 +1,24 @@
+<Grid x:Class="StickyDo.Widget.Tests.RichText.StickyNoteContentEditorProbe"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:richTextBehaviors="clr-namespace:StickyDo.Widget.Controls.Behaviors;assembly=StickyDo.Widget.Controls">
+    <TextBlock x:Name="Placeholder" Text="Start typing your note..." IsHitTestVisible="False">
+        <TextBlock.Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="Visibility" Value="Collapsed"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Content}" Value="">
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Content}" Value="{x:Null}">
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </TextBlock.Style>
+    </TextBlock>
+    <RichTextBox x:Name="ContentRichTextBox"
+                 richTextBehaviors:RichTextEditorBehavior.PlainText="{Binding Content, Mode=TwoWay}"
+                 richTextBehaviors:RichTextEditorBehavior.Formatting="{Binding ContentFormatting, Mode=TwoWay}"
+                 AcceptsReturn="True"/>
+</Grid>

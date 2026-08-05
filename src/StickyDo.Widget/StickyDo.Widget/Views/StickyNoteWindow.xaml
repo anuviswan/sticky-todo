@@ -6,6 +6,8 @@
         xmlns:local="clr-namespace:StickyDo.Widget.Views"
         xmlns:controls="clr-namespace:StickyDo.Widget;assembly=StickyDo.Widget.Controls"
         xmlns:behaviors="clr-namespace:StickyDo.Widget.Behaviors"
+        xmlns:richTextBehaviors="clr-namespace:StickyDo.Widget.Controls.Behaviors;assembly=StickyDo.Widget.Controls"
+        xmlns:documents="clr-namespace:System.Windows.Documents;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Sticky Note" Height="400" Width="320" MinHeight="200" MinWidth="250"
         Background="Transparent"
@@ -317,16 +319,27 @@
                     </TextBlock.Style>
                 </TextBlock>
 
-                <TextBox Text="{Binding Content, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         FontSize="13"
-                         Foreground="#333333"
-                         Background="Transparent"
-                         BorderThickness="0"
-                         Padding="12,12,12,8"
-                         AcceptsReturn="True"
-                         TextWrapping="Wrap"
-                         VerticalScrollBarVisibility="Auto"
-                         Cursor="IBeam"/>
+                <RichTextBox x:Name="ContentRichTextBox"
+                             richTextBehaviors:RichTextEditorBehavior.PlainText="{Binding Content, Mode=TwoWay}"
+                             richTextBehaviors:RichTextEditorBehavior.Formatting="{Binding ContentFormatting, Mode=TwoWay}"
+                             FontSize="13"
+                             Foreground="#333333"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             Padding="12,12,12,8"
+                             AcceptsReturn="True"
+                             AcceptsTab="False"
+                             VerticalScrollBarVisibility="Auto"
+                             Cursor="IBeam">
+                    <RichTextBox.Resources>
+                        <!-- Match the tight line spacing of the plain TextBox this replaces -
+                             RichTextBox's default Paragraph margin would otherwise add visible
+                             gaps between lines. -->
+                        <Style TargetType="Paragraph">
+                            <Setter Property="Margin" Value="0"/>
+                        </Style>
+                    </RichTextBox.Resources>
+                </RichTextBox>
             </Grid>
 
             <!-- Status Bar -->
@@ -337,6 +350,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
@@ -379,15 +393,83 @@
                         </Grid>
                     </Grid>
 
+                    <!-- Rich Text Formatting Toolbar: acts on whichever content/task RichTextBox
+                         last had focus in this window (see RichTextEditorBehavior.FocusedEditor),
+                         the same way the Windows 11 Sticky Notes toolbar works - not tied to one
+                         fixed control. Disabled (not hidden) until the user has focused an
+                         editable text field, since it never applies to titles. The group itself
+                         has no fill (a filled pill around all four icons made the whole group read
+                         as "selected" even at rest) - only the actually-toggled-on button gets a
+                         darker background, everything else stays flush with the footer. -->
+                    <Border Grid.Column="3"
+                            Margin="0"
+                            Padding="2"
+                            CornerRadius="4"
+                            IsEnabled="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor), Converter={StaticResource IsNotNullToBooleanConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Resources>
+                                <Style TargetType="ToggleButton">
+                                    <Setter Property="Width" Value="20"/>
+                                    <Setter Property="Height" Value="18"/>
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Setter Property="Foreground" Value="#333333"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ToggleButton">
+                                                <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="3">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bg" Property="Background" Value="#14000000"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsChecked" Value="True">
+                                                        <Setter TargetName="Bg" Property="Background" Value="#4D000000"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </StackPanel.Resources>
+                            <ToggleButton ToolTip="Bold"
+                                          Command="{x:Static documents:EditingCommands.ToggleBold}"
+                                          CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor)}"
+                                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.IsBoldActive), Mode=OneWay}">
+                                <TextBlock Text="B" FontSize="12" FontWeight="Bold"/>
+                            </ToggleButton>
+                            <ToggleButton ToolTip="Italic"
+                                          Command="{x:Static documents:EditingCommands.ToggleItalic}"
+                                          CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor)}"
+                                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.IsItalicActive), Mode=OneWay}">
+                                <TextBlock Text="I" FontSize="12" FontStyle="Italic"/>
+                            </ToggleButton>
+                            <ToggleButton ToolTip="Underline"
+                                          Command="{x:Static documents:EditingCommands.ToggleUnderline}"
+                                          CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor)}"
+                                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.IsUnderlineActive), Mode=OneWay}">
+                                <TextBlock Text="U" FontSize="12" TextDecorations="Underline"/>
+                            </ToggleButton>
+                            <ToggleButton ToolTip="Strikethrough"
+                                          Command="{x:Static richTextBehaviors:RichTextEditingCommands.ToggleStrikethrough}"
+                                          CommandTarget="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.FocusedEditor)}"
+                                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=(richTextBehaviors:RichTextEditorBehavior.IsStrikethroughActive), Mode=OneWay}">
+                                <TextBlock Text="S" FontSize="12" TextDecorations="Strikethrough"/>
+                            </ToggleButton>
+                            <Border Width="1" Margin="2,3,0,3" Background="#26000000"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Color Palette Icon -->
                     <Button x:Name="PaletteButton"
-                            Grid.Column="3"
+                            Grid.Column="4"
                             Width="20"
                             Height="20"
                             Background="Transparent"
                             BorderThickness="0"
                             Cursor="Hand"
-                            Margin="12,0,8,0"
+                            Margin="8,0,8,0"
                             VerticalAlignment="Center"
                             ToolTip="Color palette"
                             Command="{Binding OpenColorPickerCommand}">
@@ -396,7 +478,7 @@
 
                     <!-- Menu Icon -->
                     <Button x:Name="MenuButton"
-                            Grid.Column="4"
+                            Grid.Column="5"
                             Width="20"
                             Height="20"
                             Background="Transparent"

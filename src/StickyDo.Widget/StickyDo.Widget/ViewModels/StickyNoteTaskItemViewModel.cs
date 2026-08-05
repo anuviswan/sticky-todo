@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using StickyDo.Domain.Models.RichText;
 
 namespace StickyDo.Widget.ViewModels;
 
@@ -8,7 +9,7 @@ namespace StickyDo.Widget.ViewModels;
 /// </summary>
 public partial class StickyNoteTaskItemViewModel : ObservableObject
 {
-    private Func<Guid, string, bool, Task>? _onUpdateTask;
+    private Func<Guid, string, bool, RichTextFormatting?, Task>? _onUpdateTask;
     private Func<Guid, Task>? _onDeleteTask;
     private Action? _onSubmit;
 
@@ -17,6 +18,9 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
 
     [ObservableProperty]
     private string title = string.Empty;
+
+    [ObservableProperty]
+    private RichTextFormatting? titleFormatting;
 
     [ObservableProperty]
     private bool isCompleted;
@@ -30,7 +34,7 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
     [ObservableProperty]
     private DateTime updatedAt = DateTime.UtcNow;
 
-    public void SetCallbacks(Func<Guid, string, bool, Task> onUpdateTask, Func<Guid, Task> onDeleteTask, Action onSubmit)
+    public void SetCallbacks(Func<Guid, string, bool, RichTextFormatting?, Task> onUpdateTask, Func<Guid, Task> onDeleteTask, Action onSubmit)
     {
         _onUpdateTask = onUpdateTask;
         _onDeleteTask = onDeleteTask;
@@ -57,6 +61,11 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
         _ = UpdateTaskInParent();
     }
 
+    partial void OnTitleFormattingChanged(RichTextFormatting? value)
+    {
+        _ = UpdateTaskInParent();
+    }
+
     /// <summary>
     /// Command to delete this task (handled by parent ViewModel).
     /// </summary>
@@ -73,7 +82,7 @@ public partial class StickyNoteTaskItemViewModel : ObservableObject
     {
         if (_onUpdateTask != null)
         {
-            await _onUpdateTask(Id, Title, IsCompleted);
+            await _onUpdateTask(Id, Title, IsCompleted, TitleFormatting);
         }
     }
 }

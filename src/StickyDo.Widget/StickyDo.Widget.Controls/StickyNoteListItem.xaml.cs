@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using StickyDo.Domain.Models.RichText;
 
 namespace StickyDo.Widget.Controls;
 
@@ -95,6 +96,17 @@ public partial class StickyNoteListItem : UserControl
         DependencyProperty.Register("FirstTaskTitle", typeof(string), typeof(StickyNoteListItem),
             new PropertyMetadata(string.Empty));
 
+    /// <summary>Gets or sets the formatting for <see cref="FirstTaskTitle"/>.</summary>
+    public RichTextFormatting? FirstTaskTitleFormatting
+    {
+        get => (RichTextFormatting?)GetValue(FirstTaskTitleFormattingProperty);
+        set => SetValue(FirstTaskTitleFormattingProperty, value);
+    }
+
+    public static readonly DependencyProperty FirstTaskTitleFormattingProperty =
+        DependencyProperty.Register("FirstTaskTitleFormatting", typeof(RichTextFormatting), typeof(StickyNoteListItem),
+            new PropertyMetadata(null));
+
     /// <summary>Gets or sets whether the note's first task is completed.</summary>
     public bool FirstTaskCompleted
     {
@@ -116,6 +128,17 @@ public partial class StickyNoteListItem : UserControl
     public static readonly DependencyProperty ContentPreviewProperty =
         DependencyProperty.Register("ContentPreview", typeof(string), typeof(StickyNoteListItem),
             new PropertyMetadata(string.Empty));
+
+    /// <summary>Gets or sets the formatting for <see cref="ContentPreview"/>.</summary>
+    public RichTextFormatting? ContentPreviewFormatting
+    {
+        get => (RichTextFormatting?)GetValue(ContentPreviewFormattingProperty);
+        set => SetValue(ContentPreviewFormattingProperty, value);
+    }
+
+    public static readonly DependencyProperty ContentPreviewFormattingProperty =
+        DependencyProperty.Register("ContentPreviewFormatting", typeof(RichTextFormatting), typeof(StickyNoteListItem),
+            new PropertyMetadata(null));
 
     /// <summary>Gets or sets the number of additional tasks beyond the first.</summary>
     public int RemainingTaskCount

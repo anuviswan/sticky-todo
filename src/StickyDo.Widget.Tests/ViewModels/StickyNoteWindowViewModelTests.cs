@@ -3,6 +3,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
+using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Domain.Storage;
@@ -154,6 +155,81 @@ public class StickyNoteWindowViewModelTests
 
         var persisted = await _service.GetNoteByIdAsync(noteId);
         Assert.AreEqual("Typed some text", persisted!.Content);
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_NoteTypeNote_RestoresContentFormatting()
+    {
+        var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
+        var formatting = new RichTextFormatting { Spans = [new RichTextSpan { Start = 0, Length = 3, Bold = true }] };
+        await _service.UpdateNoteAsync(noteId, "Journal Entry", StickyNoteStatus.Active, content: "Existing body text", contentFormatting: formatting);
+
+        await _viewModel.LoadNoteAsync(noteId);
+
+        Assert.IsNotNull(_viewModel.ContentFormatting);
+        Assert.AreEqual(1, _viewModel.ContentFormatting.Spans.Count);
+        Assert.IsTrue(_viewModel.ContentFormatting.Spans[0] is { Start: 0, Length: 3, Bold: true });
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_LegacyNoteWithNullContentFormatting_LoadsWithoutError()
+    {
+        var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
+        await _service.UpdateNoteAsync(noteId, "Journal Entry", StickyNoteStatus.Active, content: "Plain legacy text");
+
+        await _viewModel.LoadNoteAsync(noteId);
+
+        Assert.AreEqual("Plain legacy text", _viewModel.Content);
+        Assert.IsNull(_viewModel.ContentFormatting);
+    }
+
+    [TestMethod]
+    public async Task SaveAsync_PersistsContentFormatting()
+    {
+        var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
+        await _viewModel.LoadNoteAsync(noteId);
+
+        _viewModel.Content = "Typed some text";
+        _viewModel.ContentFormatting = new RichTextFormatting { Spans = [new RichTextSpan { Start = 0, Length = 5, Italic = true }] };
+        await _viewModel.SaveCommand.ExecuteAsync(null);
+
+        var persisted = await _service.GetNoteByIdAsync(noteId);
+        Assert.IsNotNull(persisted!.ContentFormatting);
+        Assert.AreEqual(1, persisted.ContentFormatting.Spans.Count);
+        Assert.IsTrue(persisted.ContentFormatting.Spans[0] is { Start: 0, Length: 5, Italic: true });
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_NoteTypeTodo_RestoresTaskTitleFormatting()
+    {
+        var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
+        var taskId = await _taskService.CreateTaskAsync(noteId, "Buy milk");
+        var formatting = new RichTextFormatting { Spans = [new RichTextSpan { Start = 0, Length = 3, Bold = true }] };
+        await _taskService.UpdateTaskAsync(noteId, taskId, "Buy milk", isCompleted: false, titleFormatting: formatting);
+
+        await _viewModel.LoadNoteAsync(noteId);
+
+        var taskVm = _viewModel.Tasks.Single(t => t.Id == taskId);
+        Assert.IsNotNull(taskVm.TitleFormatting);
+        Assert.AreEqual(1, taskVm.TitleFormatting.Spans.Count);
+        Assert.IsTrue(taskVm.TitleFormatting.Spans[0] is { Start: 0, Length: 3, Bold: true });
+    }
+
+    [TestMethod]
+    public async Task TaskItemViewModel_TitleFormattingChanged_PersistsThroughUpdateCallback()
+    {
+        var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
+        var taskId = await _taskService.CreateTaskAsync(noteId, "Buy milk");
+        await _viewModel.LoadNoteAsync(noteId);
+        var taskVm = _viewModel.Tasks.Single(t => t.Id == taskId);
+
+        taskVm.TitleFormatting = new RichTextFormatting { Spans = [new RichTextSpan { Start = 0, Length = 3, Underline = true }] };
+        await Task.Delay(50); // OnTitleFormattingChanged fires the update fire-and-forget
+
+        var persistedNote = await _service.GetNoteByIdAsync(noteId);
+        var persistedTask = persistedNote!.Tasks.Single(t => t.Id == taskId);
+        Assert.IsNotNull(persistedTask.TitleFormatting);
+        Assert.IsTrue(persistedTask.TitleFormatting.Spans[0] is { Start: 0, Length: 3, Underline: true });
     }
 
     private sealed class FakeDialogService : IDialogService
