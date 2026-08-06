@@ -104,9 +104,10 @@ Run it from the **Actions** tab → **Build MSIX Package** → **Run workflow**,
 `release` branch once it's ready to ship, and supplying a **`version`** input in
 `Major.Minor.Build.Revision` format (e.g. `1.0.0.0`) — the run fails fast if it isn't. That value
 is written into `Package.appxmanifest`'s `Identity/@Version` before packaging, so it becomes the
-version shown for the app in Windows Settings and the Store listing. It skips signing entirely
-(`AppxPackageSigningEnabled=false`) since Microsoft Partner Center signs the package at Store
-submission time — no certificate is needed in CI.
+version shown for the app in Windows Settings and the Store listing, and is also passed as the
+`Version`/`AssemblyVersion`/`FileVersion` MSBuild properties so `StickyDo.Widget.exe`'s own file
+properties match. It skips signing entirely (`AppxPackageSigningEnabled=false`) since Microsoft
+Partner Center signs the package at Store submission time — no certificate is needed in CI.
 
 Each run publishes up to three artifacts, named `StickyDo.Widget.Package-<version>-Release-x64-<suffix>`:
 

@@ -70,11 +70,16 @@ jobs:
         # AppxPackageSigningEnabled=false skips signing entirely, so no code-signing certificate is
         # required (StickyDo.Widget.Package_TemporaryKey.pfx is gitignored and never committed).
         # Microsoft Partner Center signs the package at Store submission time.
+        # Version/AssemblyVersion/FileVersion are global MSBuild properties, so they flow through
+        # to the StickyDo.Widget.csproj project reference and stamp the packaged .exe too.
         run: >
           msbuild "${{ env.WAPPROJ_PATH }}" -t:Restore,Build
           -p:Configuration=${{ env.BUILD_CONFIGURATION }}
           -p:Platform=${{ env.BUILD_PLATFORM }}
           -p:AppxPackageSigningEnabled=false
+          -p:Version=${{ env.PACKAGE_VERSION }}
+          -p:AssemblyVersion=${{ env.PACKAGE_VERSION }}
+          -p:FileVersion=${{ env.PACKAGE_VERSION }}
 
       - name: Upload MSIX package
         # The MSIX package is the primary Store submission artifact, so publication must fail
