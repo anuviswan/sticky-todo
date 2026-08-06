@@ -101,11 +101,14 @@ The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds
 Release MSIX on demand (`workflow_dispatch` only — no automatic push/PR trigger), publishing the
 build outputs as GitHub Actions artifacts for download, validation, and manual Store submission.
 Run it from the **Actions** tab → **Build MSIX Package** → **Run workflow**, selecting the
-`release` branch once it's ready to ship. It skips signing entirely
+`release` branch once it's ready to ship, and supplying a **`version`** input in
+`Major.Minor.Build.Revision` format (e.g. `1.0.0.0`) — the run fails fast if it isn't. That value
+is written into `Package.appxmanifest`'s `Identity/@Version` before packaging, so it becomes the
+version shown for the app in Windows Settings and the Store listing. It skips signing entirely
 (`AppxPackageSigningEnabled=false`) since Microsoft Partner Center signs the package at Store
 submission time — no certificate is needed in CI.
 
-Each run publishes up to three artifacts, named `StickyDo.Widget.Package-Release-x64-<suffix>`:
+Each run publishes up to three artifacts, named `StickyDo.Widget.Package-<version>-Release-x64-<suffix>`:
 
 - **`-MSIX`** — the `.msix` package. Required; the workflow fails if it wasn't produced.
 - **`-Bundle`** — `.msixbundle`/`.appinstaller` files, if the build produced any (a plain,
