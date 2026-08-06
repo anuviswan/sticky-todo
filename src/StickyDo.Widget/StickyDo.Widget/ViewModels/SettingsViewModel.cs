@@ -23,7 +23,8 @@ namespace StickyDo.Widget.ViewModels;
 /// it registers/unregisters the app accordingly, in addition to persisting the last-known intent via
 /// <see cref="ISettingsRepository"/> as a fallback for when the OS state can't be queried.
 /// <see cref="SelectedDefaultColor"/> is likewise auto-persisted and applied to every newly created
-/// note (see <c>NotesListViewModel.CreateNoteAsync</c>); update checks are delivered by a separate ticket.
+/// note (see <c>NotesListViewModel.CreateNoteAsync</c>). <see cref="CheckForUpdatesCommand"/> queries
+/// <see cref="IUpdateService"/> on demand and reports the outcome via <see cref="IDialogService"/>.
 /// </summary>
 public partial class SettingsViewModel : ObservableObject
 {
@@ -39,6 +40,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IMessenger _messenger;
     private readonly IUrlLauncherService _urlLauncherService;
     private readonly IStartupTaskService _startupTaskService;
+    private readonly IUpdateService _updateService;
     private bool _isLoading;
 
     [ObservableProperty]
@@ -59,6 +61,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string copyrightText = string.Format(Resources.Resources.Settings_Copyright, DateTime.Now.Year);
 
+    [ObservableProperty]
+    private bool isCheckingForUpdates;
+
     /// <summary>
     /// Raised when the user requests to leave the Settings page (e.g. via its close button).
     /// The hosting view model swaps the content area back to the notes list, keeping this
@@ -75,7 +80,8 @@ public partial class SettingsViewModel : ObservableObject
         FileBasedRepository noteRepository,
         IMessenger messenger,
         IUrlLauncherService urlLauncherService,
-        IStartupTaskService startupTaskService)
+        IStartupTaskService startupTaskService,
+        IUpdateService updateService)
     {
         ArgumentNullException.ThrowIfNull(settingsRepository);
         ArgumentNullException.ThrowIfNull(backupService);
@@ -86,6 +92,7 @@ public partial class SettingsViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(messenger);
         ArgumentNullException.ThrowIfNull(urlLauncherService);
         ArgumentNullException.ThrowIfNull(startupTaskService);
+        ArgumentNullException.ThrowIfNull(updateService);
 
         _settingsRepository = settingsRepository;
         _backupService = backupService;
@@ -96,6 +103,7 @@ public partial class SettingsViewModel : ObservableObject
         _messenger = messenger;
         _urlLauncherService = urlLauncherService;
         _startupTaskService = startupTaskService;
+        _updateService = updateService;
     }
 
     /// <summary>
@@ -339,6 +347,54 @@ public partial class SettingsViewModel : ObservableObject
                 Resources.Resources.Import_ErrorTitle,
                 string.Format(Resources.Resources.Import_ErrorMessage, ex.Message),
                 MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// Checks whether a newer version of the app is available and reports the outcome via
+    /// <see cref="IDialogService"/>. <see cref="IsCheckingForUpdates"/> guards against re-entrant
+    /// checks while one is already in flight (bound to the button's <c>IsEnabled</c>).
+    /// </summary>
+    [RelayCommand]
+    public async Task CheckForUpdatesAsync()
+    {
+        IsCheckingForUpdates = true;
+        try
+        {
+            var result = await _updateService.CheckForUpdatesAsync();
+            switch (result.Status)
+            {
+                case UpdateCheckStatus.UpToDate:
+                    await _dialogService.ShowMessageAsync(
+                        Resources.Resources.UpdateCheck_UpToDateTitle,
+                        Resources.Resources.UpdateCheck_UpToDateMessage,
+                        MessageBoxImage.Information);
+                    break;
+                case UpdateCheckStatus.UpdateAvailable:
+                    await _dialogService.ShowMessageAsync(
+                        Resources.Resources.UpdateCheck_UpdateAvailableTitle,
+                        string.Format(Resources.Resources.UpdateCheck_UpdateAvailableMessage, result.LatestVersion),
+                        MessageBoxImage.Information);
+                    break;
+                default:
+                    await _dialogService.ShowMessageAsync(
+                        Resources.Resources.UpdateCheck_ErrorTitle,
+                        string.Format(Resources.Resources.UpdateCheck_ErrorMessage, result.ErrorMessage),
+                        MessageBoxImage.Error);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(CheckForUpdatesAsync));
+            await _dialogService.ShowMessageAsync(
+                Resources.Resources.UpdateCheck_ErrorTitle,
+                string.Format(Resources.Resources.UpdateCheck_ErrorMessage, ex.Message),
+                MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsCheckingForUpdates = false;
         }
     }
 

@@ -25,6 +25,7 @@ public class SettingsViewModelTests
     private WeakReferenceMessenger _messenger = null!;
     private FakeUrlLauncherService _urlLauncherService = null!;
     private FakeStartupTaskService _startupTaskService = null!;
+    private FakeUpdateService _updateService = null!;
     private SettingsViewModel _viewModel = null!;
 
     [TestInitialize]
@@ -40,6 +41,7 @@ public class SettingsViewModelTests
         _messenger = new WeakReferenceMessenger();
         _urlLauncherService = new FakeUrlLauncherService();
         _startupTaskService = new FakeStartupTaskService();
+        _updateService = new FakeUpdateService();
         _viewModel = new SettingsViewModel(
             _repository,
             _backupService,
@@ -49,7 +51,8 @@ public class SettingsViewModelTests
             _noteRepository,
             _messenger,
             _urlLauncherService,
-            _startupTaskService);
+            _startupTaskService,
+            _updateService);
     }
 
     [TestCleanup]
@@ -291,6 +294,61 @@ public class SettingsViewModelTests
     }
 
     [TestMethod]
+    public async Task CheckForUpdatesAsync_WhenUpToDate_ShowsInformationMessage()
+    {
+        _updateService.ResultToReturn = new UpdateCheckResult { Status = UpdateCheckStatus.UpToDate };
+
+        await _viewModel.CheckForUpdatesAsync();
+
+        Assert.AreEqual(1, _updateService.CheckCallCount);
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Information, _dialogService.LastIcon);
+        Assert.IsFalse(_viewModel.IsCheckingForUpdates);
+    }
+
+    [TestMethod]
+    public async Task CheckForUpdatesAsync_WhenUpdateAvailable_ShowsInformationMessage()
+    {
+        _updateService.ResultToReturn = new UpdateCheckResult
+        {
+            Status = UpdateCheckStatus.UpdateAvailable,
+            LatestVersion = "1.2.3.0"
+        };
+
+        await _viewModel.CheckForUpdatesAsync();
+
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Information, _dialogService.LastIcon);
+    }
+
+    [TestMethod]
+    public async Task CheckForUpdatesAsync_WhenCheckFails_ShowsErrorMessage()
+    {
+        _updateService.ResultToReturn = new UpdateCheckResult
+        {
+            Status = UpdateCheckStatus.Failed,
+            ErrorMessage = "network unreachable"
+        };
+
+        await _viewModel.CheckForUpdatesAsync();
+
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
+    }
+
+    [TestMethod]
+    public async Task CheckForUpdatesAsync_WhenServiceThrows_ShowsErrorMessageAndResetsBusyFlag()
+    {
+        _updateService.ExceptionToThrow = new InvalidOperationException("boom");
+
+        await _viewModel.CheckForUpdatesAsync();
+
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
+        Assert.IsFalse(_viewModel.IsCheckingForUpdates);
+    }
+
+    [TestMethod]
     public void OpenPrivacyPolicy_OpensPrivacyPolicyUrl()
     {
         _viewModel.OpenPrivacyPolicy();
@@ -432,6 +490,21 @@ public class SettingsViewModelTests
         {
             DisableCallCount++;
             return DisableException is not null ? throw DisableException : Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeUpdateService : IUpdateService
+    {
+        public UpdateCheckResult ResultToReturn { get; set; } = new() { Status = UpdateCheckStatus.UpToDate };
+        public Exception? ExceptionToThrow { get; set; }
+        public int CheckCallCount { get; private set; }
+
+        public Task<UpdateCheckResult> CheckForUpdatesAsync()
+        {
+            CheckCallCount++;
+            return ExceptionToThrow is not null
+                ? throw ExceptionToThrow
+                : Task.FromResult(ResultToReturn);
         }
     }
 }

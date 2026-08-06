@@ -288,7 +288,9 @@
                     </StackPanel>
 
                     <Button Grid.Column="2" Content="{x:Static res:Resources.Settings_CheckForUpdates}"
-                            Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center"/>
+                            Style="{StaticResource SecondaryButtonStyle}" VerticalAlignment="Center"
+                            Command="{Binding CheckForUpdatesCommand}"
+                            IsEnabled="{Binding IsCheckingForUpdates, Converter={StaticResource InverseBooleanConverter}}"/>
                 </Grid>
             </Border>
 
