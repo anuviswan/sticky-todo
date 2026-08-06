@@ -98,10 +98,17 @@ installation with the **Universal Windows Platform development** workload (speci
 "MSIX Packaging Tools"/"Windows Application Packaging Project" component).
 
 The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds an **unsigned**
-Release MSIX on every push/PR to `main` (and on demand via `workflow_dispatch`), uploading it as a
-build artifact for testing. It skips signing entirely (`AppxPackageSigningEnabled=false`) since
-Microsoft Partner Center signs the package at Store submission time — no certificate is needed in
-CI.
+Release MSIX on every push/PR to `main` (and on demand via `workflow_dispatch`), publishing the
+build outputs as GitHub Actions artifacts for download, validation, and manual Store submission.
+It skips signing entirely (`AppxPackageSigningEnabled=false`) since Microsoft Partner Center signs
+the package at Store submission time — no certificate is needed in CI.
+
+Each run publishes up to three artifacts, named `StickyDo.Widget.Package-Release-x64-<suffix>`:
+
+- **`-MSIX`** — the `.msix` package. Required; the workflow fails if it wasn't produced.
+- **`-Bundle`** — `.msixbundle`/`.appinstaller` files, if the build produced any (a plain,
+  non-bundled build normally doesn't).
+- **`-Symbols`** — `.pdb` symbol files copied into the packaging layout, if present.
 
 ### Prerequisites
 

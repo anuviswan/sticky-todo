@@ -53,11 +53,33 @@ jobs:
           -p:AppxPackageSigningEnabled=false
 
       - name: Upload MSIX package
+        # The MSIX package is the primary Store submission artifact, so publication must fail
+        # the workflow if it is missing rather than silently skipping (see #107 AC).
         uses: actions/upload-artifact@v4
         with:
-          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}
-          path: |
-            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
-            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixbundle
+          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-MSIX
+          path: src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
           if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload MSIX bundle and app installer
+        # A plain (non-bundled) Build only produces a loose .msix, so .msixbundle/.appinstaller
+        # files are not always generated - only published when present.
+        uses: actions/upload-artifact@v4
+        with:
+          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Bundle
+          path: |
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixbundle
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.appinstaller
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload symbol files
+        # wapproj copies each referenced project's build output - including PDBs - into the
+        # packaging layout folder at bin/<Platform>/<Configuration>/StickyDo.Widget/.
+        uses: actions/upload-artifact@v4
+        with:
+          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Symbols
+          path: src/StickyDo.Widget/StickyDo.Widget.Package/bin/${{ env.BUILD_PLATFORM }}/${{ env.BUILD_CONFIGURATION }}/StickyDo.Widget/**/*.pdb
+          if-no-files-found: warn
           retention-days: 14
