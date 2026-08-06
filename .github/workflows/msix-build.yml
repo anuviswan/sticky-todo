@@ -1,11 +1,12 @@
 name: Build MSIX Package
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (Major.Minor.Build.Revision, e.g. 1.0.0.0)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -25,6 +26,7 @@ jobs:
 
     env:
       WAPPROJ_PATH: src/StickyDo.Widget/StickyDo.Widget.Package/StickyDo.Widget.Package.wapproj
+      MANIFEST_PATH: src/StickyDo.Widget/StickyDo.Widget.Package/Package.appxmanifest
       BUILD_CONFIGURATION: Release
       BUILD_PLATFORM: x64
 
@@ -40,24 +42,51 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
 
+      - name: Set package version
+        # MSIX identity versions must be exactly Major.Minor.Build.Revision (4 numeric parts);
+        # the manifest is edited directly since classic wapproj packaging has no MSBuild property
+        # for overriding Identity/@Version at build time.
+        shell: pwsh
+        run: |
+          $version = "${{ inputs.version }}"
+          if ($version -notmatch '^\d+\.\d+\.\d+\.\d+$') {
+            Write-Error "Version '$version' is not in the required Major.Minor.Build.Revision format (e.g. 1.0.0.0)."
+            exit 1
+          }
+
+          [xml]$manifest = Get-Content "${{ env.MANIFEST_PATH }}"
+          $ns = New-Object System.Xml.XmlNamespaceManager($manifest.NameTable)
+          $ns.AddNamespace("ns", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
+          $identity = $manifest.SelectSingleNode("//ns:Identity", $ns)
+          $identity.SetAttribute("Version", $version)
+          $manifest.Save("${{ env.MANIFEST_PATH }}")
+
+          Write-Host "Set package version to $version"
+          echo "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
+
       - name: Restore and build unsigned MSIX package
         # StickyDo.Widget.Package.wapproj is a classic Windows Application Packaging Project, so it
         # needs full MSBuild (not dotnet build/restore) - see README.md "MSIX Packaging".
         # AppxPackageSigningEnabled=false skips signing entirely, so no code-signing certificate is
         # required (StickyDo.Widget.Package_TemporaryKey.pfx is gitignored and never committed).
         # Microsoft Partner Center signs the package at Store submission time.
+        # Version/AssemblyVersion/FileVersion are global MSBuild properties, so they flow through
+        # to the StickyDo.Widget.csproj project reference and stamp the packaged .exe too.
         run: >
           msbuild "${{ env.WAPPROJ_PATH }}" -t:Restore,Build
           -p:Configuration=${{ env.BUILD_CONFIGURATION }}
           -p:Platform=${{ env.BUILD_PLATFORM }}
           -p:AppxPackageSigningEnabled=false
+          -p:Version=${{ env.PACKAGE_VERSION }}
+          -p:AssemblyVersion=${{ env.PACKAGE_VERSION }}
+          -p:FileVersion=${{ env.PACKAGE_VERSION }}
 
       - name: Upload MSIX package
         # The MSIX package is the primary Store submission artifact, so publication must fail
         # the workflow if it is missing rather than silently skipping (see #107 AC).
         uses: actions/upload-artifact@v4
         with:
-          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-MSIX
+          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-MSIX
           path: src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
           if-no-files-found: error
           retention-days: 14
@@ -67,7 +96,7 @@ jobs:
         # files are not always generated - only published when present.
         uses: actions/upload-artifact@v4
         with:
-          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Bundle
+          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Bundle
           path: |
             src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixbundle
             src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.appinstaller
@@ -79,7 +108,7 @@ jobs:
         # packaging layout folder at bin/<Platform>/<Configuration>/StickyDo.Widget/.
         uses: actions/upload-artifact@v4
         with:
-          name: StickyDo.Widget.Package-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Symbols
+          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Symbols
           path: src/StickyDo.Widget/StickyDo.Widget.Package/bin/${{ env.BUILD_PLATFORM }}/${{ env.BUILD_CONFIGURATION }}/StickyDo.Widget/**/*.pdb
           if-no-files-found: warn
           retention-days: 14
