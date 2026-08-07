@@ -152,8 +152,10 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Opens a note as a floating sticky note window, e.g. when double-clicked in the list.
+    /// Opens a note as a floating sticky note window, e.g. when double-clicked in the list
+    /// or via the "Open" item in a note card's right-click context menu.
     /// </summary>
+    [RelayCommand]
     public async Task OpenNoteAsync(Guid noteId)
     {
         try
