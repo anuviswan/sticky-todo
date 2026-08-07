@@ -44,7 +44,8 @@ public class MainWindowViewModelTests
             _repository,
             new WeakReferenceMessenger(),
             new FakeUrlLauncherService(),
-            _startupTaskService);
+            _startupTaskService,
+            new FakeUpdateService());
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
     }
 
@@ -259,6 +260,12 @@ public class MainWindowViewModelTests
         public Task<StartupTaskStatus> EnableAsync() => Task.FromResult(StartupTaskStatus.Enabled);
 
         public Task DisableAsync() => Task.CompletedTask;
+    }
+
+    private sealed class FakeUpdateService : IUpdateService
+    {
+        public Task<UpdateCheckResult> CheckForUpdatesAsync() =>
+            Task.FromResult(new UpdateCheckResult { Status = UpdateCheckStatus.UpToDate });
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider

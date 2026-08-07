@@ -68,6 +68,12 @@ public static class Resources
     public static string Settings_Copyright => Get(nameof(Settings_Copyright));
     public static string Settings_PrivacyPolicy => Get(nameof(Settings_PrivacyPolicy));
     public static string Settings_TermsOfService => Get(nameof(Settings_TermsOfService));
+    public static string UpdateCheck_UpToDateTitle => Get(nameof(UpdateCheck_UpToDateTitle));
+    public static string UpdateCheck_UpToDateMessage => Get(nameof(UpdateCheck_UpToDateMessage));
+    public static string UpdateCheck_UpdateAvailableTitle => Get(nameof(UpdateCheck_UpdateAvailableTitle));
+    public static string UpdateCheck_UpdateAvailableMessage => Get(nameof(UpdateCheck_UpdateAvailableMessage));
+    public static string UpdateCheck_ErrorTitle => Get(nameof(UpdateCheck_ErrorTitle));
+    public static string UpdateCheck_ErrorMessage => Get(nameof(UpdateCheck_ErrorMessage));
 
     private static string Get(string name) => ResourceManager.GetString(name) ?? name;
 }
