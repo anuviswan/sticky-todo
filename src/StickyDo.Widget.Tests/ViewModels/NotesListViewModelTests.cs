@@ -94,6 +94,19 @@ public class NotesListViewModelTests
     }
 
     [TestMethod]
+    public async Task ApplyFilter_MatchesByNoteContent()
+    {
+        await CreateNoteWithContentAsync("Journal Entry", "Remember to water the plants");
+        await CreateNoteWithContentAsync("Trip Notes", "Pack sunscreen and a hat");
+        await _viewModel.LoadNotesAsync();
+
+        _viewModel.SearchQuery = "PLANTS";
+
+        Assert.AreEqual(1, AllVisibleNotes().Count());
+        Assert.AreEqual("Journal Entry", AllVisibleNotes().Single().Title);
+    }
+
+    [TestMethod]
     public async Task ApplyFilter_TrimsLeadingAndTrailingWhitespace()
     {
         await CreateNoteWithTaskAsync("Grocery List", "Buy milk");

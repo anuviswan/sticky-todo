@@ -54,4 +54,8 @@ public partial class StickyNoteItemViewModel : ObservableObject
     /// <summary>Titles of all tasks in the note, used to search notes by content.</summary>
     [ObservableProperty]
     private IReadOnlyList<string> taskTitles = [];
+
+    /// <summary>Full (untruncated) body of a free-form note, used to search notes by content. Distinct from <see cref="ContentPreview"/>, which is truncated for card display.</summary>
+    [ObservableProperty]
+    private string content = string.Empty;
 }
