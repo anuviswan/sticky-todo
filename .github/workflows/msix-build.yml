@@ -9,7 +9,7 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: msix-build-${{ github.ref }}
@@ -112,3 +112,16 @@ jobs:
           path: src/StickyDo.Widget/StickyDo.Widget.Package/bin/${{ env.BUILD_PLATFORM }}/${{ env.BUILD_CONFIGURATION }}/StickyDo.Widget/**/*.pdb
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Publish GitHub Release
+        # Gives the client-side update check (issue #87) a public source of truth to compare
+        # against before the app is available in the Microsoft Store: the widget's GitHub-fallback
+        # update check queries GET /repos/{owner}/{repo}/releases/latest.
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          name: v${{ env.PACKAGE_VERSION }}
+          files: |
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixbundle
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.appinstaller

@@ -223,4 +223,22 @@
   <data name="Settings_TermsOfService" xml:space="preserve">
     <value>Terms of Service</value>
   </data>
+  <data name="UpdateCheck_UpToDateTitle" xml:space="preserve">
+    <value>You're up to date</value>
+  </data>
+  <data name="UpdateCheck_UpToDateMessage" xml:space="preserve">
+    <value>StickyDo is already running the latest version.</value>
+  </data>
+  <data name="UpdateCheck_UpdateAvailableTitle" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="UpdateCheck_UpdateAvailableMessage" xml:space="preserve">
+    <value>A newer version of StickyDo ({0}) is available.</value>
+  </data>
+  <data name="UpdateCheck_ErrorTitle" xml:space="preserve">
+    <value>Couldn't check for updates</value>
+  </data>
+  <data name="UpdateCheck_ErrorMessage" xml:space="preserve">
+    <value>Could not check for updates: {0}</value>
+  </data>
 </root>

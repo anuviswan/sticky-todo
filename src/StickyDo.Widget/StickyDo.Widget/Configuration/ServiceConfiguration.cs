@@ -95,7 +95,8 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<FileBasedRepository>(),
                 sp.GetRequiredService<IMessenger>(),
                 sp.GetRequiredService<IUrlLauncherService>(),
-                sp.GetRequiredService<IStartupTaskService>());
+                sp.GetRequiredService<IStartupTaskService>(),
+                sp.GetRequiredService<IUpdateService>());
             Task.Run(() => viewModel.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
             return viewModel;
         });
@@ -112,6 +113,13 @@ public static class ServiceConfiguration
         services.AddSingleton<ITrayIconService, TrayIconService>();
         services.AddSingleton<IUrlLauncherService, UrlLauncherService>();
         services.AddSingleton<IStartupTaskService, StartupTaskService>();
+
+        services.AddHttpClient<IUpdateService, UpdateService>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.github.com/");
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("StickyDo-Widget");
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+        });
     }
 
     /// <summary>

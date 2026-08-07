@@ -116,6 +116,12 @@ Each run publishes up to three artifacts, named `StickyDo.Widget.Package-<versio
   non-bundled build normally doesn't).
 - **`-Symbols`** — `.pdb` symbol files copied into the packaging layout, if present.
 
+The workflow also publishes a GitHub Release tagged `v<version>` with the `.msix`/`.msixbundle`/
+`.appinstaller` files attached. This gives the app's in-product "Check for updates" feature
+(Settings page) a public version feed to check via the GitHub Releases API, used as a fallback
+before the app has a Microsoft Store listing (see `IUpdateService`/`UpdateService` in
+`StickyDo.Widget`).
+
 ### Prerequisites
 
 - Visual Studio 2022+ with the **Universal Windows Platform development** workload installed
