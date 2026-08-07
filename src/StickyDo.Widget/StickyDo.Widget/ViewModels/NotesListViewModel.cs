@@ -226,6 +226,7 @@ public partial class NotesListViewModel : ObservableObject
             FirstTaskCompleted = firstTask?.IsCompleted ?? false,
             RemainingTaskCount = Math.Max(0, orderedTasks.Count - 1),
             TaskTitles = orderedTasks.Select(t => t.Title).ToList(),
+            Content = note.Content ?? string.Empty,
             ContentPreview = contentPreview,
             ContentPreviewFormatting = contentPreviewFormatting
         };
@@ -337,7 +338,8 @@ public partial class NotesListViewModel : ObservableObject
             {
                 filtered = filtered.Where(n =>
                     n.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    n.TaskTitles.Any(t => t.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    n.TaskTitles.Any(t => t.Contains(query, StringComparison.OrdinalIgnoreCase)) ||
+                    n.Content.Contains(query, StringComparison.OrdinalIgnoreCase)
                 );
             }
 
