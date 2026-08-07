@@ -52,6 +52,18 @@ public partial class StickyNoteListItem : UserControl
         DependencyProperty.Register("ToggleFavoriteCommand", typeof(ICommand), typeof(StickyNoteListItem),
             new PropertyMetadata(null));
 
+    /// <summary>Gets or sets the command invoked with <see cref="NoteId"/> when "Open" is chosen from
+    /// the card's right-click context menu.</summary>
+    public ICommand? OpenCommand
+    {
+        get => (ICommand?)GetValue(OpenCommandProperty);
+        set => SetValue(OpenCommandProperty, value);
+    }
+
+    public static readonly DependencyProperty OpenCommandProperty =
+        DependencyProperty.Register("OpenCommand", typeof(ICommand), typeof(StickyNoteListItem),
+            new PropertyMetadata(null));
+
     /// <summary>Gets or sets the title of the note.</summary>
     public string Title
     {

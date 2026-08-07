@@ -71,6 +71,7 @@
                                                 RemainingTaskCount="{Binding RemainingTaskCount, Mode=OneWay}"
                                                 ColorBrush="{Binding ColorArgb, Mode=OneWay, Converter={StaticResource ColorArgbToBrushConverter}}"
                                                 ToggleFavoriteCommand="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                OpenCommand="{Binding DataContext.OpenNoteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 Cursor="Hand"
                                                 MouseLeftButtonDown="StickyNoteListItem_MouseLeftButtonDown"
                                                 PreviewMouseLeftButtonDown="StickyNoteListItem_PreviewMouseLeftButtonDown"

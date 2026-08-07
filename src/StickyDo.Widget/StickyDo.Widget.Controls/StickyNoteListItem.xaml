@@ -14,7 +14,56 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
         <converters:EnumNameEqualsConverter x:Key="EnumNameEqualsConverter"/>
+
+        <!-- Matches MoreOptionsPopup's menu look (white rounded card, #F2F2F2 hover) so the
+             note card's right-click menu reads as the same "menu" affordance elsewhere in the app. -->
+        <Style x:Key="NoteCardMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6">
+                            <ContentPresenter ContentSource="Header" Margin="{TemplateBinding Padding}"
+                                              RecognizesAccessKey="True" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F2F2F2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
+
+    <UserControl.ContextMenu>
+        <ContextMenu BorderThickness="0" Padding="0" HasDropShadow="False">
+            <ContextMenu.Template>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="White" CornerRadius="4" Padding="6" MinWidth="140">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="6" ShadowDepth="2" Opacity="0.15" Direction="270"/>
+                        </Border.Effect>
+                        <!-- Forces the rounded corner to rasterize before the effect is applied,
+                             matching MoreOptionsPopup - see its comment for why. -->
+                        <Border.CacheMode>
+                            <BitmapCache/>
+                        </Border.CacheMode>
+                        <StackPanel IsItemsHost="True" Orientation="Vertical"/>
+                    </Border>
+                </ControlTemplate>
+            </ContextMenu.Template>
+            <!-- PlacementTarget (not ElementName) is required here: a ContextMenu is a separate
+                 popup root with its own NameScope, so ElementName="Root" would not resolve. -->
+            <MenuItem Header="Open" Style="{StaticResource NoteCardMenuItemStyle}"
+                      Command="{Binding PlacementTarget.OpenCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                      CommandParameter="{Binding PlacementTarget.NoteId, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        </ContextMenu>
+    </UserControl.ContextMenu>
 
     <Border Background="{Binding ColorBrush, Mode=OneWay, ElementName=Root}" CornerRadius="8"
             BorderBrush="#14000000" BorderThickness="1" Padding="14,12,14,12">
@@ -183,9 +232,20 @@
                  is Hidden (not Collapsed) when there's nothing extra, so it still reserves its
                  layout space - the pill is exactly the same size whether or not the label is
                  actually visible, and the chevron in the Auto column stays pinned to the
-                 trailing edge either way. -->
-            <Border MinHeight="22" CornerRadius="11" Background="#14000000"
-                    Padding="14,4,10,4" HorizontalAlignment="Center" Margin="0,14,0,0">
+                 trailing edge either way. A Button (not a Border) so clicking it opens the note,
+                 same as double-clicking the card or the context menu's "Open" item - its
+                 ControlTemplate reproduces the original Border's look exactly. -->
+            <Button HorizontalAlignment="Center" Margin="0,14,0,0" Cursor="Hand"
+                    ToolTip="Open note"
+                    Command="{Binding OpenCommand, ElementName=Root}"
+                    CommandParameter="{Binding NoteId, ElementName=Root}">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border MinHeight="22" CornerRadius="11" Background="#14000000" Padding="14,4,10,4">
+                            <ContentPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -200,7 +260,7 @@
                           StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
                           Width="10" Height="6" Stretch="Uniform" VerticalAlignment="Center"/>
                 </Grid>
-            </Border>
+            </Button>
         </StackPanel>
     </Border>
 </UserControl>
