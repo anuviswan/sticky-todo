@@ -64,7 +64,7 @@ jobs:
           Write-Host "Set package version to $version"
           echo "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
 
-      - name: Restore and build unsigned MSIX package
+      - name: Restore and build unsigned MSIX/MSIXUpload packages
         # StickyDo.Widget.Package.wapproj is a classic Windows Application Packaging Project, so it
         # needs full MSBuild (not dotnet build/restore) - see README.md "MSIX Packaging".
         # AppxPackageSigningEnabled=false skips signing entirely, so no code-signing certificate is
@@ -72,34 +72,68 @@ jobs:
         # Microsoft Partner Center signs the package at Store submission time.
         # Version/AssemblyVersion/FileVersion are global MSBuild properties, so they flow through
         # to the StickyDo.Widget.csproj project reference and stamp the packaged .exe too.
+        # UapAppxPackageBuildMode=StoreUpload (issue #124) produces the .msixupload package that
+        # can be uploaded directly to Partner Center, while *also* still writing the sideloadable
+        # AppPackages/<Name>_<version>_Test/ folder (.msix/.msixbundle) that GitHub Releases and the
+        # in-product update check (issue #87) depend on - per Microsoft's docs, StoreUpload mode
+        # generates both, unlike CI mode which produces the .msixupload only. AppxBundle=Always +
+        # AppxBundlePlatforms produce the bundle Partner Center expects, even for a single platform.
         run: >
           msbuild "${{ env.WAPPROJ_PATH }}" -t:Restore,Build
           -p:Configuration=${{ env.BUILD_CONFIGURATION }}
           -p:Platform=${{ env.BUILD_PLATFORM }}
+          -p:UapAppxPackageBuildMode=StoreUpload
+          -p:AppxBundle=Always
+          -p:AppxBundlePlatforms=${{ env.BUILD_PLATFORM }}
           -p:AppxPackageSigningEnabled=false
           -p:Version=${{ env.PACKAGE_VERSION }}
           -p:AssemblyVersion=${{ env.PACKAGE_VERSION }}
           -p:FileVersion=${{ env.PACKAGE_VERSION }}
 
-      - name: Upload MSIX package
-        # The MSIX package is the primary Store submission artifact, so publication must fail
-        # the workflow if it is missing rather than silently skipping (see #107 AC).
+      - name: Report MSIXUpload output path
+        # Explicit log line per issue #124 AC ("build logs clearly indicate the output package
+        # path"), since the exact generated file name isn't obvious from the msbuild output above.
+        shell: pwsh
+        run: |
+          $path = Get-ChildItem -Path "src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages" -Filter "*.msixupload" -Recurse |
+            Select-Object -First 1 -ExpandProperty FullName
+          if (-not $path) {
+            Write-Error "No .msixupload file was found under AppPackages/."
+            exit 1
+          }
+          Write-Host "Store upload package: $path"
+
+      - name: Upload MSIXUpload package
+        # The .msixupload is the artifact meant for direct upload to Partner Center, so publication
+        # must fail the workflow if it's missing rather than silently skipping (see #124 AC).
         uses: actions/upload-artifact@v4
         with:
-          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-MSIX
-          path: src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
+          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-MSIXUpload
+          path: src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixupload
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload MSIX bundle and app installer
-        # A plain (non-bundled) Build only produces a loose .msix, so .msixbundle/.appinstaller
-        # files are not always generated - only published when present.
+      - name: Upload sideload MSIX/bundle package
+        # With AppxBundle=Always, the sideload _Test folder produces a .msixbundle instead of a
+        # loose .msix (verified locally - a plain, non-bundled build would produce the loose .msix
+        # instead), so both patterns are checked together and at least one must be present.
+        # Publication must fail the workflow if neither is produced (see #107 AC).
         uses: actions/upload-artifact@v4
         with:
-          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-Bundle
+          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-MSIX
           path: |
+            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msix
             src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.msixbundle
-            src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.appinstaller
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload app installer
+        # .appinstaller is only generated when app-installer-based updates are explicitly enabled,
+        # which they aren't currently, so this stays non-fatal.
+        uses: actions/upload-artifact@v4
+        with:
+          name: StickyDo.Widget.Package-${{ env.PACKAGE_VERSION }}-${{ env.BUILD_CONFIGURATION }}-${{ env.BUILD_PLATFORM }}-AppInstaller
+          path: src/StickyDo.Widget/StickyDo.Widget.Package/AppPackages/**/*.appinstaller
           if-no-files-found: ignore
           retention-days: 14
 
