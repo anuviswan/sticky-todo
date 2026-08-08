@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
@@ -8,7 +8,7 @@
 
   <Identity
     Name="DefineStack.StickyDo"
-    Publisher="CN=DefineStack"
+    Publisher="CN=F909F0E0-3BCF-4DDA-A54A-F17C2B63E910"
     Version="0.1.0.0" />
 
   <Properties>
