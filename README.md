@@ -97,7 +97,7 @@ reference the packaging project. Building it requires full MSBuild from a Visual
 installation with the **Universal Windows Platform development** workload (specifically the
 "MSIX Packaging Tools"/"Windows Application Packaging Project" component).
 
-The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds an **unsigned**
+The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds a signed
 Release MSIX on demand (`workflow_dispatch` only — no automatic push/PR trigger), publishing the
 build outputs as GitHub Actions artifacts for download, validation, and Store submission. Run it
 from the **Actions** tab → **Build MSIX Package** → **Run workflow**, selecting the `release`
@@ -106,8 +106,11 @@ format (e.g. `1.0.0.0`) — the run fails fast if it isn't. That value is writte
 `Package.appxmanifest`'s `Identity/@Version` before packaging, so it becomes the version shown for
 the app in Windows Settings and the Store listing, and is also passed as the
 `Version`/`AssemblyVersion`/`FileVersion` MSBuild properties so `StickyDo.Widget.exe`'s own file
-properties match. It skips signing entirely (`AppxPackageSigningEnabled=false`) since Microsoft
-Partner Center signs the package at Store submission time — no certificate is needed in CI.
+properties match. The workflow generates a throwaway self-signed certificate at runtime (`Subject`
+matching the manifest's `Identity/@Publisher`), exports it to a `.pfx` under the runner's temp
+directory, and uses it only for packaging — the certificate is never committed and is deleted at
+the end of the run even if the build fails. Microsoft Partner Center re-signs the package at Store
+submission time, so this certificate never needs to be a "real" one.
 
 The build uses `UapAppxPackageBuildMode=StoreUpload`, which produces both a Store-ready
 `.msixupload` package **and** the sideloadable `.msix`/`.msixbundle` outputs in the same MSBuild

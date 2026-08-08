@@ -64,12 +64,43 @@ jobs:
           Write-Host "Set package version to $version"
           echo "PACKAGE_VERSION=$version" >> $env:GITHUB_ENV
 
-      - name: Restore and build unsigned MSIX/MSIXUpload packages
+      - name: Generate temporary signing certificate
+        # AC5 (issue #127): AppxPackageSigningEnabled=false (the previous approach, issue #124) is
+        # not sufficient for StoreUpload packaging - MSBuild's package task still requires a
+        # code-signing certificate to produce the .msixupload, even though Partner Center re-signs
+        # the package at Store submission time. The cert Subject must exactly match the manifest's
+        # Identity/@Publisher or packaging fails with APPX1101, so it's read from the manifest
+        # rather than hardcoded. The .pfx is written to RUNNER_TEMP (outside the repo, never
+        # committed - *.pfx is also gitignored) and the private key is removed from the machine
+        # store immediately after export since only the .pfx file is needed for packaging.
+        shell: pwsh
+        run: |
+          [xml]$manifest = Get-Content "${{ env.MANIFEST_PATH }}"
+          $ns = New-Object System.Xml.XmlNamespaceManager($manifest.NameTable)
+          $ns.AddNamespace("ns", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
+          $publisher = $manifest.SelectSingleNode("//ns:Identity", $ns).Publisher
+
+          $certPassword = [System.Guid]::NewGuid().ToString("N")
+          Write-Host "::add-mask::$certPassword"
+
+          $cert = New-SelfSignedCertificate -Type Custom -Subject $publisher -KeyUsage DigitalSignature `
+            -FriendlyName "StickyDo CI Signing Certificate" -CertStoreLocation "Cert:\CurrentUser\My" `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}Subject Type:End Entity")
+
+          $certPath = Join-Path $env:RUNNER_TEMP "StickyDo.Widget.Package_CI.pfx"
+          $securePassword = ConvertTo-SecureString -String $certPassword -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath $certPath -Password $securePassword | Out-Null
+          Remove-Item -Path "Cert:\CurrentUser\My\$($cert.Thumbprint)" -Force
+
+          Write-Host "Generated temporary signing certificate at $certPath"
+          echo "CERT_PATH=$certPath" >> $env:GITHUB_ENV
+          echo "CERT_PASSWORD=$certPassword" >> $env:GITHUB_ENV
+
+      - name: Restore and build signed MSIX/MSIXUpload packages
         # StickyDo.Widget.Package.wapproj is a classic Windows Application Packaging Project, so it
         # needs full MSBuild (not dotnet build/restore) - see README.md "MSIX Packaging".
-        # AppxPackageSigningEnabled=false skips signing entirely, so no code-signing certificate is
-        # required (StickyDo.Widget.Package_TemporaryKey.pfx is gitignored and never committed).
-        # Microsoft Partner Center signs the package at Store submission time.
+        # PackageCertificateKeyFile/PackageCertificatePassword point at the temporary certificate
+        # generated above (issue #127); the password value is masked in logs by the add-mask above.
         # Version/AssemblyVersion/FileVersion are global MSBuild properties, so they flow through
         # to the StickyDo.Widget.csproj project reference and stamp the packaged .exe too.
         # UapAppxPackageBuildMode=StoreUpload (issue #124) produces the .msixupload package that
@@ -85,10 +116,23 @@ jobs:
           -p:UapAppxPackageBuildMode=StoreUpload
           -p:AppxBundle=Always
           -p:AppxBundlePlatforms=${{ env.BUILD_PLATFORM }}
-          -p:AppxPackageSigningEnabled=false
+          -p:AppxPackageSigningEnabled=true
+          -p:PackageCertificateKeyFile=${{ env.CERT_PATH }}
+          -p:PackageCertificatePassword=${{ env.CERT_PASSWORD }}
           -p:Version=${{ env.PACKAGE_VERSION }}
           -p:AssemblyVersion=${{ env.PACKAGE_VERSION }}
           -p:FileVersion=${{ env.PACKAGE_VERSION }}
+
+      - name: Remove temporary signing certificate
+        # AC6 (issue #127): the .pfx must not persist beyond the run, even if packaging fails -
+        # this step runs unconditionally while every step after it only runs on success.
+        if: always()
+        shell: pwsh
+        run: |
+          if ($env:CERT_PATH -and (Test-Path $env:CERT_PATH)) {
+            Remove-Item -Path $env:CERT_PATH -Force
+            Write-Host "Removed temporary signing certificate."
+          }
 
       - name: Report MSIXUpload output path
         # Explicit log line per issue #124 AC ("build logs clearly indicate the output package
