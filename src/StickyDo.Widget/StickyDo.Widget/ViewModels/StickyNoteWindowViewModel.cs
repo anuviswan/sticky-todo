@@ -388,6 +388,15 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
+            // The note may have just been permanently deleted from another window (e.g. dragged
+            // to Trash from the Notes List) - in that case there's nothing left to save, and
+            // UpdateNoteAsync would otherwise throw. This is an expected race, not an error.
+            if (await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id) is null)
+            {
+                _hasUnsavedChanges = false;
+                return;
+            }
+
             await _stickyNoteService.UpdateNoteAsync(
                 _currentNote.Id,
                 _currentNote.Title,
@@ -632,6 +641,7 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         try
         {
             await _stickyNoteService.DeleteNoteAsync(_currentNote.Id);
+            _hasUnsavedChanges = false;
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Deleted));
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }

@@ -158,6 +158,32 @@ public class StickyNoteWindowViewModelTests
     }
 
     [TestMethod]
+    public async Task SaveAsync_NoteWasDeletedConcurrently_ReturnsQuietlyWithoutShowingErrorDialog()
+    {
+        // Regression test for #134: a note can be deleted (e.g. dragged to Trash from the Notes
+        // List) while its window still has unsaved edits pending. The window-closed handler then
+        // calls SaveAsync, which used to throw "Note with ID {id} not found." and show a "Save
+        // Error" dialog. SaveAsync should instead treat this as an expected race and no-op.
+        var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
+        var dialogService = new FakeDialogService();
+        var viewModel = new StickyNoteWindowViewModel(
+            _service,
+            _taskService,
+            dialogService,
+            new FakeStickyNoteCreationService(),
+            new FakePersistenceService(),
+            new WeakReferenceMessenger(),
+            new FakeWindowService());
+        await viewModel.LoadNoteAsync(noteId);
+        viewModel.Content = "Typed some text";
+
+        await _service.DeleteNoteAsync(noteId);
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(0, dialogService.ShownMessages.Count);
+    }
+
+    [TestMethod]
     public async Task LoadNoteAsync_NoteTypeNote_RestoresContentFormatting()
     {
         var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
@@ -234,8 +260,13 @@ public class StickyNoteWindowViewModelTests
 
     private sealed class FakeDialogService : IDialogService
     {
-        public Task ShowMessageAsync(string title, string message, MessageBoxImage icon = MessageBoxImage.None) =>
-            Task.CompletedTask;
+        public List<(string Title, string Message)> ShownMessages { get; } = [];
+
+        public Task ShowMessageAsync(string title, string message, MessageBoxImage icon = MessageBoxImage.None)
+        {
+            ShownMessages.Add((title, message));
+            return Task.CompletedTask;
+        }
 
         public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(true);
     }
