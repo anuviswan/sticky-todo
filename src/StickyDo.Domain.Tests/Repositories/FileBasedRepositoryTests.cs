@@ -112,6 +112,42 @@ public class FileBasedRepositoryTests
     }
 
     [TestMethod]
+    public async Task UpdateAsync_DistinctObjectWithSameId_CopiesIsFavoriteAndContent()
+    {
+        // Regression test: UpdateAsync previously copied every field except IsFavorite/Content
+        // onto the stored note. Every current caller happens to pass back the same in-memory
+        // instance it fetched via GetByIdAsync, which made the missing copy a no-op - but a
+        // caller passing a distinct object with the same Id (e.g. a future import/batch-update
+        // path) would silently lose those fields.
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+
+        var note = new StickyNote
+        {
+            Id = Guid.NewGuid(),
+            Title = "Original",
+            Status = StickyNoteStatus.Active
+        };
+        await repository.CreateAsync(note);
+
+        var updatedNote = new StickyNote
+        {
+            Id = note.Id,
+            Title = "Original",
+            Status = StickyNoteStatus.Active,
+            IsFavorite = true,
+            Content = "Updated content"
+        };
+
+        await repository.UpdateAsync(updatedNote);
+
+        var retrieved = await repository.GetByIdAsync(note.Id);
+        Assert.IsNotNull(retrieved);
+        Assert.IsTrue(retrieved.IsFavorite);
+        Assert.AreEqual("Updated content", retrieved.Content);
+    }
+
+    [TestMethod]
     public async Task UpdateAsync_ModifiesTypeAndMarksDirty()
     {
         // Arrange

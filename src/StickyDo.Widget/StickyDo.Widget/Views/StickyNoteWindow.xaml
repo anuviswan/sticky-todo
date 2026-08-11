@@ -65,7 +65,8 @@
                          space stays part of the TitleBarBorder drag zone; only clicks on the
                          text itself land on the TextBox and enter edit mode. -->
                     <TextBox Grid.Column="1"
-                             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             behaviors:CommitOnLostFocusBehavior.Command="{Binding SaveCommand}"
                              FontSize="14"
                              FontWeight="500"
                              Foreground="#333333"
@@ -74,7 +75,11 @@
                              Padding="6,2"
                              HorizontalAlignment="Left"
                              VerticalAlignment="Center"
-                             Cursor="IBeam"/>
+                             Cursor="IBeam">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SaveCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
 
                     <!-- Favorite / Unfavorite Icon -->
                     <Button Grid.Column="2"

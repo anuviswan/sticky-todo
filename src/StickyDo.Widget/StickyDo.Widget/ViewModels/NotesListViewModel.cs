@@ -25,6 +25,7 @@ public partial class NotesListViewModel : ObservableObject
     private readonly IDialogService _dialogService;
     private readonly IMessenger _messenger;
     private readonly ISettingsRepository _settingsRepository;
+    private readonly IPersistenceService _persistenceService;
     private readonly List<StickyNoteItemViewModel> _allNotes = new();
 
     [ObservableProperty]
@@ -70,18 +71,21 @@ public partial class NotesListViewModel : ObservableObject
         IStickyNoteWindowService windowService,
         IDialogService dialogService,
         IMessenger messenger,
-        ISettingsRepository settingsRepository)
+        ISettingsRepository settingsRepository,
+        IPersistenceService persistenceService)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(windowService);
         ArgumentNullException.ThrowIfNull(dialogService);
         ArgumentNullException.ThrowIfNull(messenger);
         ArgumentNullException.ThrowIfNull(settingsRepository);
+        ArgumentNullException.ThrowIfNull(persistenceService);
         _stickyNoteService = stickyNoteService;
         _windowService = windowService;
         _dialogService = dialogService;
         _messenger = messenger;
         _settingsRepository = settingsRepository;
+        _persistenceService = persistenceService;
 
         _messenger.Register<StickyNoteChangedMessage>(this, async (recipient, message) =>
             await ((NotesListViewModel)recipient).OnNoteChangedAsync(message));
@@ -297,6 +301,13 @@ public partial class NotesListViewModel : ObservableObject
         try
         {
             await _stickyNoteService.SetNoteFavoriteAsync(noteId, note.IsFavorite);
+
+            // The Notes List has no autosave loop of its own (unlike an open note window), so
+            // without this the toggle would only reach disk incidentally - e.g. if a note window
+            // happens to be open and autosaving, or on app exit. Flushing here guarantees the
+            // change is durable immediately, matching StickyNoteWindowViewModel.SaveAsync.
+            await _persistenceService.SaveAllDirtyNotesAsync();
+
             _messenger.Send(new StickyNoteChangedMessage(noteId, StickyNoteChangeType.Updated));
         }
         catch (Exception ex)

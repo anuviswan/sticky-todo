@@ -36,7 +36,8 @@ public class NotesListViewModelTests
             new FakeStickyNoteWindowService(),
             new FakeDialogService(),
             new WeakReferenceMessenger(),
-            _settingsRepository);
+            _settingsRepository,
+            new PersistenceService(_repository));
     }
 
     [TestCleanup]
@@ -320,6 +321,26 @@ public class NotesListViewModelTests
         await _viewModel.LoadNotesAsync();
 
         Assert.AreEqual(string.Empty, AllVisibleNotes().Single().ContentPreview);
+    }
+
+    [TestMethod]
+    public async Task ToggleFavoriteAsync_TwoNotesInSequence_BothPersistToDisk()
+    {
+        // Regression test for issue #136: favouriting a note from the Notes List only marked it
+        // dirty in memory - without a note window open to trigger an incidental autosave, nothing
+        // ever flushed it to disk, so an earlier favourite could appear lost.
+        var noteId1 = await CreateNoteWithTaskAsync("Grocery List", "Buy milk");
+        var noteId2 = await CreateNoteWithTaskAsync("Work Plan", "Finish report");
+        await _viewModel.LoadNotesAsync();
+
+        await _viewModel.ToggleFavoriteAsync(noteId1);
+        await _viewModel.ToggleFavoriteAsync(noteId2);
+
+        var reloadedRepository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
+        await reloadedRepository.InitializeAsync();
+
+        Assert.IsTrue((await reloadedRepository.GetByIdAsync(noteId1))!.IsFavorite);
+        Assert.IsTrue((await reloadedRepository.GetByIdAsync(noteId2))!.IsFavorite);
     }
 
     private sealed class FakeStickyNoteWindowService : IStickyNoteWindowService

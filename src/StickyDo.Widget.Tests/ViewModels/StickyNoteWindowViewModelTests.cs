@@ -8,6 +8,7 @@ using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Domain.Storage;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget.Tests.ViewModels;
@@ -155,6 +156,49 @@ public class StickyNoteWindowViewModelTests
 
         var persisted = await _service.GetNoteByIdAsync(noteId);
         Assert.AreEqual("Typed some text", persisted!.Content);
+    }
+
+    [TestMethod]
+    public async Task SaveAsync_PersistsTitle()
+    {
+        var noteId = await _service.CreateNoteAsync("Original Title", type: NoteType.Note);
+        await _viewModel.LoadNoteAsync(noteId);
+
+        _viewModel.Title = "Updated Title";
+        await _viewModel.SaveCommand.ExecuteAsync(null);
+
+        var persisted = await _service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual("Updated Title", persisted!.Title);
+    }
+
+    [TestMethod]
+    public async Task SaveCommand_TitleCommittedViaEnterOrLostFocus_NotifiesNotesListImmediately()
+    {
+        // Regression test: editing a note's title used to only reach the Notes List when the
+        // window closed - typing a new title and leaving it open (committing via Enter or moving
+        // focus away, both of which invoke SaveCommand per the CommitOnLostFocusBehavior/KeyBinding
+        // wiring in StickyNoteWindow.xaml) never told the list to refresh that card.
+        var noteId = await _service.CreateNoteAsync("Original Title", type: NoteType.Note);
+        var messenger = new WeakReferenceMessenger();
+        var viewModel = new StickyNoteWindowViewModel(
+            _service,
+            _taskService,
+            new FakeDialogService(),
+            new FakeStickyNoteCreationService(),
+            new FakePersistenceService(),
+            messenger,
+            new FakeWindowService());
+        await viewModel.LoadNoteAsync(noteId);
+
+        StickyNoteChangedMessage? received = null;
+        messenger.Register<StickyNoteChangedMessage>(this, (recipient, message) => received = message);
+
+        viewModel.Title = "Updated Title";
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.IsNotNull(received);
+        Assert.AreEqual(noteId, received!.NoteId);
+        Assert.AreEqual(StickyNoteChangeType.Updated, received.ChangeType);
     }
 
     [TestMethod]
