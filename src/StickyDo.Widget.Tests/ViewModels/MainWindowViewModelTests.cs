@@ -33,7 +33,8 @@ public class MainWindowViewModelTests
             new FakeStickyNoteWindowService(),
             new FakeDialogService(),
             new WeakReferenceMessenger(),
-            new FakeSettingsRepository());
+            new FakeSettingsRepository(),
+            new PersistenceService(_repository));
         _startupTaskService = new FakeStartupTaskService();
         var settingsViewModel = new SettingsViewModel(
             new FakeSettingsRepository(),
