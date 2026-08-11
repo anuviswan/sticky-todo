@@ -97,23 +97,32 @@ reference the packaging project. Building it requires full MSBuild from a Visual
 installation with the **Universal Windows Platform development** workload (specifically the
 "MSIX Packaging Tools"/"Windows Application Packaging Project" component).
 
-The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds an **unsigned**
+The `Build MSIX Package` CI workflow (`.github/workflows/msix-build.yml`) builds a signed
 Release MSIX on demand (`workflow_dispatch` only — no automatic push/PR trigger), publishing the
-build outputs as GitHub Actions artifacts for download, validation, and manual Store submission.
-Run it from the **Actions** tab → **Build MSIX Package** → **Run workflow**, selecting the
-`release` branch once it's ready to ship, and supplying a **`version`** input in
-`Major.Minor.Build.Revision` format (e.g. `1.0.0.0`) — the run fails fast if it isn't. That value
-is written into `Package.appxmanifest`'s `Identity/@Version` before packaging, so it becomes the
-version shown for the app in Windows Settings and the Store listing, and is also passed as the
+build outputs as GitHub Actions artifacts for download, validation, and Store submission. Run it
+from the **Actions** tab → **Build MSIX Package** → **Run workflow**, selecting the `release`
+branch once it's ready to ship, and supplying a **`version`** input in `Major.Minor.Build.Revision`
+format (e.g. `1.0.0.0`) — the run fails fast if it isn't. That value is written into
+`Package.appxmanifest`'s `Identity/@Version` before packaging, so it becomes the version shown for
+the app in Windows Settings and the Store listing, and is also passed as the
 `Version`/`AssemblyVersion`/`FileVersion` MSBuild properties so `StickyDo.Widget.exe`'s own file
-properties match. It skips signing entirely (`AppxPackageSigningEnabled=false`) since Microsoft
-Partner Center signs the package at Store submission time — no certificate is needed in CI.
+properties match. The workflow generates a throwaway self-signed certificate at runtime (`Subject`
+matching the manifest's `Identity/@Publisher`), exports it to a `.pfx` under the runner's temp
+directory, and uses it only for packaging — the certificate is never committed and is deleted at
+the end of the run even if the build fails. Microsoft Partner Center re-signs the package at Store
+submission time, so this certificate never needs to be a "real" one.
 
-Each run publishes up to three artifacts, named `StickyDo.Widget.Package-<version>-Release-x64-<suffix>`:
+The build uses `UapAppxPackageBuildMode=StoreUpload`, which produces both a Store-ready
+`.msixupload` package **and** the sideloadable `.msix`/`.msixbundle` outputs in the same MSBuild
+run (unlike `CI` mode, which only produces the `.msixupload`).
 
-- **`-MSIX`** — the `.msix` package. Required; the workflow fails if it wasn't produced.
-- **`-Bundle`** — `.msixbundle`/`.appinstaller` files, if the build produced any (a plain,
-  non-bundled build normally doesn't).
+Each run publishes up to four artifacts, named `StickyDo.Widget.Package-<version>-Release-x64-<suffix>`:
+
+- **`-MSIXUpload`** — the `.msixupload` package, ready to upload directly to Partner Center for
+  Store submission. Required; the workflow fails if it wasn't produced.
+- **`-MSIX`** — the sideloadable `.msix`/`.msixbundle` package (bundling is enabled, so this is
+  normally a `.msixbundle`). Required; the workflow fails if neither was produced.
+- **`-AppInstaller`** — the `.appinstaller` file, if the build produced one (not currently enabled).
 - **`-Symbols`** — `.pdb` symbol files copied into the packaging layout, if present.
 
 The workflow also publishes a GitHub Release tagged `v<version>` with the `.msix`/`.msixbundle`/

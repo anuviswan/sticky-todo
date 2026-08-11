@@ -1,5 +1,13 @@
 <Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
   <Project Path="../StickyDo.Domain/StickyDo.Domain.csproj" />
   <Project Path="StickyDo.Widget.Controls/StickyDo.Widget.Controls.csproj" />
+  <Project Path="StickyDo.Widget.Package/StickyDo.Widget.Package.wapproj" Type="c7167f0d-bc9f-4e6e-afe1-012c56b48db5" Id="c3c02cba-f6ba-4d44-9e62-fbfd4e17386b">
+    <Platform Project="x64" />
+    <Deploy />
+  </Project>
   <Project Path="StickyDo.Widget/StickyDo.Widget.csproj" />
 </Solution>
