@@ -399,9 +399,14 @@
                          Bound through SyncStatus/the same converter pattern as Save Status so a
                          future release can swap in real sync state - including hiding the badge
                          once "Synced" exists - without touching this layout. Non-interactive -
-                         informational only. -->
+                         informational only.
+
+                         Sync feature is planned for a future release.
+                         The icon is intentionally kept in the UI but hidden for now.
+                         Re-enable visibility when synchronization support is implemented. -->
                     <Grid Grid.Column="1"
                           Width="20" Height="17"
+                          Visibility="Collapsed"
                           ToolTip="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToTooltipConverter}}">
                         <TextBlock Text="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToIconConverter}}"
                                    FontSize="13"
