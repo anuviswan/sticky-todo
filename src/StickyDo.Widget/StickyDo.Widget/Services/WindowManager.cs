@@ -22,6 +22,23 @@ public class WindowManager
     }
 
     /// <summary>
+    /// True once the whole application has started exiting (tray "Exit" or a Windows
+    /// session ending/restart), as opposed to a single note window being closed by the
+    /// user while the app keeps running. Note windows check this before persisting their
+    /// closed state, so notes that were open are restored on the next launch instead of
+    /// being wiped out by the mass window-close that happens during shutdown.
+    /// </summary>
+    public bool IsApplicationExiting { get; private set; }
+
+    /// <summary>
+    /// Marks the application as exiting. See <see cref="IsApplicationExiting"/>.
+    /// </summary>
+    public void MarkApplicationExiting()
+    {
+        IsApplicationExiting = true;
+    }
+
+    /// <summary>
     /// Sets the main window reference after construction (for DI pattern).
     /// </summary>
     public void SetMainWindow(Window window)

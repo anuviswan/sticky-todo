@@ -167,7 +167,15 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                         var noteStillExists = await _stickyNoteService.GetNoteByIdAsync(noteId) is not null;
                         if (noteStillExists)
                         {
-                            await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
+                            // If the whole app is exiting (tray "Exit" or a Windows session ending),
+                            // this Closed event is part of the mass window-close that happens during
+                            // shutdown, not the user closing this note - leave it flagged as open so
+                            // it's restored on the next launch instead of falling back to the notes list.
+                            if (!_windowManager.IsApplicationExiting)
+                            {
+                                await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
+                            }
+
                             await _stickyNoteService.UpdateNoteWindowBoundsAsync(noteId, window.Left, window.Top, window.Width, window.Height);
                             await _persistenceService.SaveAllDirtyNotesAsync();
                         }
