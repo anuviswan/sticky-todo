@@ -31,6 +31,15 @@ jobs:
       BUILD_PLATFORM: x64
 
     steps:
+      - name: Verify release branch
+        # workflow_dispatch lets any branch be picked from the Actions UI, so this guards against
+        # accidentally publishing a signed MSIX/GitHub Release from a feature branch.
+        if: github.ref != 'refs/heads/release'
+        shell: pwsh
+        run: |
+          Write-Error "Build MSIX Package can only be run from the 'release' branch (current ref: ${{ github.ref }})."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4
 
