@@ -349,8 +349,17 @@ public partial class NotesListViewModel : ObservableObject
     /// every column and every note card in the list on every click for no visible change - and
     /// doing that mid-click was producing a visible hover/highlight flash across other cards as
     /// the whole board's containers were destroyed and recreated under the pointer.
+    ///
+    /// <see cref="ToggleFavoriteCommand"/> is one command instance shared by every note card's
+    /// star button (each card binds the same ViewModel-level command with its own note ID as the
+    /// parameter). By default the generated AsyncRelayCommand disables itself while running to
+    /// block double-invocation, and raises CanExecuteChanged for every control bound to it - so
+    /// without AllowConcurrentExecutions, toggling one note's favourite would disable, then
+    /// re-enable, every other note's favourite button too, visible as a brief flash across the
+    /// whole board. Concurrent toggles across different notes are safe (each touches only its
+    /// own note by ID), so allowing them removes the flash instead of just narrowing it.
     /// </remarks>
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task ToggleFavoriteAsync(Guid noteId)
     {
         var note = _allNotes.FirstOrDefault(n => n.Id == noteId);
