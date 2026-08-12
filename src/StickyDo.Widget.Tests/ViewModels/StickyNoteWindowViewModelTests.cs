@@ -30,7 +30,7 @@ public class StickyNoteWindowViewModelTests
 
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
-        _service = new StickyNoteService(_repository);
+        _service = new StickyNoteService(_repository, _repository);
         _taskService = new StickyNoteTaskService(_repository, _repository);
         _viewModel = new StickyNoteWindowViewModel(
             _service,
@@ -71,7 +71,7 @@ public class StickyNoteWindowViewModelTests
     }
 
     [TestMethod]
-    public async Task LoadNoteAsync_NoteTypeTodo_StillAutoSeedsTaskWhenEmpty()
+    public async Task LoadNoteAsync_FirstNoteEverCreated_LoadsSeededDemoTask()
     {
         var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
 
@@ -79,6 +79,34 @@ public class StickyNoteWindowViewModelTests
 
         Assert.AreEqual(1, _viewModel.Tasks.Count);
         Assert.AreEqual("First Task", _viewModel.Tasks[0].Title);
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_SecondNoteCreatedEmpty_DoesNotAutoSeedTask()
+    {
+        // Regression test for #133: the demo task should only ever be seeded into a user's
+        // very first note (at creation time), not into every empty Todo note that gets loaded.
+        await _service.CreateNoteAsync("First Note", type: NoteType.Todo);
+        var secondNoteId = await _service.CreateNoteAsync("Second Note", type: NoteType.Todo);
+
+        await _viewModel.LoadNoteAsync(secondNoteId);
+
+        Assert.AreEqual(0, _viewModel.Tasks.Count);
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_ExistingNoteWithAllTasksDeleted_DoesNotReAddDemoTaskOnReload()
+    {
+        // Regression test for #133: previously, LoadNoteAsync re-seeded "First Task" any time
+        // an empty Todo note was loaded, so deleting every task from an existing note and
+        // reopening it would resurrect the demo task instead of staying empty.
+        var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
+        await _viewModel.LoadNoteAsync(noteId);
+        await _viewModel.DeleteTaskCommand.ExecuteAsync(_viewModel.Tasks[0].Id);
+
+        await _viewModel.LoadNoteAsync(noteId);
+
+        Assert.AreEqual(0, _viewModel.Tasks.Count);
     }
 
     [TestMethod]

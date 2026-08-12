@@ -27,7 +27,7 @@ public class StickyNoteCreationServiceTests
 
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
-        _service = new StickyNoteService(_repository);
+        _service = new StickyNoteService(_repository, _repository);
         _windowService = new FakeStickyNoteWindowService();
         _creationService = new StickyNoteCreationService(_service, _windowService, new WeakReferenceMessenger());
     }

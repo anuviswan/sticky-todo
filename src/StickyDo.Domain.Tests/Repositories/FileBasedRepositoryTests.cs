@@ -193,7 +193,7 @@ public class FileBasedRepositoryTests
         // disk as a fresh process would - the persisted UpdatedAt must not have moved.
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         var noteId = await service.CreateNoteAsync("Test Note");
         await repository.SaveNoteAsync(noteId);
