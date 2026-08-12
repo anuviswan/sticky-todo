@@ -29,7 +29,7 @@ public class NotesListViewModelTests
 
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
-        _service = new StickyNoteService(_repository);
+        _service = new StickyNoteService(_repository, _repository);
         _settingsRepository = new FakeSettingsRepository();
         _viewModel = new NotesListViewModel(
             _service,
@@ -52,7 +52,10 @@ public class NotesListViewModelTests
     {
         var noteId = await _service.CreateNoteAsync(title, type: type);
         var note = await _repository.GetByIdAsync(noteId);
-        note!.Tasks.Add(new StickyNoteTask { Id = Guid.NewGuid(), Title = taskTitle, Order = 0 });
+        // Clear first - if this is the first note created in the test's repository, CreateNoteAsync
+        // has already seeded it with a "First Task" demo task, which would otherwise leave two tasks.
+        note!.Tasks.Clear();
+        note.Tasks.Add(new StickyNoteTask { Id = Guid.NewGuid(), Title = taskTitle, Order = 0 });
         note.IsFavorite = isFavorite;
         await _repository.UpdateAsync(note);
         return noteId;
@@ -388,7 +391,7 @@ public class NotesListViewModelTests
         var slowPersistence = new SlowPersistenceService();
         var repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
         var viewModel = new NotesListViewModel(
             service,
             new FakeStickyNoteWindowService(),

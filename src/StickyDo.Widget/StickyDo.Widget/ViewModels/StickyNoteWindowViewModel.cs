@@ -234,44 +234,20 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             }
             else
             {
-                // If no tasks exist, add a sample task for demonstration
-                if (!_currentNote.Tasks.Any())
+                foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
                 {
-                    var sampleTaskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, "First Task");
-                    var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
-                    if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
+                    var taskVm = new StickyNoteTaskItemViewModel
                     {
-                        var taskVm = new StickyNoteTaskItemViewModel
-                        {
-                            Id = newTask.Id,
-                            Title = newTask.Title,
-                            TitleFormatting = newTask.TitleFormatting,
-                            IsCompleted = newTask.IsCompleted,
-                            Order = newTask.Order,
-                            CreatedAt = newTask.CreatedAt,
-                            UpdatedAt = newTask.UpdatedAt
-                        };
-                        taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
-                        Tasks.Add(taskVm);
-                    }
-                }
-                else
-                {
-                    foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
-                    {
-                        var taskVm = new StickyNoteTaskItemViewModel
-                        {
-                            Id = task.Id,
-                            Title = task.Title,
-                            TitleFormatting = task.TitleFormatting,
-                            IsCompleted = task.IsCompleted,
-                            Order = task.Order,
-                            CreatedAt = task.CreatedAt,
-                            UpdatedAt = task.UpdatedAt
-                        };
-                        taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
-                        Tasks.Add(taskVm);
-                    }
+                        Id = task.Id,
+                        Title = task.Title,
+                        TitleFormatting = task.TitleFormatting,
+                        IsCompleted = task.IsCompleted,
+                        Order = task.Order,
+                        CreatedAt = task.CreatedAt,
+                        UpdatedAt = task.UpdatedAt
+                    };
+                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
+                    Tasks.Add(taskVm);
                 }
             }
 

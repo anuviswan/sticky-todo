@@ -9,14 +9,21 @@ using StickyDo.Domain.Repositories;
 /// </summary>
 public class StickyNoteService
 {
+    /// <summary>
+    /// Title of the onboarding task seeded into a user's very first note.
+    /// </summary>
+    private const string DemoTaskTitle = "First Task";
+
     private readonly IStickyNoteRepository _noteRepository;
+    private readonly IStickyNoteTaskRepository _taskRepository;
 
     /// <summary>
     /// Initializes a new instance of the StickyNoteService.
     /// </summary>
-    public StickyNoteService(IStickyNoteRepository noteRepository)
+    public StickyNoteService(IStickyNoteRepository noteRepository, IStickyNoteTaskRepository taskRepository)
     {
         _noteRepository = noteRepository ?? throw new ArgumentNullException(nameof(noteRepository));
+        _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
     }
 
     /// <summary>
@@ -40,11 +47,15 @@ public class StickyNoteService
 
     /// <summary>
     /// Creates a new sticky note with the provided title, optional color, and type (defaults to Todo).
+    /// A Todo note is seeded with a "First Task" demo task only when it is the user's very first
+    /// note (i.e. no other notes currently exist) - later notes start empty.
     /// </summary>
     public async Task<Guid> CreateNoteAsync(string title, uint? colorArgb = null, NoteType type = NoteType.Todo)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Note title cannot be empty.", nameof(title));
+
+        var isFirstNote = !(await _noteRepository.GetAllAsync()).Any();
 
         var note = new StickyNote
         {
@@ -58,7 +69,24 @@ public class StickyNoteService
             ColorArgb = colorArgb
         };
 
-        return await _noteRepository.CreateAsync(note);
+        var noteId = await _noteRepository.CreateAsync(note);
+
+        if (isFirstNote && type == NoteType.Todo)
+        {
+            var demoTask = new StickyNoteTask
+            {
+                Id = Guid.NewGuid(),
+                Title = DemoTaskTitle,
+                IsCompleted = false,
+                Order = 0,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _taskRepository.CreateAsync(noteId, demoTask);
+        }
+
+        return noteId;
     }
 
     /// <summary>

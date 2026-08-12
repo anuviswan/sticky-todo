@@ -27,7 +27,7 @@ public class MainWindowViewModelTests
 
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
-        _service = new StickyNoteService(_repository);
+        _service = new StickyNoteService(_repository, _repository);
         var notesListViewModel = new NotesListViewModel(
             _service,
             new FakeStickyNoteWindowService(),

@@ -31,7 +31,7 @@ public class StickyNoteServiceTests
     {
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         var noteId = await service.CreateNoteAsync("Test Note");
         return (service, noteId);
@@ -43,7 +43,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         var noteId = await service.CreateNoteAsync("Test Note", 0xFFAABBCC);
@@ -147,7 +147,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.SetNotePinnedAsync(Guid.Empty, true);
@@ -160,7 +160,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.SetNotePinnedAsync(Guid.NewGuid(), true);
@@ -249,7 +249,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.SetNoteFavoriteAsync(Guid.Empty, true);
@@ -262,7 +262,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.SetNoteFavoriteAsync(Guid.NewGuid(), true);
@@ -285,7 +285,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         var noteId = await service.CreateNoteAsync("Test Note", type: NoteType.Note);
@@ -293,6 +293,74 @@ public class StickyNoteServiceTests
         // Assert
         var note = await service.GetNoteByIdAsync(noteId);
         Assert.AreEqual(NoteType.Note, note!.Type);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_FirstNoteEver_TodoType_SeedsDemoTask()
+    {
+        // Arrange
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository, repository);
+
+        // Act
+        var noteId = await service.CreateNoteAsync("Test Note", type: NoteType.Todo);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(1, note!.Tasks.Count);
+        Assert.AreEqual("First Task", note.Tasks[0].Title);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_FirstNoteEver_NoteType_DoesNotSeedDemoTask()
+    {
+        // Arrange
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository, repository);
+
+        // Act
+        var noteId = await service.CreateNoteAsync("Test Note", type: NoteType.Note);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(0, note!.Tasks.Count);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_SecondNote_DoesNotSeedDemoTask()
+    {
+        // Arrange
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository, repository);
+        await service.CreateNoteAsync("First Note", type: NoteType.Todo);
+
+        // Act
+        var secondNoteId = await service.CreateNoteAsync("Second Note", type: NoteType.Todo);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(secondNoteId);
+        Assert.AreEqual(0, note!.Tasks.Count);
+    }
+
+    [TestMethod]
+    public async Task CreateNoteAsync_EleventhNote_DoesNotSeedDemoTask()
+    {
+        // Arrange
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository, repository);
+        for (var i = 0; i < 10; i++)
+            await service.CreateNoteAsync($"Note {i}", type: NoteType.Todo);
+
+        // Act
+        var eleventhNoteId = await service.CreateNoteAsync("Note 11", type: NoteType.Todo);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(eleventhNoteId);
+        Assert.AreEqual(0, note!.Tasks.Count);
     }
 
     [TestMethod]
@@ -347,7 +415,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.SetNoteTypeAsync(Guid.Empty, NoteType.Note);
@@ -360,7 +428,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.SetNoteTypeAsync(Guid.NewGuid(), NoteType.Note);
@@ -451,7 +519,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.UpdateNoteWindowBoundsAsync(Guid.Empty, 0, 0, 300, 400);
@@ -477,7 +545,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act & Assert (no exception expected - deleting a non-existent note is a no-op)
         await service.DeleteNoteAsync(Guid.NewGuid());
@@ -490,7 +558,7 @@ public class StickyNoteServiceTests
         // Arrange
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var service = new StickyNoteService(repository);
+        var service = new StickyNoteService(repository, repository);
 
         // Act
         await service.DeleteNoteAsync(Guid.Empty);
