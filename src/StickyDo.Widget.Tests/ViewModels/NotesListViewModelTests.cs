@@ -343,6 +343,38 @@ public class NotesListViewModelTests
         Assert.IsTrue((await reloadedRepository.GetByIdAsync(noteId2))!.IsFavorite);
     }
 
+    [TestMethod]
+    public async Task ToggleFavoriteAsync_NotFilteringToFavoritesOnly_DoesNotRebuildColumns()
+    {
+        // Regression test for #143 follow-up: toggling favourite used to unconditionally call
+        // ApplyFilter(), which clears and rebuilds every column (and every note card) in the
+        // whole board even though favouriting alone never changes grouping (by color) or
+        // ordering (by Last Modified) - that full teardown/rebuild mid-click was producing a
+        // visible highlight flash across unrelated cards. The column instances (and the note
+        // card's own ObservableProperty) should be enough to reflect the change without a rebuild.
+        var noteId = await CreateNoteWithTaskAsync("Grocery List", "Buy milk");
+        await _viewModel.LoadNotesAsync();
+        var columnBeforeToggle = _viewModel.Columns.Single();
+
+        await _viewModel.ToggleFavoriteAsync(noteId);
+
+        Assert.AreSame(columnBeforeToggle, _viewModel.Columns.Single());
+        Assert.IsTrue(AllVisibleNotes().Single(n => n.Id == noteId).IsFavorite);
+    }
+
+    [TestMethod]
+    public async Task ToggleFavoriteAsync_WhileShowingFavoritesOnly_RemovesUnfavoritedNoteFromView()
+    {
+        var noteId = await CreateNoteWithTaskAsync("Grocery List", "Buy milk", isFavorite: true);
+        await _viewModel.LoadNotesAsync();
+        _viewModel.ShowFavoritesOnly = true;
+        Assert.AreEqual(1, AllVisibleNotes().Count());
+
+        await _viewModel.ToggleFavoriteAsync(noteId);
+
+        Assert.AreEqual(0, AllVisibleNotes().Count());
+    }
+
     private sealed class FakeStickyNoteWindowService : IStickyNoteWindowService
     {
         public Task OpenNoteWindowAsync(Guid noteId) => Task.CompletedTask;
