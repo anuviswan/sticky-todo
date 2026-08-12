@@ -164,6 +164,7 @@ public class StickyNoteTaskService
             }
 
             note.Type = targetType;
+            note.UpdatedAt = DateTime.UtcNow;
             await _noteRepository.UpdateAsync(note);
         }
 

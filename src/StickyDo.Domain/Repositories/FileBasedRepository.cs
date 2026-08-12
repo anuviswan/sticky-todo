@@ -161,7 +161,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             existing.Title = note.Title;
             existing.Status = note.Status;
             existing.Type = note.Type;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = note.UpdatedAt;
             existing.Content = note.Content;
             existing.ContentFormatting = note.ContentFormatting;
             existing.ColorArgb = note.ColorArgb;

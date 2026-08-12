@@ -343,6 +343,95 @@ public class NotesListViewModelTests
         Assert.IsTrue((await reloadedRepository.GetByIdAsync(noteId2))!.IsFavorite);
     }
 
+    [TestMethod]
+    public async Task ToggleFavoriteAsync_NotFilteringToFavoritesOnly_DoesNotRebuildColumns()
+    {
+        // Regression test for #143 follow-up: toggling favourite used to unconditionally call
+        // ApplyFilter(), which clears and rebuilds every column (and every note card) in the
+        // whole board even though favouriting alone never changes grouping (by color) or
+        // ordering (by Last Modified) - that full teardown/rebuild mid-click was producing a
+        // visible highlight flash across unrelated cards. The column instances (and the note
+        // card's own ObservableProperty) should be enough to reflect the change without a rebuild.
+        var noteId = await CreateNoteWithTaskAsync("Grocery List", "Buy milk");
+        await _viewModel.LoadNotesAsync();
+        var columnBeforeToggle = _viewModel.Columns.Single();
+
+        await _viewModel.ToggleFavoriteAsync(noteId);
+
+        Assert.AreSame(columnBeforeToggle, _viewModel.Columns.Single());
+        Assert.IsTrue(AllVisibleNotes().Single(n => n.Id == noteId).IsFavorite);
+    }
+
+    [TestMethod]
+    public async Task ToggleFavoriteAsync_WhileShowingFavoritesOnly_RemovesUnfavoritedNoteFromView()
+    {
+        var noteId = await CreateNoteWithTaskAsync("Grocery List", "Buy milk", isFavorite: true);
+        await _viewModel.LoadNotesAsync();
+        _viewModel.ShowFavoritesOnly = true;
+        Assert.AreEqual(1, AllVisibleNotes().Count());
+
+        await _viewModel.ToggleFavoriteAsync(noteId);
+
+        Assert.AreEqual(0, AllVisibleNotes().Count());
+    }
+
+    [TestMethod]
+    public async Task ToggleFavoriteAsync_WhileInFlight_LeavesCommandExecutableForOtherNotes()
+    {
+        // Regression test: every note card's star button binds the SAME NotesListViewModel-level
+        // ToggleFavoriteCommand instance (each card just supplies its own note ID as the
+        // parameter). The generated AsyncRelayCommand disables itself - and raises
+        // CanExecuteChanged for every control bound to it - while it's running, unless
+        // AllowConcurrentExecutions is set. Without it, toggling favourite on one note would
+        // visibly disable (then re-enable) every OTHER note's favourite button too, seen as a
+        // white "blink" flash across the whole board.
+        var slowPersistence = new SlowPersistenceService();
+        var repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository);
+        var viewModel = new NotesListViewModel(
+            service,
+            new FakeStickyNoteWindowService(),
+            new FakeDialogService(),
+            new WeakReferenceMessenger(),
+            new FakeSettingsRepository(),
+            slowPersistence);
+
+        var noteId1 = await service.CreateNoteAsync("Note 1");
+        var noteId2 = await service.CreateNoteAsync("Note 2");
+        await viewModel.LoadNotesAsync();
+
+        var toggleTask = viewModel.ToggleFavoriteCommand.ExecuteAsync(noteId1);
+
+        Assert.IsTrue(viewModel.ToggleFavoriteCommand.CanExecute(noteId2));
+
+        slowPersistence.Release();
+        await toggleTask;
+    }
+
+    private sealed class SlowPersistenceService : IPersistenceService
+    {
+        private readonly TaskCompletionSource _gate = new();
+
+        public event EventHandler<NoteSaveStateChangedEventArgs>? NoteSaveStateChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public void StartAutoSave()
+        {
+        }
+
+        public Task StopAutoSaveAsync() => Task.CompletedTask;
+
+        public Task SaveAllDirtyNotesAsync() => _gate.Task;
+
+        public bool HasPendingChanges => false;
+
+        public void Release() => _gate.TrySetResult();
+    }
+
     private sealed class FakeStickyNoteWindowService : IStickyNoteWindowService
     {
         public Task OpenNoteWindowAsync(Guid noteId) => Task.CompletedTask;

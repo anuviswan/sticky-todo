@@ -177,9 +177,19 @@ public partial class NotesListViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Handles a note being created, updated, or deleted elsewhere in the app,
-    /// keeping the notes list current without requiring an app restart.
+    /// Handles a note being created, updated, or deleted elsewhere in the app (e.g. a pin/favourite
+    /// toggle or edit from an open note window, or this view's own commands broadcasting back to
+    /// themselves), keeping the notes list current without requiring an app restart.
     /// </summary>
+    /// <remarks>
+    /// An existing note is updated in place rather than replaced, and the board is only rebuilt via
+    /// <see cref="ApplyFilter"/> when something that actually affects grouping (color), ordering
+    /// (Last Modified) or the active filter (type/favourite/search) changed. Replacing the item and
+    /// unconditionally rebuilding on every message - including ones a command on this same
+    /// ViewModel just broadcast about its own already-applied change - tore down and recreated
+    /// every column and every note card on the board each time, which was visible as a brief
+    /// highlight flash across unrelated cards.
+    /// </remarks>
     private async Task OnNoteChangedAsync(StickyNoteChangedMessage message)
     {
         try
@@ -187,23 +197,67 @@ public partial class NotesListViewModel : ObservableObject
             if (message.ChangeType == StickyNoteChangeType.Deleted)
             {
                 _allNotes.RemoveAll(n => n.Id == message.NoteId);
+                ApplyFilter();
+                return;
             }
-            else
+
+            var note = await _stickyNoteService.GetNoteByIdAsync(message.NoteId);
+            if (note is null)
+                return;
+
+            var existing = _allNotes.FirstOrDefault(n => n.Id == message.NoteId);
+            if (existing is null)
             {
-                var note = await _stickyNoteService.GetNoteByIdAsync(message.NoteId);
-                if (note is null)
-                    return;
-
-                _allNotes.RemoveAll(n => n.Id == message.NoteId);
                 _allNotes.Add(ToItemViewModel(note));
+                ApplyFilter();
+                return;
             }
 
-            ApplyFilter();
+            var updated = ToItemViewModel(note);
+            var searchActive = !string.IsNullOrWhiteSpace(SearchQuery);
+            var needsRefilter =
+                existing.ColorArgb != updated.ColorArgb ||
+                existing.LastModified != updated.LastModified ||
+                existing.Type != updated.Type ||
+                (ShowFavoritesOnly && existing.IsFavorite != updated.IsFavorite) ||
+                (searchActive && (existing.Title != updated.Title ||
+                                   existing.Content != updated.Content ||
+                                   !existing.TaskTitles.SequenceEqual(updated.TaskTitles)));
+
+            CopyItemViewModel(updated, existing);
+
+            if (needsRefilter)
+                ApplyFilter();
         }
         catch (Exception ex)
         {
             LoggerHelper.LogException(ex, nameof(OnNoteChangedAsync));
         }
+    }
+
+    /// <summary>
+    /// Copies every display field from <paramref name="source"/> onto <paramref name="target"/>,
+    /// preserving <paramref name="target"/>'s identity (and <see cref="StickyNoteItemViewModel.Id"/>)
+    /// so any Columns/Notes collection already holding it doesn't need to be rebuilt just to pick
+    /// up the new values - its own ObservableProperty change notifications carry the update to the
+    /// bound card.
+    /// </summary>
+    private static void CopyItemViewModel(StickyNoteItemViewModel source, StickyNoteItemViewModel target)
+    {
+        target.Title = source.Title;
+        target.LastModified = source.LastModified;
+        target.ColorArgb = source.ColorArgb;
+        target.Type = source.Type;
+        target.HasTasks = source.HasTasks;
+        target.IsFavorite = source.IsFavorite;
+        target.FirstTaskTitle = source.FirstTaskTitle;
+        target.FirstTaskTitleFormatting = source.FirstTaskTitleFormatting;
+        target.FirstTaskCompleted = source.FirstTaskCompleted;
+        target.RemainingTaskCount = source.RemainingTaskCount;
+        target.TaskTitles = source.TaskTitles;
+        target.Content = source.Content;
+        target.ContentPreview = source.ContentPreview;
+        target.ContentPreviewFormatting = source.ContentPreviewFormatting;
     }
 
     private static StickyNoteItemViewModel ToItemViewModel(StickyNote note)
@@ -287,7 +341,25 @@ public partial class NotesListViewModel : ObservableObject
     /// card in the list is clicked. Reverts the icon back to its previous state if persisting
     /// fails, so the UI never shows a favourite status that wasn't actually saved.
     /// </summary>
-    [RelayCommand]
+    /// <remarks>
+    /// Only re-filters when <see cref="ShowFavoritesOnly"/> is active. Grouping is by color and
+    /// ordering is by Last Modified, neither of which favouriting changes, so the note's card
+    /// stays in the same column/position and its icon updates via its own property-changed
+    /// notification. A plain <see cref="ApplyFilter"/> call here would tear down and rebuild
+    /// every column and every note card in the list on every click for no visible change - and
+    /// doing that mid-click was producing a visible hover/highlight flash across other cards as
+    /// the whole board's containers were destroyed and recreated under the pointer.
+    ///
+    /// <see cref="ToggleFavoriteCommand"/> is one command instance shared by every note card's
+    /// star button (each card binds the same ViewModel-level command with its own note ID as the
+    /// parameter). By default the generated AsyncRelayCommand disables itself while running to
+    /// block double-invocation, and raises CanExecuteChanged for every control bound to it - so
+    /// without AllowConcurrentExecutions, toggling one note's favourite would disable, then
+    /// re-enable, every other note's favourite button too, visible as a brief flash across the
+    /// whole board. Concurrent toggles across different notes are safe (each touches only its
+    /// own note by ID), so allowing them removes the flash instead of just narrowing it.
+    /// </remarks>
+    [RelayCommand(AllowConcurrentExecutions = true)]
     public async Task ToggleFavoriteAsync(Guid noteId)
     {
         var note = _allNotes.FirstOrDefault(n => n.Id == noteId);
@@ -296,7 +368,8 @@ public partial class NotesListViewModel : ObservableObject
 
         var previousValue = note.IsFavorite;
         note.IsFavorite = !previousValue;
-        ApplyFilter();
+        if (ShowFavoritesOnly)
+            ApplyFilter();
 
         try
         {
@@ -314,7 +387,8 @@ public partial class NotesListViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(ToggleFavoriteAsync));
             note.IsFavorite = previousValue;
-            ApplyFilter();
+            if (ShowFavoritesOnly)
+                ApplyFilter();
             await _dialogService.ShowMessageAsync(
                 AppResources.Favorite_ErrorTitle,
                 string.Format(AppResources.Favorite_ErrorMessage, ex.Message),

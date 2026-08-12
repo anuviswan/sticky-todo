@@ -24,7 +24,10 @@ public interface IStickyNoteRepository
     Task<Guid> CreateAsync(StickyNote note);
 
     /// <summary>
-    /// Updates an existing sticky note.
+    /// Updates an existing sticky note. Persists <paramref name="note"/>'s <c>UpdatedAt</c>
+    /// as given rather than stamping it with the current time - callers decide whether an
+    /// operation represents a content change (and should bump it) or a metadata/organizational
+    /// change like favouriting or pinning (which should leave it untouched).
     /// </summary>
     Task UpdateAsync(StickyNote note);
 

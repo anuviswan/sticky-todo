@@ -110,6 +110,37 @@ public class StickyNoteServiceTests
     }
 
     [TestMethod]
+    public async Task SetNotePinnedAsync_Pinning_DoesNotChangeUpdatedAt()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        var beforeUpdatedAt = (await service.GetNoteByIdAsync(noteId))!.UpdatedAt;
+
+        // Act
+        await service.SetNotePinnedAsync(noteId, true);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(beforeUpdatedAt, note!.UpdatedAt);
+    }
+
+    [TestMethod]
+    public async Task SetNotePinnedAsync_Unpinning_DoesNotChangeUpdatedAt()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.SetNotePinnedAsync(noteId, true);
+        var beforeUpdatedAt = (await service.GetNoteByIdAsync(noteId))!.UpdatedAt;
+
+        // Act
+        await service.SetNotePinnedAsync(noteId, false);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(beforeUpdatedAt, note!.UpdatedAt);
+    }
+
+    [TestMethod]
     [ExpectedException(typeof(ArgumentException))]
     public async Task SetNotePinnedAsync_ThrowsOnEmptyId()
     {
@@ -178,6 +209,37 @@ public class StickyNoteServiceTests
         var note = await service.GetNoteByIdAsync(noteId);
         Assert.AreEqual("Test Note", note!.Title);
         Assert.AreEqual((uint)0xFFAABBCC, note.ColorArgb);
+    }
+
+    [TestMethod]
+    public async Task SetNoteFavoriteAsync_Favoriting_DoesNotChangeUpdatedAt()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        var beforeUpdatedAt = (await service.GetNoteByIdAsync(noteId))!.UpdatedAt;
+
+        // Act
+        await service.SetNoteFavoriteAsync(noteId, true);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(beforeUpdatedAt, note!.UpdatedAt);
+    }
+
+    [TestMethod]
+    public async Task SetNoteFavoriteAsync_Unfavoriting_DoesNotChangeUpdatedAt()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        await service.SetNoteFavoriteAsync(noteId, true);
+        var beforeUpdatedAt = (await service.GetNoteByIdAsync(noteId))!.UpdatedAt;
+
+        // Act
+        await service.SetNoteFavoriteAsync(noteId, false);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual(beforeUpdatedAt, note!.UpdatedAt);
     }
 
     [TestMethod]
@@ -331,6 +393,38 @@ public class StickyNoteServiceTests
         // Assert
         var note = await service.GetNoteByIdAsync(noteId);
         Assert.AreEqual("Some free-form text", note!.Content);
+    }
+
+    [TestMethod]
+    public async Task UpdateNoteAsync_TitleChange_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        var beforeUpdatedAt = (await service.GetNoteByIdAsync(noteId))!.UpdatedAt;
+        await Task.Delay(10);
+
+        // Act
+        await service.UpdateNoteAsync(noteId, "Renamed Note", StickyNoteStatus.Active);
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.IsTrue(note!.UpdatedAt > beforeUpdatedAt);
+    }
+
+    [TestMethod]
+    public async Task UpdateNoteAsync_ContentChange_UpdatesUpdatedAt()
+    {
+        // Arrange
+        var (service, noteId) = await CreateServiceWithNoteAsync();
+        var beforeUpdatedAt = (await service.GetNoteByIdAsync(noteId))!.UpdatedAt;
+        await Task.Delay(10);
+
+        // Act
+        await service.UpdateNoteAsync(noteId, "Test Note", StickyNoteStatus.Active, content: "New content");
+
+        // Assert
+        var note = await service.GetNoteByIdAsync(noteId);
+        Assert.IsTrue(note!.UpdatedAt > beforeUpdatedAt);
     }
 
     [TestMethod]
