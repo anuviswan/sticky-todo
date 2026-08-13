@@ -1,0 +1,22 @@
+﻿{
+    "Id":  "11111111-1111-1111-1111-111111111108",
+    "Title":  "Recipe: Sunday Pancakes",
+    "Tasks":  [
+
+              ],
+    "Status":  "Active",
+    "Type":  "Note",
+    "Content":  "2 cups flour, 2 tbsp sugar, 2 tsp baking powder, pinch of salt.\n1.5 cups milk, 2 eggs, 3 tbsp melted butter.\nMix dry, then wet, don\u0027t overmix. Cook on medium until bubbles form, flip once.",
+    "ContentFormatting":  null,
+    "CreatedAt":  "2026-07-27T08:00:00Z",
+    "UpdatedAt":  "2026-07-27T08:20:00Z",
+    "ColorArgb":  4292926173,
+    "DisplayOrder":  7,
+    "IsOpened":  false,
+    "IsPinned":  false,
+    "IsFavorite":  false,
+    "WindowLeft":  null,
+    "WindowTop":  null,
+    "WindowWidth":  null,
+    "WindowHeight":  null
+}

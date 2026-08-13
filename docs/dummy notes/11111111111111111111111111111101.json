@@ -1,0 +1,56 @@
+{
+  "Id": "11111111-1111-1111-1111-111111111101",
+  "Title": "Wi-Fi \u0026 House Info",
+  "Tasks": [],
+  "Status": "Active",
+  "Type": "Note",
+  "Content": "Wi-Fi network: HomeNest-5G\nPassword: sunflower82\nTrash pickup is every Tuesday morning, bins go out the night before.\nSpare key is under the blue flowerpot by the door.",
+  "ContentFormatting": {
+    "Version": 1,
+    "Spans": [
+      {
+        "Start": 0,
+        "Length": 14,
+        "Bold": true,
+        "Italic": false,
+        "Underline": false,
+        "Strikethrough": false
+      },
+      {
+        "Start": 27,
+        "Length": 9,
+        "Bold": true,
+        "Italic": false,
+        "Underline": false,
+        "Strikethrough": false
+      },
+      {
+        "Start": 37,
+        "Length": 11,
+        "Bold": false,
+        "Italic": false,
+        "Underline": true,
+        "Strikethrough": false
+      },
+      {
+        "Start": 71,
+        "Length": 15,
+        "Bold": false,
+        "Italic": true,
+        "Underline": false,
+        "Strikethrough": false
+      }
+    ]
+  },
+  "CreatedAt": "2026-08-01T09:15:00Z",
+  "UpdatedAt": "2026-08-11T15:14:12.7591348Z",
+  "ColorArgb": 4293848575,
+  "DisplayOrder": 0,
+  "IsOpened": true,
+  "IsPinned": false,
+  "IsFavorite": true,
+  "WindowLeft": 80,
+  "WindowTop": 120,
+  "WindowWidth": 320,
+  "WindowHeight": 400
+}
