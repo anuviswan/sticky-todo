@@ -27,6 +27,16 @@ public class WindowService : IWindowService
         _mainWindow?.Close();
     }
 
+    public void RequestToggleMaximizeRestore()
+    {
+        if (_mainWindow == null)
+            return;
+
+        _mainWindow.WindowState = _mainWindow.WindowState == System.Windows.WindowState.Maximized
+            ? System.Windows.WindowState.Normal
+            : System.Windows.WindowState.Maximized;
+    }
+
     public void RequestShow()
     {
         if (_mainWindow == null)

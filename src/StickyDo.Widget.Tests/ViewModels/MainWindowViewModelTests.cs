@@ -210,6 +210,8 @@ public class MainWindowViewModelTests
 
         public void RequestClose() { }
 
+        public void RequestToggleMaximizeRestore() { }
+
         public void RequestShow() { }
     }
 
