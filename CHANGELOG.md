@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Notes can now be resized by dragging any edge or corner, not just the bottom-left one. ([#151](https://github.com/anuviswan/sticky-todo/pull/151))
+
 ### Fixed
 
 - Deleting a note no longer occasionally shows a false "Save Error" message right after. ([#135](https://github.com/anuviswan/sticky-todo/pull/135))
@@ -14,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The notes list no longer pops open by itself every time Windows restarts — your open notes are restored instead. ([#146](https://github.com/anuviswan/sticky-todo/pull/146))
 - Marking a note as a favourite or pinning it no longer changes its "last modified" time. ([#147](https://github.com/anuviswan/sticky-todo/pull/147))
 - Toggling one note's favourite status no longer briefly disables the favourite button on every other note. ([#147](https://github.com/anuviswan/sticky-todo/pull/147))
+- The "First Task" sample task now only appears in your very first note, instead of every new note you create — and it won't reappear if you delete it. ([#150](https://github.com/anuviswan/sticky-todo/pull/150))
+- Relaunching StickyDo while it's already running no longer shows a confusing "Unexpected Error" message after the "already running" notice. ([#154](https://github.com/anuviswan/sticky-todo/pull/154))
+- Deleting a note now reliably shows the confirmation prompt, instead of occasionally doing nothing on slower PCs. ([#157](https://github.com/anuviswan/sticky-todo/pull/157))
 
 ### Removed
 
