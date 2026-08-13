@@ -1,0 +1,50 @@
+﻿{
+    "Id":  "11111111-1111-1111-1111-111111111104",
+    "Title":  "Mom\u0027s Birthday Party",
+    "Tasks":  [
+
+              ],
+    "Status":  "Active",
+    "Type":  "Note",
+    "Content":  "Order the cake from Sweet Treats Bakery by Thursday.\nInvite the neighbors - Sarah, Tom, and the Patels.\nBalloons and streamers are in the garage, top shelf.",
+    "ContentFormatting":  {
+                              "Version":  1,
+                              "Spans":  [
+                                            {
+                                                "Start":  20,
+                                                "Length":  19,
+                                                "Bold":  true,
+                                                "Italic":  false,
+                                                "Underline":  false,
+                                                "Strikethrough":  false
+                                            },
+                                            {
+                                                "Start":  43,
+                                                "Length":  8,
+                                                "Bold":  false,
+                                                "Italic":  false,
+                                                "Underline":  true,
+                                                "Strikethrough":  false
+                                            },
+                                            {
+                                                "Start":  146,
+                                                "Length":  9,
+                                                "Bold":  false,
+                                                "Italic":  true,
+                                                "Underline":  false,
+                                                "Strikethrough":  false
+                                            }
+                                        ]
+                          },
+    "CreatedAt":  "2026-08-03T15:30:00Z",
+    "UpdatedAt":  "2026-08-03T16:10:00Z",
+    "ColorArgb":  4293787133,
+    "DisplayOrder":  3,
+    "IsOpened":  false,
+    "IsPinned":  false,
+    "IsFavorite":  false,
+    "WindowLeft":  null,
+    "WindowTop":  null,
+    "WindowWidth":  null,
+    "WindowHeight":  null
+}
