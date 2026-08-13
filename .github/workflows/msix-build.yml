@@ -1,3 +1,6 @@
+# Manually builds, self-signs, and packages StickyDo.Widget as an MSIX/MSIXUpload, then
+# publishes a GitHub Release with the packaged artifacts. Can only be run from the "release"
+# branch, and must be triggered by hand from the Actions tab with the target version.
 name: Build MSIX Package
 
 on:

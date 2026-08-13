@@ -1,3 +1,7 @@
+# Manually cuts a release: merges main into prerelease, turns CHANGELOG.md's [Unreleased]
+# section into a dated version heading on prerelease, and opens/updates the
+# prerelease -> main and prerelease -> release pull requests for that version. Must be
+# triggered by hand from the Actions tab with the version to release.
 name: Prepare Release
 
 on:

@@ -1,3 +1,5 @@
+# Builds the StickyDo solution, runs dead-code diagnostics, and runs the test suite for every
+# pull request targeting main.
 name: PR Validation
 
 on:

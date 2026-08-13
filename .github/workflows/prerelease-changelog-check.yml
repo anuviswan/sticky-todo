@@ -1,3 +1,10 @@
+# Validates the release PR opened by "Prepare Release" (prerelease -> main): checks that it
+# touches only CHANGELOG.md, that the [Unreleased] section has been cut, and that the new
+# version heading carries a release date. GitHub's `branches` filter on `pull_request` only
+# matches the PR's *base* branch, not its head, so it cannot restrict this trigger to PRs
+# coming from "prerelease" - every PR into main will queue this workflow. The job-level `if`
+# below is what actually limits real execution to prerelease -> main PRs; every other PR shows
+# up as a skipped run rather than performing any checks.
 name: Prerelease Changelog Check
 
 on:
