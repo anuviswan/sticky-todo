@@ -76,19 +76,21 @@ jobs:
       - name: Push prerelease branch
         run: git push origin HEAD:prerelease
 
-      - name: Create or update pull request
+      - name: Create or update pull requests
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          existing_pr="$(gh pr list --base main --head prerelease --state open --json url --jq '.[0].url' || true)"
-          if [ -n "$existing_pr" ]; then
-            echo "Pushed to existing pull request: $existing_pr"
-          else
-            gh pr create \
-              --base main \
-              --head prerelease \
-              --title "Release v${VERSION}" \
-              --body "Cuts the \`[Unreleased]\` section of CHANGELOG.md to version ${VERSION}."
-          fi
+          for base in main release; do
+            existing_pr="$(gh pr list --base "$base" --head prerelease --state open --json url --jq '.[0].url' || true)"
+            if [ -n "$existing_pr" ]; then
+              echo "Pushed to existing pull request: $existing_pr"
+            else
+              gh pr create \
+                --base "$base" \
+                --head prerelease \
+                --title "Release v${VERSION}" \
+                --body "Cuts the \`[Unreleased]\` section of CHANGELOG.md to version ${VERSION}."
+            fi
+          done
