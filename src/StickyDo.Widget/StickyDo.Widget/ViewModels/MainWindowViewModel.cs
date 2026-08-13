@@ -154,6 +154,15 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Toggles the application window between maximized and normal (restored) state.
+    /// </summary>
+    [RelayCommand]
+    public void MaximizeRestoreWindow()
+    {
+        _mainWindowService.RequestToggleMaximizeRestore();
+    }
+
+    /// <summary>
     /// Requests that the notes list window close. The app intercepts this and hides the
     /// window to the system tray instead of exiting; only the tray icon's "Exit" command quits.
     /// </summary>
