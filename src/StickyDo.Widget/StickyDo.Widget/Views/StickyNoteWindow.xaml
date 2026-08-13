@@ -547,13 +547,16 @@
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
             </Popup>
 
-            <!-- More Options Popup (see StaysOpen note above) -->
+            <!-- More Options Popup (see StaysOpen note above). PopupAnimation is bound rather
+                 than hardcoded: DeleteNoteAsync forces it to None for the close that precedes
+                 the delete confirmation dialog, to avoid racing the fade-out animation against
+                 that modal (see DeleteNoteAsync). -->
             <Popup x:Name="MoreOptionsFlyout"
                    IsOpen="{Binding IsMoreOptionsOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=MenuButton}"
                    Placement="Top"
                    AllowsTransparency="True"
-                   PopupAnimation="Fade"
+                   PopupAnimation="{Binding MoreOptionsPopupAnimation}"
                    StaysOpen="True"
                    HorizontalOffset="-156"
                    VerticalOffset="-6"
