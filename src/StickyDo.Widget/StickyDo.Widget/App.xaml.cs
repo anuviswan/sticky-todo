@@ -18,6 +18,7 @@ public partial class App : Application
     private WindowManager? _windowManager;
     private bool _isExitRequested;
     private static Mutex? _appMutex;
+    private static bool _ownsMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
     private readonly GlobalExceptionHandler _globalExceptionHandler = new(new ExceptionReporter());
 
@@ -93,12 +94,22 @@ public partial class App : Application
     private static bool AcquireSingleInstanceLock()
     {
         _appMutex = new Mutex(true, MutexName, out bool createdNew);
+        _ownsMutex = createdNew;
         return createdNew;
     }
 
+    /// <summary>
+    /// Only releases the mutex if this instance actually owns it. When another instance is
+    /// already running, AcquireSingleInstanceLock leaves this instance's mutex handle unowned,
+    /// so calling ReleaseMutex() on it would throw a SynchronizationLockException.
+    /// </summary>
     private static void ReleaseSingleInstanceLock()
     {
-        _appMutex?.ReleaseMutex();
+        if (_ownsMutex)
+        {
+            _appMutex?.ReleaseMutex();
+        }
+
         _appMutex?.Dispose();
         _appMutex = null;
     }
