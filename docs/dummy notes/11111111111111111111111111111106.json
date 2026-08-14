@@ -1,0 +1,22 @@
+﻿{
+    "Id":  "11111111-1111-1111-1111-111111111106",
+    "Title":  "Book Recommendations",
+    "Tasks":  [
+
+              ],
+    "Status":  "Active",
+    "Type":  "Note",
+    "Content":  "Books to pick up next:\n- Atomic Habits - James Clear\n- Deep Work - Cal Newport\n- The Pragmatic Programmer\nAsk Priya for her sci-fi list too.",
+    "ContentFormatting":  null,
+    "CreatedAt":  "2026-07-30T19:00:00Z",
+    "UpdatedAt":  "2026-08-01T08:00:00Z",
+    "ColorArgb":  4294175986,
+    "DisplayOrder":  5,
+    "IsOpened":  false,
+    "IsPinned":  false,
+    "IsFavorite":  false,
+    "WindowLeft":  null,
+    "WindowTop":  null,
+    "WindowWidth":  null,
+    "WindowHeight":  null
+}

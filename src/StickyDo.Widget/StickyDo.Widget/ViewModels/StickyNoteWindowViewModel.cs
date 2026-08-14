@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -95,6 +96,14 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private bool isMoreOptionsOpen = false;
+
+    /// <summary>
+    /// Drives the "more options" Popup's <c>PopupAnimation</c>. Normally <see cref="PopupAnimation.Fade"/>;
+    /// <see cref="DeleteNoteAsync"/> switches it to <see cref="PopupAnimation.None"/> for the close that
+    /// precedes the delete confirmation dialog, see that method for why.
+    /// </summary>
+    [ObservableProperty]
+    private PopupAnimation moreOptionsPopupAnimation = PopupAnimation.Fade;
 
     [ObservableProperty]
     private MoreOptionsPopupViewModel moreOptionsPopupViewModel = new();
@@ -234,44 +243,20 @@ public partial class StickyNoteWindowViewModel : ObservableObject
             }
             else
             {
-                // If no tasks exist, add a sample task for demonstration
-                if (!_currentNote.Tasks.Any())
+                foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
                 {
-                    var sampleTaskId = await _stickyNoteTaskService.CreateTaskAsync(_currentNote.Id, "First Task");
-                    var sampleTask = await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id);
-                    if (sampleTask?.Tasks.FirstOrDefault(t => t.Id == sampleTaskId) is { } newTask)
+                    var taskVm = new StickyNoteTaskItemViewModel
                     {
-                        var taskVm = new StickyNoteTaskItemViewModel
-                        {
-                            Id = newTask.Id,
-                            Title = newTask.Title,
-                            TitleFormatting = newTask.TitleFormatting,
-                            IsCompleted = newTask.IsCompleted,
-                            Order = newTask.Order,
-                            CreatedAt = newTask.CreatedAt,
-                            UpdatedAt = newTask.UpdatedAt
-                        };
-                        taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
-                        Tasks.Add(taskVm);
-                    }
-                }
-                else
-                {
-                    foreach (var task in _currentNote.Tasks.OrderBy(t => t.Order))
-                    {
-                        var taskVm = new StickyNoteTaskItemViewModel
-                        {
-                            Id = task.Id,
-                            Title = task.Title,
-                            TitleFormatting = task.TitleFormatting,
-                            IsCompleted = task.IsCompleted,
-                            Order = task.Order,
-                            CreatedAt = task.CreatedAt,
-                            UpdatedAt = task.UpdatedAt
-                        };
-                        taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
-                        Tasks.Add(taskVm);
-                    }
+                        Id = task.Id,
+                        Title = task.Title,
+                        TitleFormatting = task.TitleFormatting,
+                        IsCompleted = task.IsCompleted,
+                        Order = task.Order,
+                        CreatedAt = task.CreatedAt,
+                        UpdatedAt = task.UpdatedAt
+                    };
+                    taskVm.SetCallbacks(UpdateTaskAsync, async (taskId) => await DeleteTaskAsync(taskId), FocusAddTaskInput);
+                    Tasks.Add(taskVm);
                 }
             }
 
@@ -388,6 +373,15 @@ public partial class StickyNoteWindowViewModel : ObservableObject
 
         try
         {
+            // The note may have just been permanently deleted from another window (e.g. dragged
+            // to Trash from the Notes List) - in that case there's nothing left to save, and
+            // UpdateNoteAsync would otherwise throw. This is an expected race, not an error.
+            if (await _stickyNoteService.GetNoteByIdAsync(_currentNote.Id) is null)
+            {
+                _hasUnsavedChanges = false;
+                return;
+            }
+
             await _stickyNoteService.UpdateNoteAsync(
                 _currentNote.Id,
                 _currentNote.Title,
@@ -614,24 +608,28 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         if (_currentNote is null)
             return;
 
+        // Close the "more options" Popup without its fade animation before showing a modal
+        // dialog. PopupAnimation.Fade defers the popup's actual window teardown until the
+        // animation finishes; Dispatcher.Yield only guarantees the next dispatcher frame has
+        // run, not that the animation has completed, so on slower machines the confirmation
+        // dialog can still be created while the popup's window is mid-teardown and end up
+        // non-visible/non-interactive (menu closes, nothing else happens). Forcing
+        // PopupAnimation.None makes the close synchronous and removes the race entirely.
+        MoreOptionsPopupAnimation = PopupAnimation.None;
         IsMoreOptionsOpen = false;
-
-        // Let the "more options" Popup finish closing before showing a modal dialog. Popup
-        // (StaysOpen="False") races its own dismissal against a synchronous MessageBox.Show
-        // triggered from a button inside it, and the dialog can end up created but never
-        // actually visible/interactive if shown before the popup teardown is done.
         await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
-
-        var confirmed = await _dialogService.ShowConfirmationAsync(
-            AppResources.DeleteNote_ConfirmTitle,
-            AppResources.DeleteNote_ConfirmMessage);
-
-        if (!confirmed)
-            return;
 
         try
         {
+            var confirmed = await _dialogService.ShowConfirmationAsync(
+                AppResources.DeleteNote_ConfirmTitle,
+                AppResources.DeleteNote_ConfirmMessage);
+
+            if (!confirmed)
+                return;
+
             await _stickyNoteService.DeleteNoteAsync(_currentNote.Id);
+            _hasUnsavedChanges = false;
             _messenger.Send(new StickyNoteChangedMessage(_currentNote.Id, StickyNoteChangeType.Deleted));
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -639,6 +637,10 @@ public partial class StickyNoteWindowViewModel : ObservableObject
         {
             LoggerHelper.LogException(ex, nameof(DeleteNoteAsync));
             await _dialogService.ShowMessageAsync("Delete Error", $"Error deleting note: {ex.Message}", System.Windows.MessageBoxImage.Error);
+        }
+        finally
+        {
+            MoreOptionsPopupAnimation = PopupAnimation.Fade;
         }
     }
 

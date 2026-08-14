@@ -8,6 +8,7 @@ using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
 using StickyDo.Domain.Storage;
 using StickyDo.Widget.Interfaces;
+using StickyDo.Widget.Messages;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget.Tests.ViewModels;
@@ -29,7 +30,7 @@ public class StickyNoteWindowViewModelTests
 
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
-        _service = new StickyNoteService(_repository);
+        _service = new StickyNoteService(_repository, _repository);
         _taskService = new StickyNoteTaskService(_repository, _repository);
         _viewModel = new StickyNoteWindowViewModel(
             _service,
@@ -70,7 +71,7 @@ public class StickyNoteWindowViewModelTests
     }
 
     [TestMethod]
-    public async Task LoadNoteAsync_NoteTypeTodo_StillAutoSeedsTaskWhenEmpty()
+    public async Task LoadNoteAsync_FirstNoteEverCreated_LoadsSeededDemoTask()
     {
         var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
 
@@ -78,6 +79,34 @@ public class StickyNoteWindowViewModelTests
 
         Assert.AreEqual(1, _viewModel.Tasks.Count);
         Assert.AreEqual("First Task", _viewModel.Tasks[0].Title);
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_SecondNoteCreatedEmpty_DoesNotAutoSeedTask()
+    {
+        // Regression test for #133: the demo task should only ever be seeded into a user's
+        // very first note (at creation time), not into every empty Todo note that gets loaded.
+        await _service.CreateNoteAsync("First Note", type: NoteType.Todo);
+        var secondNoteId = await _service.CreateNoteAsync("Second Note", type: NoteType.Todo);
+
+        await _viewModel.LoadNoteAsync(secondNoteId);
+
+        Assert.AreEqual(0, _viewModel.Tasks.Count);
+    }
+
+    [TestMethod]
+    public async Task LoadNoteAsync_ExistingNoteWithAllTasksDeleted_DoesNotReAddDemoTaskOnReload()
+    {
+        // Regression test for #133: previously, LoadNoteAsync re-seeded "First Task" any time
+        // an empty Todo note was loaded, so deleting every task from an existing note and
+        // reopening it would resurrect the demo task instead of staying empty.
+        var noteId = await _service.CreateNoteAsync("Grocery List", type: NoteType.Todo);
+        await _viewModel.LoadNoteAsync(noteId);
+        await _viewModel.DeleteTaskCommand.ExecuteAsync(_viewModel.Tasks[0].Id);
+
+        await _viewModel.LoadNoteAsync(noteId);
+
+        Assert.AreEqual(0, _viewModel.Tasks.Count);
     }
 
     [TestMethod]
@@ -158,6 +187,75 @@ public class StickyNoteWindowViewModelTests
     }
 
     [TestMethod]
+    public async Task SaveAsync_PersistsTitle()
+    {
+        var noteId = await _service.CreateNoteAsync("Original Title", type: NoteType.Note);
+        await _viewModel.LoadNoteAsync(noteId);
+
+        _viewModel.Title = "Updated Title";
+        await _viewModel.SaveCommand.ExecuteAsync(null);
+
+        var persisted = await _service.GetNoteByIdAsync(noteId);
+        Assert.AreEqual("Updated Title", persisted!.Title);
+    }
+
+    [TestMethod]
+    public async Task SaveCommand_TitleCommittedViaEnterOrLostFocus_NotifiesNotesListImmediately()
+    {
+        // Regression test: editing a note's title used to only reach the Notes List when the
+        // window closed - typing a new title and leaving it open (committing via Enter or moving
+        // focus away, both of which invoke SaveCommand per the CommitOnLostFocusBehavior/KeyBinding
+        // wiring in StickyNoteWindow.xaml) never told the list to refresh that card.
+        var noteId = await _service.CreateNoteAsync("Original Title", type: NoteType.Note);
+        var messenger = new WeakReferenceMessenger();
+        var viewModel = new StickyNoteWindowViewModel(
+            _service,
+            _taskService,
+            new FakeDialogService(),
+            new FakeStickyNoteCreationService(),
+            new FakePersistenceService(),
+            messenger,
+            new FakeWindowService());
+        await viewModel.LoadNoteAsync(noteId);
+
+        StickyNoteChangedMessage? received = null;
+        messenger.Register<StickyNoteChangedMessage>(this, (recipient, message) => received = message);
+
+        viewModel.Title = "Updated Title";
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.IsNotNull(received);
+        Assert.AreEqual(noteId, received!.NoteId);
+        Assert.AreEqual(StickyNoteChangeType.Updated, received.ChangeType);
+    }
+
+    [TestMethod]
+    public async Task SaveAsync_NoteWasDeletedConcurrently_ReturnsQuietlyWithoutShowingErrorDialog()
+    {
+        // Regression test for #134: a note can be deleted (e.g. dragged to Trash from the Notes
+        // List) while its window still has unsaved edits pending. The window-closed handler then
+        // calls SaveAsync, which used to throw "Note with ID {id} not found." and show a "Save
+        // Error" dialog. SaveAsync should instead treat this as an expected race and no-op.
+        var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
+        var dialogService = new FakeDialogService();
+        var viewModel = new StickyNoteWindowViewModel(
+            _service,
+            _taskService,
+            dialogService,
+            new FakeStickyNoteCreationService(),
+            new FakePersistenceService(),
+            new WeakReferenceMessenger(),
+            new FakeWindowService());
+        await viewModel.LoadNoteAsync(noteId);
+        viewModel.Content = "Typed some text";
+
+        await _service.DeleteNoteAsync(noteId);
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(0, dialogService.ShownMessages.Count);
+    }
+
+    [TestMethod]
     public async Task LoadNoteAsync_NoteTypeNote_RestoresContentFormatting()
     {
         var noteId = await _service.CreateNoteAsync("Journal Entry", type: NoteType.Note);
@@ -234,8 +332,13 @@ public class StickyNoteWindowViewModelTests
 
     private sealed class FakeDialogService : IDialogService
     {
-        public Task ShowMessageAsync(string title, string message, MessageBoxImage icon = MessageBoxImage.None) =>
-            Task.CompletedTask;
+        public List<(string Title, string Message)> ShownMessages { get; } = [];
+
+        public Task ShowMessageAsync(string title, string message, MessageBoxImage icon = MessageBoxImage.None)
+        {
+            ShownMessages.Add((title, message));
+            return Task.CompletedTask;
+        }
 
         public Task<bool> ShowConfirmationAsync(string title, string message) => Task.FromResult(true);
     }
@@ -259,6 +362,7 @@ public class StickyNoteWindowViewModelTests
     {
         public void RequestMinimize() { }
         public void RequestClose() { }
+        public void RequestToggleMaximizeRestore() { }
         public void RequestShow() { }
     }
 

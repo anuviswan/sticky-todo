@@ -2,6 +2,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
+using StickyDo.Domain.Services;
 using StickyDo.Domain.Storage;
 using StickyDo.Domain.Utilities;
 
@@ -109,6 +110,105 @@ public class FileBasedRepositoryTests
         Assert.IsNotNull(retrieved);
         Assert.AreEqual("Updated", retrieved.Title);
         Assert.IsTrue(repository.GetDirtyNotes().Contains(note.Id));
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_DistinctObjectWithSameId_CopiesIsFavoriteAndContent()
+    {
+        // Regression test: UpdateAsync previously copied every field except IsFavorite/Content
+        // onto the stored note. Every current caller happens to pass back the same in-memory
+        // instance it fetched via GetByIdAsync, which made the missing copy a no-op - but a
+        // caller passing a distinct object with the same Id (e.g. a future import/batch-update
+        // path) would silently lose those fields.
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+
+        var note = new StickyNote
+        {
+            Id = Guid.NewGuid(),
+            Title = "Original",
+            Status = StickyNoteStatus.Active
+        };
+        await repository.CreateAsync(note);
+
+        var updatedNote = new StickyNote
+        {
+            Id = note.Id,
+            Title = "Original",
+            Status = StickyNoteStatus.Active,
+            IsFavorite = true,
+            Content = "Updated content"
+        };
+
+        await repository.UpdateAsync(updatedNote);
+
+        var retrieved = await repository.GetByIdAsync(note.Id);
+        Assert.IsNotNull(retrieved);
+        Assert.IsTrue(retrieved.IsFavorite);
+        Assert.AreEqual("Updated content", retrieved.Content);
+    }
+
+    [TestMethod]
+    public async Task UpdateAsync_DoesNotOverwriteUpdatedAtWithCurrentTime()
+    {
+        // Regression test for #143: UpdateAsync used to unconditionally stamp UpdatedAt with
+        // DateTime.UtcNow on every call, even for metadata-only changes (favourite/pin). It now
+        // persists whatever UpdatedAt the caller set on the note, so callers control whether an
+        // operation counts as a content change.
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+
+        var originalUpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var note = new StickyNote
+        {
+            Id = Guid.NewGuid(),
+            Title = "Original",
+            Status = StickyNoteStatus.Active,
+            UpdatedAt = originalUpdatedAt
+        };
+        await repository.CreateAsync(note);
+
+        var updatedNote = new StickyNote
+        {
+            Id = note.Id,
+            Title = "Original",
+            Status = StickyNoteStatus.Active,
+            IsFavorite = true,
+            UpdatedAt = originalUpdatedAt
+        };
+
+        await repository.UpdateAsync(updatedNote);
+
+        var retrieved = await repository.GetByIdAsync(note.Id);
+        Assert.IsNotNull(retrieved);
+        Assert.IsTrue(retrieved.IsFavorite);
+        Assert.AreEqual(originalUpdatedAt, retrieved.UpdatedAt);
+    }
+
+    [TestMethod]
+    public async Task FavoriteToggle_SavedToDiskAndReloaded_KeepsOriginalUpdatedAt()
+    {
+        // End-to-end regression test for #143 through the same path the app uses: create a
+        // note via the service, save it to disk, favourite it, save again, then reload from
+        // disk as a fresh process would - the persisted UpdatedAt must not have moved.
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+        var service = new StickyNoteService(repository, repository);
+
+        var noteId = await service.CreateNoteAsync("Test Note");
+        await repository.SaveNoteAsync(noteId);
+        var originalUpdatedAt = (await repository.GetByIdAsync(noteId))!.UpdatedAt;
+
+        await service.SetNoteFavoriteAsync(noteId, true);
+        await repository.SaveNoteAsync(noteId);
+
+        var reloadedRepository = new FileBasedRepository(_storageLocationProvider);
+        await reloadedRepository.InitializeAsync();
+
+        var reloadedNote = await reloadedRepository.GetByIdAsync(noteId);
+        Assert.IsNotNull(reloadedNote);
+        Assert.IsTrue(reloadedNote.IsFavorite);
+        Assert.AreEqual(originalUpdatedAt, reloadedNote.UpdatedAt);
     }
 
     [TestMethod]

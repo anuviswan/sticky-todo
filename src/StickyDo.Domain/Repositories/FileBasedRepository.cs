@@ -161,13 +161,15 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
             existing.Title = note.Title;
             existing.Status = note.Status;
             existing.Type = note.Type;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = note.UpdatedAt;
+            existing.Content = note.Content;
             existing.ContentFormatting = note.ContentFormatting;
             existing.ColorArgb = note.ColorArgb;
             existing.DisplayOrder = note.DisplayOrder;
             existing.Tasks = note.Tasks;
             existing.IsOpened = note.IsOpened;
             existing.IsPinned = note.IsPinned;
+            existing.IsFavorite = note.IsFavorite;
             existing.WindowLeft = note.WindowLeft;
             existing.WindowTop = note.WindowTop;
             existing.WindowWidth = note.WindowWidth;

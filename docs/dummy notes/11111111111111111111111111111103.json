@@ -1,0 +1,43 @@
+{
+  "Id": "11111111-1111-1111-1111-111111111103",
+  "Title": "Sprint Bug Fixes",
+  "Tasks": [
+    {
+      "Id": "22222222-2222-2222-2222-222222222301",
+      "Title": "Fix note color not saving after app restart",
+      "IsCompleted": true,
+      "Order": 0,
+      "CreatedAt": "2026-08-04T13:00:00Z",
+      "UpdatedAt": "2026-08-05T09:00:00Z"
+    },
+    {
+      "Id": "22222222-2222-2222-2222-222222222302",
+      "Title": "Search doesn\u0027t match note titles with punctuation",
+      "IsCompleted": false,
+      "Order": 1,
+      "CreatedAt": "2026-08-04T13:00:10Z",
+      "UpdatedAt": "2026-08-04T13:00:10Z"
+    },
+    {
+      "Id": "22222222-2222-2222-2222-222222222303",
+      "Title": "Tray icon tooltip shows wrong note count",
+      "IsCompleted": false,
+      "Order": 2,
+      "CreatedAt": "2026-08-04T13:00:20Z",
+      "UpdatedAt": "2026-08-04T13:00:20Z"
+    }
+  ],
+  "Status": "Active",
+  "Type": "Todo",
+  "CreatedAt": "2026-08-04T13:00:00Z",
+  "UpdatedAt": "2026-08-11T15:14:13.2029901Z",
+  "ColorArgb": 4294958799,
+  "DisplayOrder": 2,
+  "IsOpened": true,
+  "IsPinned": false,
+  "IsFavorite": true,
+  "WindowLeft": 800,
+  "WindowTop": 120,
+  "WindowWidth": 320,
+  "WindowHeight": 400
+}

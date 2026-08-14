@@ -32,8 +32,12 @@ public class StickyNoteTaskServiceTests
     {
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var noteService = new StickyNoteService(repository);
+        var noteService = new StickyNoteService(repository, repository);
         var taskService = new StickyNoteTaskService(repository, repository);
+
+        // Prime the repository with a throwaway note first, so the note under test isn't
+        // treated as the user's very first note ever and seeded with a "First Task" demo task.
+        await noteService.CreateNoteAsync("Priming Note", type: NoteType.Note);
 
         var noteId = await noteService.CreateNoteAsync("Test Note", type: NoteType.Todo);
         foreach (var title in taskTitles)
@@ -68,7 +72,7 @@ public class StickyNoteTaskServiceTests
     {
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var noteService = new StickyNoteService(repository);
+        var noteService = new StickyNoteService(repository, repository);
         var taskService = new StickyNoteTaskService(repository, repository);
         var noteId = await noteService.CreateNoteAsync("Journal", type: NoteType.Note);
         await noteService.UpdateNoteAsync(noteId, "Journal", StickyNoteStatus.Active, content: "Buy milk\n\nWalk dog");
@@ -89,7 +93,7 @@ public class StickyNoteTaskServiceTests
     {
         var repository = new FileBasedRepository(_storageLocationProvider);
         await repository.InitializeAsync();
-        var noteService = new StickyNoteService(repository);
+        var noteService = new StickyNoteService(repository, repository);
         var taskService = new StickyNoteTaskService(repository, repository);
         var noteId = await noteService.CreateNoteAsync("Journal", type: NoteType.Note);
         await noteService.UpdateNoteAsync(noteId, "Journal", StickyNoteStatus.Active, content: "Buy milk");

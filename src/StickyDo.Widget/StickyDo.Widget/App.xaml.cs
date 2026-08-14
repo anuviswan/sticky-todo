@@ -15,8 +15,10 @@ public partial class App : Application
 {
     private ServiceProvider? _serviceProvider;
     private ITrayIconService? _trayIconService;
+    private WindowManager? _windowManager;
     private bool _isExitRequested;
     private static Mutex? _appMutex;
+    private static bool _ownsMutex;
     private const string MutexName = "StickyDo_SingleInstance_e8d3c9a1";
     private readonly GlobalExceptionHandler _globalExceptionHandler = new(new ExceptionReporter());
 
@@ -46,6 +48,18 @@ public partial class App : Application
             MessageBox.Show($"Failed to start application: {ex.Message}\n\n{ex.StackTrace}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
+    }
+
+    /// <summary>
+    /// Fires when Windows is logging off or shutting down/restarting. Marked here - before
+    /// the OS closes our windows as part of ending the session - so note windows know their
+    /// upcoming Closed event is part of a mass shutdown and skip clearing their "open" flag,
+    /// letting them be restored on the next launch instead of falling back to the notes list.
+    /// </summary>
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        _windowManager?.MarkApplicationExiting();
+        base.OnSessionEnding(e);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -80,12 +94,22 @@ public partial class App : Application
     private static bool AcquireSingleInstanceLock()
     {
         _appMutex = new Mutex(true, MutexName, out bool createdNew);
+        _ownsMutex = createdNew;
         return createdNew;
     }
 
+    /// <summary>
+    /// Only releases the mutex if this instance actually owns it. When another instance is
+    /// already running, AcquireSingleInstanceLock leaves this instance's mutex handle unowned,
+    /// so calling ReleaseMutex() on it would throw a SynchronizationLockException.
+    /// </summary>
     private static void ReleaseSingleInstanceLock()
     {
-        _appMutex?.ReleaseMutex();
+        if (_ownsMutex)
+        {
+            _appMutex?.ReleaseMutex();
+        }
+
         _appMutex?.Dispose();
         _appMutex = null;
     }
@@ -101,8 +125,8 @@ public partial class App : Application
             throw new InvalidOperationException("Services not configured");
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-        var windowManager = _serviceProvider.GetRequiredService<WindowManager>();
-        windowManager.SetMainWindow(mainWindow);
+        _windowManager = _serviceProvider.GetRequiredService<WindowManager>();
+        _windowManager.SetMainWindow(mainWindow);
 
         var windowServiceImpl = _serviceProvider.GetRequiredService<IWindowService>();
         if (windowServiceImpl is WindowService windowService)
@@ -122,6 +146,7 @@ public partial class App : Application
             onExitRequested: () =>
             {
                 _isExitRequested = true;
+                _windowManager?.MarkApplicationExiting();
                 Shutdown();
             });
 
@@ -140,7 +165,7 @@ public partial class App : Application
     /// </summary>
     private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
-        if (_isExitRequested)
+        if (_isExitRequested || (_windowManager?.IsApplicationExiting ?? false))
             return;
 
         e.Cancel = true;

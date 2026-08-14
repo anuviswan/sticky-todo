@@ -1,3 +1,6 @@
+# Manually builds, self-signs, and packages StickyDo.Widget as an MSIX/MSIXUpload, then
+# publishes a GitHub Release with the packaged artifacts. Can only be run from the "release"
+# branch, and must be triggered by hand from the Actions tab with the target version.
 name: Build MSIX Package
 
 on:
@@ -31,8 +34,53 @@ jobs:
       BUILD_PLATFORM: x64
 
     steps:
+      - name: Verify release branch
+        # workflow_dispatch lets any branch be picked from the Actions UI, so this guards against
+        # accidentally publishing a signed MSIX/GitHub Release from a feature branch.
+        if: github.ref != 'refs/heads/release'
+        shell: pwsh
+        run: |
+          Write-Error "Build MSIX Package can only be run from the 'release' branch (current ref: ${{ github.ref }})."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Verify CHANGELOG.md version
+        # Guards against packaging a version that CHANGELOG.md doesn't actually document: the
+        # latest entry must be a cut release (no [Unreleased] section left), it must carry a
+        # release date, and its version must match the one supplied to this workflow. Format
+        # follows Keep a Changelog (https://keepachangelog.com/en/1.1.0/): "## [x.y.z.w] - YYYY-MM-DD".
+        shell: pwsh
+        run: |
+          $version = "${{ inputs.version }}"
+          $changelog = Get-Content -Path "CHANGELOG.md" -Raw
+
+          if ($changelog -match '(?im)^## \[Unreleased\]') {
+            Write-Error "CHANGELOG.md still has an [Unreleased] section. Cut it to a released version before building the MSIX package."
+            exit 1
+          }
+
+          $headingMatch = [regex]::Match($changelog, '(?m)^## \[([^\]]+)\](?:\s*-\s*(\S+))?')
+          if (-not $headingMatch.Success) {
+            Write-Error "No version heading (e.g. '## [$version] - 2026-08-13') found in CHANGELOG.md."
+            exit 1
+          }
+
+          $changelogVersion = $headingMatch.Groups[1].Value
+          $changelogDate = $headingMatch.Groups[2].Value
+
+          if ($changelogVersion -ne $version) {
+            Write-Error "CHANGELOG.md's latest version '$changelogVersion' does not match the requested package version '$version'."
+            exit 1
+          }
+
+          if ($changelogDate -notmatch '^\d{4}-\d{2}-\d{2}$') {
+            Write-Error "CHANGELOG.md's latest entry '## [$changelogVersion]' is missing a release date in YYYY-MM-DD format."
+            exit 1
+          }
+
+          Write-Host "CHANGELOG.md version $changelogVersion ($changelogDate) matches requested package version $version."
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4

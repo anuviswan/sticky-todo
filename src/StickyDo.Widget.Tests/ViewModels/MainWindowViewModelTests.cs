@@ -27,13 +27,14 @@ public class MainWindowViewModelTests
 
         _repository = new FileBasedRepository(new FakeStorageLocationProvider(_testDataDirectory));
         await _repository.InitializeAsync();
-        _service = new StickyNoteService(_repository);
+        _service = new StickyNoteService(_repository, _repository);
         var notesListViewModel = new NotesListViewModel(
             _service,
             new FakeStickyNoteWindowService(),
             new FakeDialogService(),
             new WeakReferenceMessenger(),
-            new FakeSettingsRepository());
+            new FakeSettingsRepository(),
+            new PersistenceService(_repository));
         _startupTaskService = new FakeStartupTaskService();
         var settingsViewModel = new SettingsViewModel(
             new FakeSettingsRepository(),
@@ -208,6 +209,8 @@ public class MainWindowViewModelTests
         public void RequestMinimize() { }
 
         public void RequestClose() { }
+
+        public void RequestToggleMaximizeRestore() { }
 
         public void RequestShow() { }
     }

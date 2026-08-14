@@ -13,11 +13,12 @@
         Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
-        ResizeMode="CanResizeWithGrip"
+        ResizeMode="NoResize"
         ShowInTaskbar="False"
         Topmost="False"
         behaviors:WindowBehavior.IsEnabled="True">
 
+    <Grid>
     <Border Background="{Binding CurrentColor, Converter={StaticResource ColorArgbToBrushConverter}}" BorderBrush="#E8D4B8" BorderThickness="1" CornerRadius="8">
         <Border.Style>
             <Style TargetType="Border">
@@ -65,7 +66,8 @@
                          space stays part of the TitleBarBorder drag zone; only clicks on the
                          text itself land on the TextBox and enter edit mode. -->
                     <TextBox Grid.Column="1"
-                             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                             Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             behaviors:CommitOnLostFocusBehavior.Command="{Binding SaveCommand}"
                              FontSize="14"
                              FontWeight="500"
                              Foreground="#333333"
@@ -74,7 +76,11 @@
                              Padding="6,2"
                              HorizontalAlignment="Left"
                              VerticalAlignment="Center"
-                             Cursor="IBeam"/>
+                             Cursor="IBeam">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SaveCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
 
                     <!-- Favorite / Unfavorite Icon -->
                     <Button Grid.Column="2"
@@ -394,9 +400,14 @@
                          Bound through SyncStatus/the same converter pattern as Save Status so a
                          future release can swap in real sync state - including hiding the badge
                          once "Synced" exists - without touching this layout. Non-interactive -
-                         informational only. -->
+                         informational only.
+
+                         Sync feature is planned for a future release.
+                         The icon is intentionally kept in the UI but hidden for now.
+                         Re-enable visibility when synchronization support is implemented. -->
                     <Grid Grid.Column="1"
                           Width="20" Height="17"
+                          Visibility="Collapsed"
                           ToolTip="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToTooltipConverter}}">
                         <TextBlock Text="{Binding SyncStatus, Converter={StaticResource NoteSyncStateToIconConverter}}"
                                    FontSize="13"
@@ -536,13 +547,16 @@
                 <controls:ColorPalettePopup DataContext="{Binding}"/>
             </Popup>
 
-            <!-- More Options Popup (see StaysOpen note above) -->
+            <!-- More Options Popup (see StaysOpen note above). PopupAnimation is bound rather
+                 than hardcoded: DeleteNoteAsync forces it to None for the close that precedes
+                 the delete confirmation dialog, to avoid racing the fade-out animation against
+                 that modal (see DeleteNoteAsync). -->
             <Popup x:Name="MoreOptionsFlyout"
                    IsOpen="{Binding IsMoreOptionsOpen, Mode=TwoWay}"
                    PlacementTarget="{Binding ElementName=MenuButton}"
                    Placement="Top"
                    AllowsTransparency="True"
-                   PopupAnimation="Fade"
+                   PopupAnimation="{Binding MoreOptionsPopupAnimation}"
                    StaysOpen="True"
                    HorizontalOffset="-156"
                    VerticalOffset="-6"
@@ -552,4 +566,46 @@
             </Popup>
         </Grid>
     </Border>
+
+    <!-- Resize handles: thin invisible strips along each edge and small squares at each corner,
+         layered above the note content so a drag from within a few pixels of the window's border
+         resizes it instead of moving/clicking through to the content underneath. Declared after
+         the note content and edges are declared before corners, so hit-testing at a corner favors
+         the (smaller, diagonal-cursor) corner handle over the edge strips it overlaps in the
+         margin-reserved corner area. Disabled while the note is pinned, matching
+         DragWindowBehavior.CanDrag on the title bar above. -->
+    <Rectangle Fill="Transparent" Cursor="SizeNS"
+               VerticalAlignment="Top" HorizontalAlignment="Stretch" Height="6" Margin="10,0,10,0"
+               behaviors:ResizeWindowBehavior.Edge="Top"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    <Rectangle Fill="Transparent" Cursor="SizeNS"
+               VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Height="6" Margin="10,0,10,0"
+               behaviors:ResizeWindowBehavior.Edge="Bottom"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    <Rectangle Fill="Transparent" Cursor="SizeWE"
+               HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="6" Margin="0,10,0,10"
+               behaviors:ResizeWindowBehavior.Edge="Left"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    <Rectangle Fill="Transparent" Cursor="SizeWE"
+               HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="6" Margin="0,10,0,10"
+               behaviors:ResizeWindowBehavior.Edge="Right"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+
+    <Rectangle Fill="Transparent" Cursor="SizeNWSE"
+               HorizontalAlignment="Left" VerticalAlignment="Top" Width="10" Height="10"
+               behaviors:ResizeWindowBehavior.Edge="TopLeft"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    <Rectangle Fill="Transparent" Cursor="SizeNESW"
+               HorizontalAlignment="Right" VerticalAlignment="Top" Width="10" Height="10"
+               behaviors:ResizeWindowBehavior.Edge="TopRight"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    <Rectangle Fill="Transparent" Cursor="SizeNESW"
+               HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="10" Height="10"
+               behaviors:ResizeWindowBehavior.Edge="BottomLeft"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    <Rectangle Fill="Transparent" Cursor="SizeNWSE"
+               HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="10" Height="10"
+               behaviors:ResizeWindowBehavior.Edge="BottomRight"
+               behaviors:ResizeWindowBehavior.CanResize="{Binding IsPinned, Converter={StaticResource InverseBooleanConverter}}"/>
+    </Grid>
 </Window>

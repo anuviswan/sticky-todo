@@ -37,9 +37,9 @@ public class StickyNoteCreationService : IStickyNoteCreationService
             var noteTitle = $"Note {noteNumber}";
             var noteId = await _stickyNoteService.CreateNoteAsync(noteTitle, colorArgb, type);
 
-            // Open the window first - it adds the default "First Task" during load. Notifying
-            // the list only after that completes ensures its card reflects that task, instead
-            // of caching a stale zero-task snapshot that nothing ever refreshes afterward.
+            // Open the window before notifying the list, so its card reflects the note as
+            // loaded (e.g. the demo task seeded into a user's very first note) instead of
+            // caching a stale snapshot that nothing ever refreshes afterward.
             await _windowService.OpenNoteWindowAsync(noteId);
 
             _messenger.Send(new StickyNoteChangedMessage(noteId, StickyNoteChangeType.Created));
