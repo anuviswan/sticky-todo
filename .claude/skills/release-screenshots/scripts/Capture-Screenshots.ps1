@@ -36,6 +36,17 @@ param(
 $ErrorActionPreference = "Stop"
 
 # ---------------------------------------------------------------------------
+# Limits
+# ---------------------------------------------------------------------------
+# Same 204,800-byte (200KB) ceiling MSBuild enforces (APPX3207) for the MSIX
+# package's own tile images (src/StickyDo.Widget/StickyDo.Widget.Package/Images).
+# These Store *listing* screenshots aren't part of that manifest and aren't
+# actually checked by the build, but we hold them to the same cap so the whole
+# image pipeline has one consistent ceiling rather than two silently different
+# ones.
+$MaxImageBytes = 204800
+
+# ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")
@@ -452,6 +463,22 @@ try {
     $minimizedWindows = @()
 
     Write-Host "All 10 screenshots captured into $ScreenshotsDir"
+
+    # -----------------------------------------------------------------------
+    # 17. Size check - flag anything over the shared 200KB ceiling so it gets
+    #     recompressed before committing, rather than discovered later.
+    # -----------------------------------------------------------------------
+    Write-Host ""
+    Write-Host "Checking file sizes against the $MaxImageBytes byte limit..."
+    $oversized = @()
+    Get-ChildItem $ScreenshotsDir -Filter *.png | Sort-Object Name | ForEach-Object {
+        $status = if ($_.Length -gt $MaxImageBytes) { "OVER LIMIT" } else { "ok" }
+        Write-Host ("  {0,-32} {1,10:N0} bytes  [{2}]" -f $_.Name, $_.Length, $status)
+        if ($_.Length -gt $MaxImageBytes) { $oversized += $_.Name }
+    }
+    if ($oversized.Count -gt 0) {
+        Write-Warning "$($oversized.Count) screenshot(s) exceed the $MaxImageBytes byte limit: $($oversized -join ', ')`nRecompress these losslessly (same dimensions/alpha) before committing - see SKILL.md."
+    }
 }
 finally {
     # -----------------------------------------------------------------------
