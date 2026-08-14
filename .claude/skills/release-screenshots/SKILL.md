@@ -69,6 +69,22 @@ at that scale.
 Read each of the 10 output files and sanity-check them — don't just assume
 the run succeeded because the script exited 0. Specifically look for:
 
+- **Any file over 204,800 bytes (200KB).** The script prints a size report
+  and a `Write-Warning` for offenders at the end of its run — check that
+  output first. This is the same cap MSBuild enforces via `APPX3207` for the
+  MSIX package's own tile images (`Images/*.png` under
+  `StickyDo.Widget.Package`); these screenshots aren't part of that manifest
+  and the build won't actually reject them, but we hold them to the same
+  ceiling for consistency. `10-desktop-hero.png` is the usual offender since
+  it's the largest capture region (1300x700, three note windows over a
+  photographic wallpaper). Recompress any offender losslessly — same pixel
+  dimensions, same alpha channel, just tighter PNG encoding — for example:
+  `npx --yes sharp-cli -i <file> -o <dir> -c 9 --effort 6 --adaptiveFiltering`
+  (this is the exact approach and settings used to fix `APPX3207` in
+  [PR #179](https://github.com/anuviswan/sticky-todo/pull/179)). After
+  recompressing, re-check both the new file size and that width/height still
+  match the original before moving on.
+
 - A screenshot that's just this terminal/host app's own window instead of
   the expected app view (the z-order failure mode described above — if you
   see this, it means something interrupted the script mid-run rather than
