@@ -72,7 +72,7 @@
                                      Text="{Binding NotesListViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <!-- Search Placeholder (shown when query is empty; does not touch bound text) -->
-                            <TextBlock Grid.Column="1" Text="Search tasks, notes, or labels..."
+                            <TextBlock Grid.Column="1" Text="Search tasks or notes..."
                                        FontSize="13" Foreground="#999999"
                                        VerticalAlignment="Center" IsHitTestVisible="False">
                                 <TextBlock.Style>
