@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (e.g. 1.2.3 or 1.2.3-beta.1)"
+        description: "Version to release (Major.Minor.Build.Revision, e.g. 1.0.1.0)"
         required: true
         type: string
 
@@ -27,11 +27,14 @@ jobs:
 
     steps:
       - name: Validate version format
+        # Matches the Major.Minor.Build.Revision format the Microsoft Store requires (see
+        # msix-build.yml's "Set package version" step), since the same version string is
+        # carried through from this workflow's CHANGELOG.md heading to the eventual MSIX build.
         run: |
           set -euo pipefail
           version="${{ inputs.version }}"
-          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-            echo "::error::'$version' is not a valid semantic version (expected e.g. 1.2.3 or 1.2.3-beta.1)."
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$version' is not in the required Major.Minor.Build.Revision format (e.g. 1.0.1.0)."
             exit 1
           fi
 

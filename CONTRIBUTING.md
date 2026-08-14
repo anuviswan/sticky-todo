@@ -2,7 +2,9 @@
 
 ## Versioning
 
-StickyDo follows [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`).
+StickyDo uses the Microsoft Store's package identity format, `MAJOR.MINOR.BUILD.REVISION` (each field a
+16-bit unsigned integer, 0–65535), rather than Semantic Versioning — the same version string is carried
+through CHANGELOG.md, the release tag, and the MSIX package identity with no conversion between formats.
 
 The version is defined in one place, [`src/Directory.Build.props`](src/Directory.Build.props), and applies
 to every project under `src/` via `Version`, `AssemblyVersion`, and `FileVersion`. Individual `.csproj`
@@ -10,17 +12,20 @@ files should not set these properties.
 
 - **MAJOR** — breaking changes to the sync protocol, on-disk note format, or public API.
 - **MINOR** — new user-facing functionality that's backward compatible (e.g. a new note type, a new widget feature).
-- **PATCH** — bug fixes and other backward-compatible changes with no new functionality.
+- **BUILD** — bug fixes and other backward-compatible changes with no new functionality.
+- **REVISION** — reserved by the Microsoft Store, which assigns it on submission; always `0` in this repo's
+  manifests, tags, and CHANGELOG.md headings.
 
-Before `1.0.0`, the app is under active development and its API/format is not considered stable; expect more
-frequent `MINOR` bumps for breaking changes during this period, per SemVer's pre-1.0 convention.
+Before `1.0.0.0`, the app is under active development and its API/format is not considered stable; expect more
+frequent `MINOR` bumps for breaking changes during this period, per SemVer's pre-1.0 convention (applied here
+to the MAJOR/MINOR fields even though the overall format isn't SemVer).
 
 ### Bumping the version
 
 As part of preparing a release:
 
 1. Update `Version`, `AssemblyVersion`, and `FileVersion` in `src/Directory.Build.props`.
-2. Tag the release commit (e.g. `git tag v0.2.0`).
+2. Tag the release commit (e.g. `git tag v0.2.0.0`).
 
 The version is readable at runtime via standard assembly metadata (e.g.
 `Assembly.GetExecutingAssembly().GetName().Version` or
