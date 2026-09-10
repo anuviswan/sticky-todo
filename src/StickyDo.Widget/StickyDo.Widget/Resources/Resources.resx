@@ -209,7 +209,7 @@
     <value>StickyDo Backup (*.zip)|*.zip</value>
   </data>
   <data name="Settings_ApplicationName" xml:space="preserve">
-    <value>StickyDo Desktop</value>
+    <value>StickyDo</value>
   </data>
   <data name="Settings_CheckForUpdates" xml:space="preserve">
     <value>Check for updates</value>
