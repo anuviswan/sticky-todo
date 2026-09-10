@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Microsoft Store's `Major.Minor.Build.Revision` format (see [CONTRIBUTING.md](CONTRIBUTING.md#versioning))
 rather than Semantic Versioning.
 
+## [Unreleased]
+
 ## [1.0.2.0] - 2026-09-10
 
 ### Added
