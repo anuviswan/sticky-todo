@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Models.RichText;
 using StickyDo.Domain.Repositories;
@@ -630,6 +630,44 @@ public class FileBasedRepositoryTests
 
         // Assert
         Assert.IsNull(result);
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_UnreadableNoteFile_IsQuarantinedAndReported()
+    {
+        // Arrange - a note file that isn't valid JSON, e.g. truncated by a crash mid-write.
+        var dataDirectory = _storageLocationProvider.DataDirectory;
+        Directory.CreateDirectory(dataDirectory);
+        var corruptFilePath = Path.Combine(dataDirectory, $"{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(corruptFilePath, "{ this is not json");
+
+        var repository = new FileBasedRepository(_storageLocationProvider);
+
+        // Act
+        await repository.InitializeAsync();
+
+        // Assert - the note is skipped, set aside for recovery, and reported rather than vanishing.
+        var notes = await repository.GetAllAsync();
+        Assert.AreEqual(0, notes.Count());
+        Assert.IsFalse(File.Exists(corruptFilePath));
+        Assert.IsTrue(File.Exists(corruptFilePath + ".corrupt"));
+        Assert.AreEqual(1, repository.QuarantinedNoteFiles.Count);
+        Assert.AreEqual(corruptFilePath, repository.QuarantinedNoteFiles[0]);
+    }
+
+    [TestMethod]
+    public async Task InitializeAsync_AllNotesReadable_ReportsNoQuarantinedFiles()
+    {
+        var repository = new FileBasedRepository(_storageLocationProvider);
+        await repository.InitializeAsync();
+        await repository.CreateAsync(new StickyNote { Title = "Readable" });
+        await repository.SaveAllDirtyNotesAsync();
+
+        var reloaded = new FileBasedRepository(_storageLocationProvider);
+        await reloaded.InitializeAsync();
+
+        Assert.AreEqual(1, (await reloaded.GetAllAsync()).Count());
+        Assert.AreEqual(0, reloaded.QuarantinedNoteFiles.Count);
     }
 
     private sealed class FakeStorageLocationProvider : IStorageLocationProvider

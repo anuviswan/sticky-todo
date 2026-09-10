@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -240,5 +240,25 @@
   </data>
   <data name="UpdateCheck_ErrorMessage" xml:space="preserve">
     <value>Could not check for updates: {0}</value>
+  </data>
+  <data name="Settings_NotesLocation_Title" xml:space="preserve">
+    <value>Notes storage location</value>
+  </data>
+  <data name="Settings_NotesLocation_OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="Settings_NotesLocation_OpenErrorTitle" xml:space="preserve">
+    <value>Could Not Open Folder</value>
+  </data>
+  <data name="Settings_NotesLocation_OpenErrorMessage" xml:space="preserve">
+    <value>Could not open {0}. Error: {1}</value>
+  </data>
+  <data name="Notes_Unreadable_Title" xml:space="preserve">
+    <value>Some Notes Could Not Be Read</value>
+  </data>
+  <data name="Notes_Unreadable_Message" xml:space="preserve">
+    <value>{0} note file(s) could not be read and were set aside with a .corrupt extension so they aren't lost. You can find them in:
+
+{1}</value>
   </data>
 </root>

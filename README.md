@@ -187,6 +187,20 @@ are tracked separately.
 > located`. Install the Windows SDK via the Visual Studio Installer's Individual Components tab
 > before producing a Release/Store package.
 
+## Where your notes are stored
+
+Notes, settings and backups live under your user profile, resolved by
+`StickyDo.Domain.Storage.StorageLocationProvider`:
+
+| Build   | Location                                        |
+| ------- | ----------------------------------------------- |
+| Release | `%LocalAppData%\DefineStack\StickyDo`            |
+| Debug   | `%LocalAppData%\DefineStack\StickyDo.Debug`      |
+
+Each build keeps `Data` (one JSON file per note), `Settings`, `Logs` and `Backups` subfolders there,
+so developer data stays isolated from production data. The Settings page shows the resolved `Data`
+path and can open it in File Explorer.
+
 ## Privacy
 
 StickyDo is fully local and offline in this version — no telemetry, no accounts, no cloud

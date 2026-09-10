@@ -1,9 +1,12 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
+using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
+using StickyDo.Domain.Storage;
 using StickyDo.Widget.Configuration;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Services;
+using StickyDo.Widget.Utilities;
 using StickyDo.Widget.ViewModels;
 
 namespace StickyDo.Widget;
@@ -156,7 +159,45 @@ public partial class App : Application
             _ = viewModel.LoadNotesAsync();
         }
 
-        _ = RestoreOpenNotesOrShowListAsync(mainWindow);
+        _ = ShowInitialContentAsync(mainWindow);
+    }
+
+    /// <summary>
+    /// Restores the previous session's windows and only then reports any unreadable note files, so
+    /// the warning appears over the app rather than ahead of it.
+    /// </summary>
+    private async Task ShowInitialContentAsync(MainWindow mainWindow)
+    {
+        await RestoreOpenNotesOrShowListAsync(mainWindow);
+        await ReportUnreadableNotesAsync();
+    }
+
+    /// <summary>
+    /// Tells the user when note files could not be deserialized during startup. Those files are set
+    /// aside with a .corrupt extension by the repository; without this the affected notes would just
+    /// be missing from the list with no explanation, which reads as data loss (issue #183).
+    /// </summary>
+    private async Task ReportUnreadableNotesAsync()
+    {
+        if (_serviceProvider == null)
+            return;
+
+        try
+        {
+            var repository = _serviceProvider.GetRequiredService<FileBasedRepository>();
+            if (repository.QuarantinedNoteFiles.Count == 0)
+                return;
+
+            var dataDirectory = _serviceProvider.GetRequiredService<IStorageLocationProvider>().DataDirectory;
+            await _serviceProvider.GetRequiredService<IDialogService>().ShowMessageAsync(
+                StickyDo.Widget.Resources.Resources.Notes_Unreadable_Title,
+                string.Format(StickyDo.Widget.Resources.Resources.Notes_Unreadable_Message, repository.QuarantinedNoteFiles.Count, dataDirectory),
+                MessageBoxImage.Warning);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(ReportUnreadableNotesAsync));
+        }
     }
 
     /// <summary>

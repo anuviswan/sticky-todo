@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Resources;
 
 namespace StickyDo.Widget.Resources;
@@ -53,6 +53,12 @@ public static class Resources
     public static string Settings_ImportNotes_Description => Get(nameof(Settings_ImportNotes_Description));
     public static string Settings_ExportNotes_Title => Get(nameof(Settings_ExportNotes_Title));
     public static string Settings_ExportNotes_Description => Get(nameof(Settings_ExportNotes_Description));
+    public static string Settings_NotesLocation_Title => Get(nameof(Settings_NotesLocation_Title));
+    public static string Settings_NotesLocation_OpenFolder => Get(nameof(Settings_NotesLocation_OpenFolder));
+    public static string Settings_NotesLocation_OpenErrorTitle => Get(nameof(Settings_NotesLocation_OpenErrorTitle));
+    public static string Settings_NotesLocation_OpenErrorMessage => Get(nameof(Settings_NotesLocation_OpenErrorMessage));
+    public static string Notes_Unreadable_Title => Get(nameof(Notes_Unreadable_Title));
+    public static string Notes_Unreadable_Message => Get(nameof(Notes_Unreadable_Message));
     public static string Export_SuccessTitle => Get(nameof(Export_SuccessTitle));
     public static string Export_SuccessMessage => Get(nameof(Export_SuccessMessage));
     public static string Export_ErrorTitle => Get(nameof(Export_ErrorTitle));
