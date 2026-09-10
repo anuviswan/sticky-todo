@@ -16,6 +16,7 @@ rather than Semantic Versioning.
 
 - Notes last positioned on a monitor that is no longer connected now open on a screen you can actually see, instead of appearing not to open at all. Their original position is kept, so reconnecting the monitor puts them back where they were. ([#183](https://github.com/anuviswan/sticky-todo/issues/183))
 - A note file that can't be read is now reported on startup, instead of silently disappearing from your notes list. ([#183](https://github.com/anuviswan/sticky-todo/issues/183))
+- Settings no longer calls the app "StickyDo Desktop" — it now shows the name used everywhere else, StickyDo. ([#185](https://github.com/anuviswan/sticky-todo/pull/185))
 
 ## [1.0.1.0] - 2026-08-14
 
