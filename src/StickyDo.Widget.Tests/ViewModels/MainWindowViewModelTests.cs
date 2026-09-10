@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StickyDo.Domain.Models;
@@ -45,6 +45,7 @@ public class MainWindowViewModelTests
             _repository,
             new WeakReferenceMessenger(),
             new FakeUrlLauncherService(),
+            new FakeFolderLauncherService(),
             _startupTaskService,
             new FakeUpdateService());
         _viewModel = new MainWindowViewModel(new FakeWindowService(), notesListViewModel, settingsViewModel);
@@ -247,6 +248,13 @@ public class MainWindowViewModelTests
         public string? ShowSaveFileDialog(string defaultFileName, string filter, string? initialDirectory = null) => null;
 
         public string? ShowOpenFileDialog(string filter, string? initialDirectory = null) => null;
+    }
+
+    private sealed class FakeFolderLauncherService : IFolderLauncherService
+    {
+        public void OpenFolder(string path)
+        {
+        }
     }
 
     private sealed class FakeUrlLauncherService : IUrlLauncherService

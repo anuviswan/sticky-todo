@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using StickyDo.Domain.Models;
 using StickyDo.Domain.Serialization;
 using StickyDo.Domain.Storage;
@@ -15,6 +15,7 @@ namespace StickyDo.Domain.Repositories;
 public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskRepository
 {
     private readonly List<StickyNote> _notes = [];
+    private readonly List<string> _quarantinedNoteFiles = [];
     private readonly IDirtyTracker _dirtyTracker;
     private readonly PersistencePathHelper _pathHelper;
     private bool _initialized;
@@ -24,6 +25,13 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         _dirtyTracker = new DirtyTracker();
         _pathHelper = new PersistencePathHelper(storageLocationProvider);
     }
+
+    /// <summary>
+    /// Files that could not be deserialized during the most recent load and were set aside with a
+    /// <c>.corrupt</c> extension. Exposed so the app can tell the user a note was unreadable instead
+    /// of letting it disappear silently (issue #183).
+    /// </summary>
+    public IReadOnlyList<string> QuarantinedNoteFiles => _quarantinedNoteFiles;
 
     /// <summary>
     /// Initializes the repository by loading all notes from disk.
@@ -50,7 +58,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         catch (UnauthorizedAccessException ex)
         {
             throw new InvalidOperationException(
-                $"No permission to access the data directory. Ensure you have write access to %LocalAppData%\\StickyDo. Error: {ex.Message}", ex);
+                $"No permission to access the data directory '{_pathHelper.GetDataDirectoryPath()}'. Error: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
@@ -69,6 +77,7 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     private async Task LoadAllNotesFromDiskAsync()
     {
         _notes.Clear();
+        _quarantinedNoteFiles.Clear();
         var noteFiles = _pathHelper.GetAllNoteFiles();
 
         foreach (var filePath in noteFiles)
@@ -104,9 +113,10 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
     }
 
     /// <summary>
-    /// Handles corrupted JSON files by renaming them for manual recovery.
+    /// Handles corrupted JSON files by renaming them for manual recovery, and records them in
+    /// <see cref="QuarantinedNoteFiles"/> so the loss can be reported to the user.
     /// </summary>
-    private static void HandleCorruptedFile(string filePath, Exception ex)
+    private void HandleCorruptedFile(string filePath, Exception ex)
     {
         var corruptPath = filePath + ".corrupt";
         try
@@ -120,6 +130,10 @@ public class FileBasedRepository : IStickyNoteRepository, IStickyNoteTaskReposit
         {
             // Ignore if rename fails
         }
+
+        // Recorded whether or not the rename succeeded - either way this note did not load.
+        _quarantinedNoteFiles.Add(filePath);
+        System.Diagnostics.Debug.WriteLine($"FileBasedRepository: Could not read note file {filePath}: {ex.Message}");
     }
 
     // ========== IStickyNoteRepository Implementation ==========

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -39,6 +39,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly FileBasedRepository _noteRepository;
     private readonly IMessenger _messenger;
     private readonly IUrlLauncherService _urlLauncherService;
+    private readonly IFolderLauncherService _folderLauncherService;
     private readonly IStartupTaskService _startupTaskService;
     private readonly IUpdateService _updateService;
     private bool _isLoading;
@@ -65,6 +66,13 @@ public partial class SettingsViewModel : ObservableObject
     private bool isCheckingForUpdates;
 
     /// <summary>
+    /// Absolute path of the folder the app stores note files in, shown so users can find, back up
+    /// or troubleshoot their data instead of having to guess where it lives (issue #183).
+    /// </summary>
+    [ObservableProperty]
+    private string notesStorageLocation = string.Empty;
+
+    /// <summary>
     /// Raised when the user requests to leave the Settings page (e.g. via its close button).
     /// The hosting view model swaps the content area back to the notes list, keeping this
     /// ViewModel view-agnostic.
@@ -80,6 +88,7 @@ public partial class SettingsViewModel : ObservableObject
         FileBasedRepository noteRepository,
         IMessenger messenger,
         IUrlLauncherService urlLauncherService,
+        IFolderLauncherService folderLauncherService,
         IStartupTaskService startupTaskService,
         IUpdateService updateService)
     {
@@ -91,6 +100,7 @@ public partial class SettingsViewModel : ObservableObject
         ArgumentNullException.ThrowIfNull(noteRepository);
         ArgumentNullException.ThrowIfNull(messenger);
         ArgumentNullException.ThrowIfNull(urlLauncherService);
+        ArgumentNullException.ThrowIfNull(folderLauncherService);
         ArgumentNullException.ThrowIfNull(startupTaskService);
         ArgumentNullException.ThrowIfNull(updateService);
 
@@ -102,8 +112,11 @@ public partial class SettingsViewModel : ObservableObject
         _noteRepository = noteRepository;
         _messenger = messenger;
         _urlLauncherService = urlLauncherService;
+        _folderLauncherService = folderLauncherService;
         _startupTaskService = startupTaskService;
         _updateService = updateService;
+
+        NotesStorageLocation = storageLocationProvider.DataDirectory;
     }
 
     /// <summary>
@@ -264,6 +277,27 @@ public partial class SettingsViewModel : ObservableObject
     public void OpenPrivacyPolicy()
     {
         _urlLauncherService.OpenUrl(PrivacyPolicyUrl);
+    }
+
+    /// <summary>
+    /// Reveals the notes storage folder in File Explorer. Failures are surfaced rather than
+    /// swallowed, since the whole point of the command is telling the user where their data is.
+    /// </summary>
+    [RelayCommand]
+    public async Task OpenNotesStorageLocationAsync()
+    {
+        try
+        {
+            _folderLauncherService.OpenFolder(NotesStorageLocation);
+        }
+        catch (Exception ex)
+        {
+            LoggerHelper.LogException(ex, nameof(OpenNotesStorageLocationAsync));
+            await _dialogService.ShowMessageAsync(
+                Resources.Resources.Settings_NotesLocation_OpenErrorTitle,
+                string.Format(Resources.Resources.Settings_NotesLocation_OpenErrorMessage, NotesStorageLocation, ex.Message),
+                MessageBoxImage.Error);
+        }
     }
 
     /// <summary>

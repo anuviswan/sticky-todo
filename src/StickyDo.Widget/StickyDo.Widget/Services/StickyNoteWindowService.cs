@@ -1,6 +1,7 @@
-using System.Windows;
+﻿using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using StickyDo.Domain.Services;
+using StickyDo.Widget.Behaviors;
 using StickyDo.Widget.Interfaces;
 using StickyDo.Widget.Messages;
 using StickyDo.Widget.Utilities;
@@ -24,6 +25,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
     private readonly IPersistenceService _persistenceService;
     private readonly IMessenger _messenger;
     private readonly IWindowService _windowService;
+    private readonly IScreenProvider _screenProvider;
 
     public StickyNoteWindowService(
         StickyNoteService stickyNoteService,
@@ -33,7 +35,8 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         Lazy<IStickyNoteCreationService> creationService,
         IPersistenceService persistenceService,
         IMessenger messenger,
-        IWindowService windowService)
+        IWindowService windowService,
+        IScreenProvider screenProvider)
     {
         ArgumentNullException.ThrowIfNull(stickyNoteService);
         ArgumentNullException.ThrowIfNull(stickyNoteTaskService);
@@ -43,6 +46,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         ArgumentNullException.ThrowIfNull(persistenceService);
         ArgumentNullException.ThrowIfNull(messenger);
         ArgumentNullException.ThrowIfNull(windowService);
+        ArgumentNullException.ThrowIfNull(screenProvider);
         _stickyNoteService = stickyNoteService;
         _stickyNoteTaskService = stickyNoteTaskService;
         _windowManager = windowManager;
@@ -51,6 +55,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
         _persistenceService = persistenceService;
         _messenger = messenger;
         _windowService = windowService;
+        _screenProvider = screenProvider;
 
         _messenger.Register<StickyNoteChangedMessage>(this, (recipient, message) =>
             ((StickyNoteWindowService)recipient).OnNoteChanged(message));
@@ -131,33 +136,52 @@ public class StickyNoteWindowService : IStickyNoteWindowService
 
                 // Restore window state: prefer the in-memory state from this session, then fall
                 // back to the position persisted on disk from the last time this note was closed.
-                var savedState = _windowManager.GetSavedNoteWindowState(noteId);
-                if (savedState != null)
+                var savedBounds = ToBounds(_windowManager.GetSavedNoteWindowState(noteId))
+                    ?? ToBounds(await _stickyNoteService.GetNoteByIdAsync(noteId), window);
+
+                // The saved position comes from whatever display layout the note was last closed on.
+                // If that monitor is gone (a docked laptop opened undocked, or a note restored onto a
+                // narrower machine) the window would open completely off-screen and look like it never
+                // opened at all, so pull it back onto a connected monitor - see issue #183.
+                // Only set when the placement had to be corrected: the position the user actually
+                // chose, plus the corrected position we put the window at instead. On close the
+                // original is written back unless the user has since moved the window, so
+                // reconnecting the missing monitor restores their original layout.
+                Rect? uncorrectedBounds = null;
+                Rect? correctedBounds = null;
+
+                if (savedBounds is { } bounds)
                 {
-                    window.Left = savedState.Left;
-                    window.Top = savedState.Top;
-                    window.Width = savedState.Width;
-                    window.Height = savedState.Height;
+                    var placement = NoteWindowPlacementCalculator.EnsureVisible(bounds, _screenProvider.GetWorkAreasInDips());
+
+                    window.Left = placement.Bounds.Left;
+                    window.Top = placement.Bounds.Top;
+                    window.Width = placement.Bounds.Width;
+                    window.Height = placement.Bounds.Height;
+
+                    if (placement.WasCorrected)
+                    {
+                        uncorrectedBounds = bounds;
+                        correctedBounds = placement.Bounds;
+                    }
                 }
                 else
                 {
-                    var note = await _stickyNoteService.GetNoteByIdAsync(noteId);
-                    if (note?.WindowLeft is { } left && note.WindowTop is { } top)
-                    {
-                        window.Left = left;
-                        window.Top = top;
-                        window.Width = note.WindowWidth ?? window.Width;
-                        window.Height = note.WindowHeight ?? window.Height;
-                    }
-                    else
-                    {
-                        window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                    }
+                    window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
                 }
 
                 window.Closed += async (s, e) =>
                 {
-                    _windowManager.SaveNoteWindowState(noteId, window.Left, window.Top, window.Width, window.Height);
+                    var closingBounds = new Rect(window.Left, window.Top, window.Width, window.Height);
+
+                    // Comparing the closing bounds against what we placed the window at is more
+                    // reliable than watching LocationChanged/SizeChanged, which WPF can also raise
+                    // during a transparent window's own layout passes.
+                    var boundsToPersist = uncorrectedBounds is { } uncorrected && IsUnmovedFrom(closingBounds, correctedBounds)
+                        ? uncorrected
+                        : closingBounds;
+
+                    _windowManager.SaveNoteWindowState(noteId, boundsToPersist.Left, boundsToPersist.Top, boundsToPersist.Width, boundsToPersist.Height);
                     _windowManager.UnregisterNoteWindow(noteId);
 
                     try
@@ -176,7 +200,7 @@ public class StickyNoteWindowService : IStickyNoteWindowService
                                 await _stickyNoteService.SetNoteOpenStateAsync(noteId, false);
                             }
 
-                            await _stickyNoteService.UpdateNoteWindowBoundsAsync(noteId, window.Left, window.Top, window.Width, window.Height);
+                            await _stickyNoteService.UpdateNoteWindowBoundsAsync(noteId, boundsToPersist.Left, boundsToPersist.Top, boundsToPersist.Width, boundsToPersist.Height);
                             await _persistenceService.SaveAllDirtyNotesAsync();
                         }
                     }
@@ -205,4 +229,34 @@ public class StickyNoteWindowService : IStickyNoteWindowService
             await _dialogService.ShowMessageAsync("Open Note Error", $"Error opening note: {ex.Message}", MessageBoxImage.Error);
         }
     }
+
+    /// <summary>
+    /// Converts the in-memory window state saved earlier in this session into bounds, or null when
+    /// this note hasn't been opened yet in this session.
+    /// </summary>
+    private static Rect? ToBounds(WindowState? savedState) =>
+        savedState is null
+            ? null
+            : new Rect(savedState.Left, savedState.Top, savedState.Width, savedState.Height);
+
+    /// <summary>
+    /// Converts the note's persisted position into bounds, falling back to the window's default size
+    /// for any dimension that was never saved. Returns null when the note has no saved position at
+    /// all, so the caller can centre it instead.
+    /// </summary>
+    private static Rect? ToBounds(Domain.Models.StickyNote? note, Window window) =>
+        note?.WindowLeft is { } left && note.WindowTop is { } top
+            ? new Rect(left, top, note.WindowWidth ?? window.Width, note.WindowHeight ?? window.Height)
+            : null;
+
+    /// <summary>
+    /// True when the window still sits where it was placed, i.e. the user never dragged or resized
+    /// it. Uses a sub-pixel tolerance because WPF can round bounds during layout.
+    /// </summary>
+    private static bool IsUnmovedFrom(Rect closingBounds, Rect? placedBounds) =>
+        placedBounds is { } placed &&
+        Math.Abs(closingBounds.Left - placed.Left) < 0.5 &&
+        Math.Abs(closingBounds.Top - placed.Top) < 0.5 &&
+        Math.Abs(closingBounds.Width - placed.Width) < 0.5 &&
+        Math.Abs(closingBounds.Height - placed.Height) < 0.5;
 }

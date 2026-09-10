@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Microsoft Store's `Major.Minor.Build.Revision` format (see [CONTRIBUTING.md](CONTRIBUTING.md#versioning))
 rather than Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- Settings now shows exactly where your notes are stored on disk, with a button to open that folder in File Explorer. ([#183](https://github.com/anuviswan/sticky-todo/issues/183))
+
+### Fixed
+
+- Notes last positioned on a monitor that is no longer connected now open on a screen you can actually see, instead of appearing not to open at all. Their original position is kept, so reconnecting the monitor puts them back where they were. ([#183](https://github.com/anuviswan/sticky-todo/issues/183))
+- A note file that can't be read is now reported on startup, instead of silently disappearing from your notes list. ([#183](https://github.com/anuviswan/sticky-todo/issues/183))
+
 ## [1.0.1.0] - 2026-08-14
 
 ### Added
