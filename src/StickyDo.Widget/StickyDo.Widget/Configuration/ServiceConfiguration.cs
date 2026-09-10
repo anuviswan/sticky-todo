@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using StickyDo.Domain.Repositories;
 using StickyDo.Domain.Services;
@@ -95,6 +95,7 @@ public static class ServiceConfiguration
                 sp.GetRequiredService<FileBasedRepository>(),
                 sp.GetRequiredService<IMessenger>(),
                 sp.GetRequiredService<IUrlLauncherService>(),
+                sp.GetRequiredService<IFolderLauncherService>(),
                 sp.GetRequiredService<IStartupTaskService>(),
                 sp.GetRequiredService<IUpdateService>());
             Task.Run(() => viewModel.InitializeAsync()).Wait(TimeSpan.FromSeconds(10));
@@ -112,7 +113,9 @@ public static class ServiceConfiguration
         services.AddSingleton<IWindowService, WindowService>();
         services.AddSingleton<ITrayIconService, TrayIconService>();
         services.AddSingleton<IUrlLauncherService, UrlLauncherService>();
+        services.AddSingleton<IFolderLauncherService, FolderLauncherService>();
         services.AddSingleton<IStartupTaskService, StartupTaskService>();
+        services.AddSingleton<IScreenProvider, ScreenProvider>();
 
         services.AddHttpClient<IUpdateService, UpdateService>(client =>
         {
@@ -157,7 +160,8 @@ public static class ServiceConfiguration
                 new Lazy<IStickyNoteCreationService>(() => sp.GetRequiredService<IStickyNoteCreationService>()),
                 sp.GetRequiredService<IPersistenceService>(),
                 sp.GetRequiredService<IMessenger>(),
-                sp.GetRequiredService<IWindowService>()));
+                sp.GetRequiredService<IWindowService>(),
+                sp.GetRequiredService<IScreenProvider>()));
 
         services.AddSingleton<IStickyNoteCreationService, StickyNoteCreationService>();
         services.AddSingleton<MainWindow>();

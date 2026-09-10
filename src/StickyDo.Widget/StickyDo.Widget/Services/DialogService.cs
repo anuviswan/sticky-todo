@@ -1,4 +1,5 @@
-using System.Windows;
+﻿using System.Windows;
+using System.Windows.Interop;
 using StickyDo.Widget.Interfaces;
 
 namespace StickyDo.Widget.Services;
@@ -31,13 +32,22 @@ public class DialogService : IDialogService
     /// Resolves the window the dialog should be owned by, so it gets correct z-order,
     /// activation, and centering instead of being an ownerless top-level window that has to
     /// independently win OS-level foreground activation.
+    /// Only ever returns a window that has actually been shown: MessageBox throws when handed an
+    /// owner with no window handle yet, which would turn a startup dialog into a silent no-op
+    /// (the notes list stays hidden at startup whenever open notes are restored instead).
     /// </summary>
     private static Window? GetOwnerWindow()
     {
         if (Application.Current is null)
             return null;
 
-        return Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
-            ?? Application.Current.MainWindow;
+        var activeWindow = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive && HasWindowHandle(w));
+        if (activeWindow is not null)
+            return activeWindow;
+
+        return HasWindowHandle(Application.Current.MainWindow) ? Application.Current.MainWindow : null;
     }
+
+    private static bool HasWindowHandle(Window? window) =>
+        window is not null && new WindowInteropHelper(window).Handle != IntPtr.Zero;
 }

@@ -38,7 +38,7 @@ public class PersistencePathHelper(IStorageLocationProvider storageLocationProvi
             catch (UnauthorizedAccessException)
             {
                 throw new UnauthorizedAccessException(
-                    $"No permission to create directory: {dataDir}. Please ensure you have write access to %LocalAppData%.");
+                    $"No permission to create the notes directory: {dataDir}. Please ensure you have write access to that location.");
             }
             catch (IOException ex)
             {

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -24,6 +24,7 @@ public class SettingsViewModelTests
     private FileBasedRepository _noteRepository = null!;
     private WeakReferenceMessenger _messenger = null!;
     private FakeUrlLauncherService _urlLauncherService = null!;
+    private FakeFolderLauncherService _folderLauncherService = null!;
     private FakeStartupTaskService _startupTaskService = null!;
     private FakeUpdateService _updateService = null!;
     private SettingsViewModel _viewModel = null!;
@@ -40,6 +41,7 @@ public class SettingsViewModelTests
         _noteRepository = new FileBasedRepository(_storageLocationProvider);
         _messenger = new WeakReferenceMessenger();
         _urlLauncherService = new FakeUrlLauncherService();
+        _folderLauncherService = new FakeFolderLauncherService();
         _startupTaskService = new FakeStartupTaskService();
         _updateService = new FakeUpdateService();
         _viewModel = new SettingsViewModel(
@@ -51,6 +53,7 @@ public class SettingsViewModelTests
             _noteRepository,
             _messenger,
             _urlLauncherService,
+            _folderLauncherService,
             _startupTaskService,
             _updateService);
     }
@@ -72,6 +75,32 @@ public class SettingsViewModelTests
     public void Constructor_LaunchAtStartupDefaultsToFalse()
     {
         Assert.IsFalse(_viewModel.LaunchAtStartup);
+    }
+
+    [TestMethod]
+    public void Constructor_ExposesTheNotesDataDirectoryAsTheStorageLocation()
+    {
+        Assert.AreEqual(_storageLocationProvider.DataDirectory, _viewModel.NotesStorageLocation);
+    }
+
+    [TestMethod]
+    public async Task OpenNotesStorageLocation_OpensTheNotesDataDirectory()
+    {
+        await _viewModel.OpenNotesStorageLocationCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(_storageLocationProvider.DataDirectory, _folderLauncherService.LastPath);
+    }
+
+    [TestMethod]
+    public async Task OpenNotesStorageLocation_ShowsAnErrorWhenTheFolderCannotBeOpened()
+    {
+        _folderLauncherService.ExceptionToThrow = new IOException("boom");
+
+        await _viewModel.OpenNotesStorageLocationCommand.ExecuteAsync(null);
+
+        Assert.AreEqual(1, _dialogService.MessageCallCount);
+        Assert.AreEqual(MessageBoxImage.Error, _dialogService.LastIcon);
+        StringAssert.Contains(_dialogService.LastMessage!, _storageLocationProvider.DataDirectory);
     }
 
     [TestMethod]
@@ -431,11 +460,13 @@ public class SettingsViewModelTests
     {
         public int MessageCallCount { get; private set; }
         public MessageBoxImage LastIcon { get; private set; }
+        public string? LastMessage { get; private set; }
 
         public Task ShowMessageAsync(string title, string message, MessageBoxImage icon = MessageBoxImage.None)
         {
             MessageCallCount++;
             LastIcon = icon;
+            LastMessage = message;
             return Task.CompletedTask;
         }
 
@@ -465,6 +496,20 @@ public class SettingsViewModelTests
         public string? LastUrl { get; private set; }
 
         public void OpenUrl(string url) => LastUrl = url;
+    }
+
+    private sealed class FakeFolderLauncherService : IFolderLauncherService
+    {
+        public string? LastPath { get; private set; }
+        public Exception? ExceptionToThrow { get; set; }
+
+        public void OpenFolder(string path)
+        {
+            LastPath = path;
+
+            if (ExceptionToThrow != null)
+                throw ExceptionToThrow;
+        }
     }
 
     private sealed class FakeStartupTaskService : IStartupTaskService
